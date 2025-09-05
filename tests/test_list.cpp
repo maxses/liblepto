@@ -112,7 +112,6 @@ TEST_CASE( "List", "[default]" )
    {
       CRing< int > ring( 2 + LEPTO_RING_SPARE_ENTRIES );
       //ring.setFatal(false);
-      bool sta;
 
       /* - push values to buffer should succeed till buffer is full
        * - Poping entries should return expected vales
@@ -133,7 +132,6 @@ TEST_CASE( "List", "[default]" )
    SECTION( "Overlap" )
    {
       CRing< int > ring(4);
-      bool sta;
 
       /* - Push some values
        * - Pop an values
@@ -162,7 +160,6 @@ TEST_CASE( "List", "[default]" )
    SECTION( "Next" )
    {
       CRing< int > ring( 3 + LEPTO_RING_SPARE_ENTRIES );
-      bool sta;
 
       /* - Use pushBack() to push some values
        * - Use '<<' to push an entry

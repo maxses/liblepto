@@ -38,8 +38,6 @@ TEST_CASE( "Base64", "[default]" )
    SECTION( "Base64" )
    {
       const char *data="Hello world! Lori ipsum um die Welt";
-      const char *data1="Hello ";
-      const char *data2="World!";
       
       {
          CBase64 b64;

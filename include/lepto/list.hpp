@@ -90,9 +90,11 @@
 
 #if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
    // Smaller types increase
-   typedef int ringIndex_t;
+   typedef unsigned int ringIndex_t;
 #else
-   typedef int ringIndex_t;
+   // Force unsigned division for cortex-m0 with no division support
+   // There is no support for negative values
+   typedef unsigned int ringIndex_t;
 #endif
 
 template <typename T>

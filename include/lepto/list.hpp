@@ -116,7 +116,7 @@ class CList
       ringIndex_t m_maxEntries;
       
       #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-         int m_maxEntriesDuplicated;
+         unsigned int m_maxEntriesDuplicated;
       #endif
          
       #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )

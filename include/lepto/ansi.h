@@ -56,6 +56,7 @@
 #define ANSI_CLEARSCREEN ESC "[2J"
 #define ANSI_RESET ESC "[0m"
 #define ANSI_HOME ESC "[H"
+#define ANSI_DELETE ESC "[D"
 
 
 /*--- Fin ------------------------------------------------------------------*/

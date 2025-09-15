@@ -66,6 +66,8 @@
 #  define CONFIG_LEPTO_RING_DEFAULT_SIZE 0x0
 #endif
 
+#define CONFIG_LEPTO_LIST_INCREMENT       10
+
 #if ! defined(LEPTO_CONFIGURED)
    #error LEPTO_CONFIGURED not defined. The configuration header was probably not involved.
 #endif
@@ -441,6 +443,9 @@ class CList
          return( m_buffers[ pos MOD_ENTRY ] );
       }
 
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+      bool expand( void );
+      #endif
 };
 
 
@@ -571,7 +576,15 @@ bool CList<T>::push_back(const T value)
    
    if( index < 0 )
    {
-      return(false);
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+            expand();
+            if( (index=tryReserve()) < 0 )
+            {
+               return(false);
+            }
+      #else
+            return(false);
+      #endif
    }
    *reservedEntry(index)=value;
    pushReserved( index );
@@ -711,6 +724,31 @@ typename CList<T>::CIterator& CList<T>::CIterator::operator ++()
    m_pos = ( m_pos + 1 ) MOD_DUPLICATED_ITERATOR;
    return( *this );
 };
+
+#if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+
+template <typename T>
+bool CList<T>::expand( )
+{
+   T *oldBuffers=m_buffers;
+   int size=count();
+   m_maxEntries+= CONFIG_LEPTO_LIST_INCREMENT;
+   m_buffers=new T[ m_maxEntries ];
+   lFullAssert( m_buffers != nullptr );
+
+   for(int i1=0; i1<size; i1++)
+   {
+      m_buffers[i1]=oldBuffers[ (i1+m_frontPos) MOD_ENTRY ];
+   }
+
+   delete[](oldBuffers);
+   m_frontPos=0;
+   m_backPos=size;
+
+   return(true);
+}
+
+#endif // ? CONFIG_LEPTO_LIST_RESIZABLE
 
 // Who knows... sometime someone might want to debug. Some tests actually use this
 #if HOST || __x86_64__

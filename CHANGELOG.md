@@ -1,3 +1,10 @@
+# Changes for v0.6.1
+
+* [#685] Support for expandable lists
+* [#684] Add unit tests for text strings
+* Avoid signed division to shrink binary size
+* minor fixes
+
 # Changes for v0.6.0
 
 * Cleanup and reformating

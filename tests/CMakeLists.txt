@@ -46,6 +46,7 @@ set(
       test_ring_threaded.cpp
       test_ring_threaded.hpp
       test_signal.cpp
+      test_string.cpp
       test_base64.cpp
       test_log.cpp
       test_regConfig.cpp

@@ -44,7 +44,7 @@ CByteArray::~CByteArray()
 template <typename T>
 CBaseString<T> &CBaseString<T>::insert(int insertPos, T _char)
 {
-   checkLength(length()+1);
+   checkSpace(length()+1);
    if(insertPos<0)
    {
       insertPos=length()+(insertPos+1);
@@ -53,7 +53,10 @@ CBaseString<T> &CBaseString<T>::insert(int insertPos, T _char)
          return(*this);
       memmove(&(data()[insertPos+1]), &(data()[insertPos]), length()-insertPos);
       data()[insertPos]=_char;
-      m_length++;
+
+      #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+         m_length++;
+      #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
    }
    return(*this);
 };

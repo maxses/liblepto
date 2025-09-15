@@ -34,7 +34,9 @@
 
 // Too small values actually waste RAM due to fragmentation. even 10 is bad
 #define MEMORY_GAP   20
-#undef LEPTO_STRING_FREE_ON_CLEAR
+#define  CONFIG_LEPTO_STRING_FREE_ON_CLEAR         0  // costs 8 bytes but may
+                                                      // lead to fragmentation
+#define CONFIG_LEPTO_STRING_CACHED_LENGTH          1  // brings bytes
 
 
 /*--- Declarations ---------------------------------------------------------*/
@@ -92,8 +94,10 @@ class CBaseString
       T *m_buf;
 
    private:
-      static const T * const staticZeroString;
+      //static const T * const staticZeroString;
+      #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
       int m_length;
+      #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
       int m_maxSize;
 
    public:
@@ -101,12 +105,28 @@ class CBaseString
       ~CBaseString();
 
       CBaseString(const T *buf);
-      CBaseString(const CBaseString&) = delete;
+      CBaseString(const CBaseString& r)
+      {
+         *this = r;
+      }
 
+      CBaseString& operator= (const CBaseString& r)
+      {
+         checkSpace(r.length(), false);
+         memcpy(m_buf, r.m_buf, r.length()+1);
+         #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+            m_length=strlen(m_buf);
+         #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+         return( *this );
+      }
       void clear();
       int length() const
       {
-         return(m_length);
+         #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+            return( m_length );
+         #else
+            return( strlen(m_buf) );
+         #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
       }
       int maxLength() const
       {
@@ -116,19 +136,43 @@ class CBaseString
       {
          return(m_maxSize);
       }
+      /*
       int setLength(int length)
       {
-         checkLength(length);
+         checkSpace(length);
          return(m_length=length);
       }
+      */
 
+      /**
+       * @brief Allocate new memory. Old data is not handles.
+       * @param size    New total maximum length.
+       */
       void allocate(int size);
-      //void reserve(int size);
-      void checkLength(int length);
-      void cut(int i1)
+
+      /**
+       * @brief   Check for availability for (additional) space
+       *
+       *          Allocate more memory when space is not long enough.
+       * @param   length      Total length of the new string
+       * @param   doPreserve  If set the the old data will be copied when
+       *                      reallocating space.
+       */
+      void checkSpace(int length, bool doPreserve = true);
+
+      /**
+       * @brief   Cut the sttring at a position
+       * @param   pos: New length of the string
+       */
+      void cut(int pos)
       {
-         if(i1<=m_maxSize)
-            m_buf[i1]=0;
+         if(pos<=m_maxSize)
+         {
+            m_buf[pos]=0;
+            #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+            m_length=pos;
+            #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+         }
       }
 
       // Well, Qt...
@@ -149,17 +193,23 @@ class CBaseString
       {
          return(m_buf);
       }
-      T last()
+      #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+      T pop_bottom()
       {
          T t=(T)0;
+         #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
          if(m_length)
          {
             t=m_buf[--m_length];
             m_buf[m_length]=0;
          }
+         #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
          return(t);
       }
+      #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+
       CBaseString<T> &add(const T *_pChar, int len);
+
       /// \brief  Little hack; returns reference to itself
       ///
       ///         This method is needed to get the method food.toUtf8().data()
@@ -171,6 +221,15 @@ class CBaseString
 
       CBaseString<T> &operator+=(const T _char);
       CBaseString<T> &operator+=(const T *_pChar);
+      CBaseString<T> &operator+=(const CBaseString<T>& r)
+      {
+         checkSpace( length() +  r.length() + 1);
+         memcpy(&m_buf[ length() ], r.data(), r.length()+1);
+         #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+            m_length+=r.length();
+         #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+         return *this;
+      }
 
       #if IS_ENABLED( CONFIG_LEPTO_CCHAR )
          CBaseString<T> &operator+=(const CChar _CChar);
@@ -184,6 +243,8 @@ class CBaseString
       CBaseString<T> &append(const T *_pChar, int len);
       CBaseString<T> &append(const CBaseString<T> &_data);
       CBaseString<T> &insert(int insertPos, T _char);
+      CBaseString<T> &remove(int pos, int number);
+
 };
 
 
@@ -195,9 +256,13 @@ class CString: public CBaseString<char>
       CString(const char *input)
          :CBaseString(input)
       {
+      };
 
-      }
-      #if 1
+      CString(const CString& input):CBaseString(input)
+      {
+      };
+
+      #if 0
       int printf(const char format[], ...)
       {
          va_list va;
@@ -206,7 +271,7 @@ class CString: public CBaseString<char>
 
          va_start(va, format);
          // the +32 is not the gap, its the assumed arguments overhead
-         checkLength( length() + strlen(format) + 32 );
+         checkSpace( length() + strlen(format) + 32 );
          newSize=vsnprintf(&data()[oldLength], maxSize() - oldLength, format, va);
          if(newSize>maxLength()+oldLength)
          {
@@ -232,6 +297,7 @@ class CString: public CBaseString<char>
       {
          return( m_buf[pos] );
       };
+
       bool operator== (const char* str) const
       {
          int pos=0;
@@ -252,8 +318,15 @@ class CString: public CBaseString<char>
 
          return(true);
       }
+
       CString& toLatin1()
       {
+         return(*this);
+      }
+
+      CString& operator+(const CString& r2)
+      {
+         (*this)+=r2;
          return(*this);
       }
 };
@@ -267,27 +340,24 @@ class CByteArray: public CBaseString<char>
       CByteArray(const char *buf)
          :CBaseString<char>(buf)
       {
-
       }
 
       char at(int pos) const
       {
          return( m_buf[pos] );
       };
-
 };
 
-//template <typename T>
-//const T * const CBaseString<T>::staticZeroString=(T[]){(T)0};
 
 template <typename T>
 constexpr CBaseString<T>::CBaseString()
    //:m_buf( ( T *) staticZeroString )
    :m_buf( nullptr )
+   #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
    ,m_length(0)
+   #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
    ,m_maxSize(0)
 {
-   //allocate(0);
 }
 
 
@@ -297,7 +367,9 @@ CBaseString<T>::CBaseString(const T *buf)
    int i1=strlen(buf)+1;
    allocate(i1);
    memcpy(m_buf, buf, i1);
+   #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
    m_length=i1-1;
+   #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
 }
 
 
@@ -305,30 +377,35 @@ template <typename T>
 CBaseString<T>::~CBaseString()
 {
    clear();
-   free(m_buf);
+   if(m_buf)
+   {
+      free(m_buf);
+   }
    m_buf=nullptr;
 }
+
 
 template <typename T>
 void CBaseString<T>::clear()
 {
    if( m_buf )
    {
-#if 0
-      #if defined(LEPTO_STRING_FREE_ON_CLEAR)
-      if( m_buf != staticZeroString )
+      #if IS_ENABLED( CONFIG_LEPTO_STRING_FREE_ON_CLEAR )
+      if( m_buf != nullptr )
       {
          free(m_buf);
-         m_buf = (T *) staticZeroString ;
+         m_buf = nullptr;
+         m_maxSize = 0;
       }
       else
       #endif
-#endif
       {
          m_buf[0]=0;
       }
    }
+   #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
    m_length=0;
+   #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
 }
 
 
@@ -336,38 +413,62 @@ template <typename T>
 void CBaseString<T>::allocate(int size)
 {
    // Must not free m_buf here. Other methods may want to copy from old area
-   m_maxSize=size+MEMORY_GAP;
+   m_maxSize=size;
    m_buf=(T *)malloc(m_maxSize);
    if(!m_buf)
    {
       abort();
    }
    m_buf[0]=0;
+   #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
    m_length=0;
+   #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
    return;
 }
 
+
 template <typename T>
-void CBaseString<T>::checkLength(int length)
+void CBaseString<T>::checkSpace(int newLength, bool doPreserve /*=true*/ )
 {
    T *oldBuf=m_buf;
-   int oldLength=m_length;
+   int oldLength=length();
 
    // We need size+1 to keep a zero
-   if(length+1>m_maxSize)
+   if(newLength+1>m_maxSize)
    {
-      allocate( length + 1 );
-      m_length=oldLength;
-      if( oldBuf )
+      // Only extend with a gap when there is a byte by byte increasement.
+      if( newLength+1 == m_maxSize + 1  )
       {
-         memcpy(m_buf, oldBuf, m_length);
-         free(oldBuf);
+         newLength+=MEMORY_GAP;
+      }
+      allocate( newLength + 1 );
+      if( doPreserve )
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+         m_length=oldLength;
+         #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+         if( oldBuf )
+         {
+            memcpy(m_buf, oldBuf, oldLength+1);
+         }
+         else
+         {
+            // memset(m_buf, 'X', m_length);
+            m_buf[0]=0;
+         }
       }
       else
       {
-         memset(m_buf, 'X', m_length);
+         #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+         m_length=0;
+         #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+         m_buf[0]=0;
       }
-      m_buf[m_length]=0;
+
+      if( oldBuf )
+      {
+         free(oldBuf);
+      }
    }
 
    return;
@@ -377,9 +478,13 @@ void CBaseString<T>::checkLength(int length)
 template <typename T>
 CBaseString<T> &CBaseString<T>::operator +=(const T _char)
 {
-   checkLength(m_length+1);
-   m_buf[m_length++]=_char;
-   m_buf[m_length]=0;
+   int end=length();
+   checkSpace(end+1);
+   m_buf[end]=_char;
+   m_buf[++end]=0;
+   #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+   m_length=end;
+   #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
 
    return(*this);
 }
@@ -402,10 +507,16 @@ CBaseString<T> &CBaseString<T>::operator +=(const T *_pChar)
 template <typename T>
 CBaseString<T> &CBaseString<T>::append(const T *_pChar, int len)
 {
-   checkLength(m_length+len);
-   memcpy(&m_buf[m_length], _pChar,len);
-   m_length+=len;
-   m_buf[m_length]=0;
+   int oldLength=length();
+   checkSpace(oldLength+len);
+   memcpy(&m_buf[oldLength], _pChar,len);
+
+   #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+      m_length+=len;
+      m_buf[m_length]=0;
+   #else
+      m_buf[oldLength+len]=0;
+   #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
 
    return(*this);
 }
@@ -422,7 +533,7 @@ CBaseString<T> &CBaseString<T>::append(const CBaseString<T> &_data)
 template <typename T>
 CBaseString<T> &CBaseString<T>::operator+=(const CChar _CChar)
 {
-   checkLength(m_length+1);
+   checkSpace(m_length+1);
    m_buf[m_length++]=_CChar.unicode();
    m_buf[m_length]=0;
 
@@ -434,51 +545,36 @@ CBaseString<T> &CBaseString<T>::operator+=(const CChar _CChar)
 template <typename T>
 void CBaseString<T>::setData(const T *_data, int len)
 {
-   checkLength(len);
+   checkSpace(len);
    memcpy(m_buf, _data, len);
-   m_length=len;
-   m_buf[m_length+1]=0;
-
+   #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+      m_length=len;
+   #endif // ? CONFIG_LEPTO_STRING_CACHED_LENGTH
+   m_buf[ len ]=0;
 }
 
 
-/*
 template <typename T>
-CBaseString<T> &CBaseString<T>::operator<<(const int32_t _int)
+CBaseString<T>& CBaseString<T>::remove(int pos, int number)
 {
-   checkSpace(m_length + sizeof(_int));
-   int entities=(sizeof(_int)/sizeof(T));
+   if(pos<0)
+   {
+      pos=length()+pos;
+   }
 
-   for(int i1=0 ; i1 < entities ; i1++)
-      (*this) << (T)(_int >> ( ( entities-1 ) - i1 ) );
-
+   // "abcdefgh"; length=8; pos=6;
+   number=MIN(number, length()-pos);
+   if( (pos>=0) && pos<length())
+   {
+      for(int i1=pos; i1<length(); i1++ )
+      {
+         m_buf[i1]=m_buf[i1+number];
+      }
+      #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+         m_length=strlen( m_buf );
+      #endif // ? CONFIG_LEPTO_STRING_CACHED_LENGTH
+   }
    return(*this);
-}
-
-template <typename T>
-CBaseString<T> &CBaseString<T>::operator<<(const uint32_t _int)
-{
-   checkSpace(m_length + sizeof(_int));
-   int entities=(sizeof(_int)/sizeof(T));
-
-   for(int i1=0 ; i1 < entities ; i1++)
-      (*this) << (T)(_int >> ( ( ( entities-1 ) - i1 ) * 8) );
-
-   return(*this);
-}
-*/
-
-
-template <typename T>
-int &operator << (int &i, CBaseString<T> &str)
-{
-   int entities=(sizeof(i)/sizeof(T));
-
-   i=0;
-   for(int i1=0 ; i1 < entities ; i1++)
-      i |= (int)( ((int)str.last()) << ( ( ( entities-1 ) - i1 ) * 8 ) );
-
-   return(i);
 }
 
 

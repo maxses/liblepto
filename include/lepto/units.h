@@ -31,6 +31,8 @@
 #define SUBSEC_PER_SEC  0x100
 #define MSEC_PER_SUBSEC (1000/0x100)
 
+#define BYTES_PER_MB    ( 1024 * 1024 )
+
 
 /*--- Fin ------------------------------------------------------------------*/
 #endif // ? ! LEPTO_UNITS_H

@@ -380,7 +380,7 @@ class CList
        */
       T* reservedEntry(ringIndex_t index) const
       {
-         if( index<0 )
+         if( index == (ringIndex_t)-1 )
          {
             return( nullptr );
          }
@@ -572,13 +572,13 @@ bool CList<T>::push_back(const T value)
    }
    #endif // ? #if BIWAK_SUPPORT_VOLATILE_RING
    
-   int index=tryReserve();
+   ringIndex_t index=tryReserve();
    
-   if( index < 0 )
+   if( index == (ringIndex_t)-1 )
    {
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
             expand();
-            if( (index=tryReserve()) < 0 )
+            if( (index=tryReserve()) == (ringIndex_t)-1 )
             {
                return(false);
             }

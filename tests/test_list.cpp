@@ -189,7 +189,7 @@ TEST_CASE( "List", "[default]" )
       // adding an additional entry must not be allowed. Stack would become
       // "empty" but all entries are marked 'valid'.
       ring.setBottomTop(0, ring.getMaxEntriesDuplicated() - 1 );
-      REQUIRE ( ring.tryReserve() < 0 );
+      REQUIRE ( ring.tryReserve() == (ringIndex_t)-1 );
       REQUIRE ( ring.push_back( 10 ) == false );
    }
 

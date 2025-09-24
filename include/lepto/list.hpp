@@ -124,7 +124,9 @@ class CList
       #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
       bool m_volatile;
       #endif // ? BIWAK_SUPPORT_VOLATILE_RING
-      
+
+   public:
+
       class CIterator
       {
          private:
@@ -145,10 +147,21 @@ class CList
                return( m_parent->m_buffers[ m_pos MOD_ENTRY_ITERATOR ] );
             }
             CIterator& operator ++();
+            int getIndex()
+            {
+               return( m_pos );
+            }
+            CIterator operator +( int add )
+            {
+               return( CIterator( getIndex() + add ) );
+            }
+            CIterator& operator =( int pos )
+            {
+               m_pos=pos;
+               return(*this);
+            }
       };
       
-   public:
-
       CList(int maxEntries = CONFIG_LEPTO_RING_DEFAULT_SIZE);
       ~CList();
       void clear();
@@ -233,16 +246,27 @@ class CList
        */
       int count() const
       {
-         ringIndex_t front= m_frontPos MOD_ENTRY;
-         ringIndex_t back= m_backPos MOD_ENTRY;
-         
+         return( distance( m_frontPos, m_backPos ) );
+      }
+
+      int distance( CIterator front, CIterator back ) const
+      {
+         return( distance(front.getIndex(), back.getIndex() ) );
+      }
+
+      int distance( ringIndex_t front, ringIndex_t back ) const
+      {
          #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
          // Will not happe when CONFIG_LEPTO_RING_DOWNSIZE is enabled
-         if( m_backPos == ( m_frontPos + m_maxEntries ) MOD_DUPLICATED )
+         if( back == ( front + m_maxEntries ) MOD_DUPLICATED )
          {
             return( m_maxEntries );
          }
          #endif
+
+         // Normalize
+         front = front MOD_ENTRY;
+         back = back MOD_ENTRY;
 
          if( front == back )
          {
@@ -391,10 +415,22 @@ class CList
       /**
        * @brief   Just for internal testing
        */
-      void setBottomTop( ringIndex_t bottom, ringIndex_t top)
+      void setFrontBack( ringIndex_t front, ringIndex_t back, int maxEntries=0)
       {
-         m_frontPos=( bottom MOD_DUPLICATED );
-         m_backPos=( top MOD_DUPLICATED );
+         // Must set maxEntries first to let MOD_DUPLICATED work
+         if( maxEntries )
+         {
+            if( m_buffers )
+            {
+               // Can not change entry count when memory is already alocated
+               lFatal( "CNCE" );
+               // This is only usefull on "pseudo" lists without own data
+            }
+            m_maxEntries = maxEntries;
+            m_maxEntriesDuplicated = maxEntries * DUPLICATE_FACTOR;
+         }
+         m_frontPos=( front MOD_DUPLICATED );
+         m_backPos=( back MOD_DUPLICATED );
       }
       
       /**
@@ -428,6 +464,29 @@ class CList
       {
          return( CIterator( this, m_backPos ) );
       }
+      static void left(CIterator& front, CIterator& mid, CIterator& back)
+      {
+         back=mid;
+      }
+      static void right(CIterator& front, CIterator& mid, CIterator& back)
+      {
+         front=mid;
+      }
+      /**
+       * @brief Find element in list.
+       *
+       * The returned iterator points to the element that is equal or bigger
+       * than the wanted.
+       * The operator '<' for comparing has to be implemented seperately.
+       * e.g. "bool operator <(CList<bool>::CIterator i1, const int i2)"
+       * By using th eiterator the list does not need to contain the data itself
+       * (m_buffers==nullptr).
+       *
+       * @param element  Element to be find.
+       * @return  Iterator to element.
+       */
+      template< typename C >
+      CIterator find(const C& element);
 
    protected:
 
@@ -746,9 +805,51 @@ bool CList<T>::expand( )
    m_backPos=size;
 
    return(true);
-}
+};
 
 #endif // ? CONFIG_LEPTO_LIST_RESIZABLE
+
+template <typename T> template<typename C>
+typename CList<T>::CIterator CList<T>::find(const C& candidate)
+{
+   CIterator front( this, m_frontPos );
+   CIterator back( this, m_backPos );
+   CIterator mid(this, 0);
+   #if 0
+   int steps=0;
+   #endif
+
+   while( distance(front, back) > 1 )
+   {
+      mid=(front.getIndex() +(distance( front.getIndex(), back.getIndex() ) /2 ) ) % m_maxEntries;
+      //printf("   Check: Front: 0x%X; Back: 0x%X; distance: %d; value: 0x%X\n", front.getIndex(), back.getIndex(), distance(front, back), candidate );
+      if( mid < candidate )
+      {
+         right(front, mid, back);
+      }
+      else
+      {
+         left(front, mid, back);
+      }
+      #if 0
+      steps++;
+      if(steps>1000)
+      {
+         lFatal("");
+      }
+      #endif
+   }
+
+   // printf("   Front: 0x%X; Back: 0x%X; distance: %d; value: 0x%X\n", front.getIndex(), back.getIndex(), distance(front, back), candidate );
+   if( front < candidate )
+   {
+      //printf("   F\n");
+      return( back );
+   }
+
+   //printf("   B\n");
+   return( front );
+}
 
 // Who knows... sometime someone might want to debug. Some tests actually use this
 #if HOST || __x86_64__

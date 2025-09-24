@@ -190,7 +190,7 @@ TEST_CASE( "List", "[default]" )
       // When top-position is at the very end and the bottom is at the beginning,
       // adding an additional entry must not be allowed. Stack would become
       // "empty" but all entries are marked 'valid'.
-      ring.setBottomTop(0, ring.getMaxEntriesDuplicated() - 1 );
+      ring.setFrontBack(0, ring.getMaxEntriesDuplicated() - 1 );
       REQUIRE ( ring.tryReserve() == (ringIndex_t)-1 );
 
       #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )

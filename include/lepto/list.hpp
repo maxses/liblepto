@@ -125,13 +125,15 @@ class CList
       bool m_volatile;
       #endif // ? BIWAK_SUPPORT_VOLATILE_RING
       
+  public:
+      
       class CIterator
       {
          private:
             const CList* m_parent;
-            int m_pos;
+            ringIndex_t m_pos;
          public:
-            constexpr CIterator(const CList* parent, int pos)
+            constexpr CIterator(const CList* parent, ringIndex_t pos)
                 :m_parent( parent )
                 ,m_pos(pos)
             {
@@ -140,15 +142,36 @@ class CList
             {
                return( other.m_pos !=m_pos );
             }
+            bool operator ==(const CIterator& other) const
+            {
+               return( other.m_pos == m_pos );
+            }
+            void operator =(ringIndex_t pos)
+            {
+               m_pos = pos;
+               return;
+            }
             const T& operator *() const
             {
                return( m_parent->m_buffers[ m_pos MOD_ENTRY_ITERATOR ] );
             }
-            CIterator& operator ++();
+            CIterator& operator ++(int)
+            {
+               // The int is dummy and is 0;
+               // its used to distinguish ++i vs i++;
+               return( (*this)+=1 );
+            }
+            CIterator& operator +=(int number);
+            CIterator& operator ++()
+            {
+               return( (*this)+=1 );
+            }
+            ringIndex_t realIndex() const
+            {
+               return( m_parent->realIndex( m_pos ) );
+            }
       };
       
-   public:
-
       CList(int maxEntries = CONFIG_LEPTO_RING_DEFAULT_SIZE);
       ~CList();
       void clear();
@@ -182,6 +205,31 @@ class CList
       ringIndex_t backIndex() const
       {
          return(m_backPos);
+      }
+      
+      ringIndex_t realIndex( ringIndex_t pos ) const
+      {
+         return( pos MOD_ENTRY );
+      }
+      
+      void setIndices(ringIndex_t front, ringIndex_t back, int maxEntries, void* data)
+      {
+         m_frontPos = front;
+         m_backPos = back;
+         m_maxEntries = maxEntries;
+         
+         if( m_buffers )
+         {
+            lFatal( "TID" );
+         }
+         
+         m_buffers = (T*)data;
+         // Can not use huge loops in counter when super big lists are used
+         // e.g. for blocks of SD card
+         m_maxEntriesDuplicated = ( maxEntries *
+               ( (m_maxEntries>0x10000) ? 0x4 : DUPLICATE_FACTOR ) );
+         
+         return;
       }
       
       CList<T>& operator << (const T value)
@@ -572,13 +620,13 @@ bool CList<T>::push_back(const T value)
    }
    #endif // ? #if BIWAK_SUPPORT_VOLATILE_RING
    
-   int index=tryReserve();
+   ringIndex_t index=tryReserve();
    
-   if( index < 0 )
+   if( index == (ringIndex_t)-1 )
    {
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
             expand();
-            if( (index=tryReserve()) < 0 )
+            if( (index=tryReserve()) == (ringIndex_t)-1 )
             {
                return(false);
             }
@@ -719,9 +767,10 @@ const T *CList<T>::putString(const T *str)
 
 
 template <typename T>
-typename CList<T>::CIterator& CList<T>::CIterator::operator ++()
+typename CList<T>::CIterator& CList<T>::CIterator::operator +=(int number)
 {
-   m_pos = ( m_pos + 1 ) MOD_DUPLICATED_ITERATOR;
+   lDebugAssert( number );
+   m_pos = ( m_pos + number ) MOD_DUPLICATED_ITERATOR;
    return( *this );
 };
 

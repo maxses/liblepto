@@ -189,7 +189,7 @@ TEST_CASE( "List", "[default]" )
       // adding an additional entry must not be allowed. Stack would become
       // "empty" but all entries are marked 'valid'.
       ring.setBottomTop(0, ring.getMaxEntriesDuplicated() - 1 );
-      REQUIRE ( ring.tryReserve() < 0 );
+      REQUIRE ( ring.tryReserve() == (ringIndex_t)-1 );
       REQUIRE ( ring.push_back( 10 ) == false );
    }
 
@@ -226,6 +226,16 @@ TEST_CASE( "List", "[default]" )
          REQUIRE ( ring.count() == 4 );
          REQUIRE ( ring.average() == ( ( 2.0 + 3.0 + 4.0 + 5.0 ) / 4.0 ) );
       #endif
+   }
+   
+   SECTION( "Iterator" )
+   {
+      CList<int> liste(10);
+      CList<int>::CIterator iterator(&liste, 0);
+      REQUIRE( iterator.realIndex() == 0 );
+      iterator++;
+      REQUIRE( iterator.realIndex() == 1 );
+      
    }
 }
 

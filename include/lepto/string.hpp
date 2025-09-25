@@ -262,7 +262,7 @@ class CString: public CBaseString<char>
       {
       };
 
-      #if 0
+      // Used by CANDis
       int printf(const char format[], ...)
       {
          va_list va;
@@ -284,7 +284,6 @@ class CString: public CBaseString<char>
 
          return(0);
       }
-      #endif
 
       #if IS_ENABLED( CONFIG_LEPTO_CCHAR )
          const CChar at(int pos) const

@@ -33,6 +33,9 @@
 
 #define BYTES_PER_MB    ( 1024 * 1024 )
 
+#define SECONDS_SINCE_EPOCH_ON_MILLENNIUM       ( 946684800l )
+#define DAYS_SINCE_EPOCH_ON_MILLENNIUM          ( 10957l )
+
 
 /*--- Fin ------------------------------------------------------------------*/
 #endif // ? ! LEPTO_UNITS_H

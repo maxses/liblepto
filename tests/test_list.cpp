@@ -121,7 +121,9 @@ TEST_CASE( "List", "[default]" )
       REQUIRE ( ring.frontEntry() == nullptr );
       REQUIRE ( ring.push_back(0x10) == true );
       REQUIRE ( ring.push_back(0x20) == true );
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
       REQUIRE ( ring.push_back(0x30) == false );
+      #endif
       REQUIRE ( *ring.frontEntry() == 0x10 );
       ring.dropFront();
       REQUIRE ( *ring.frontEntry() == 0x20 );
@@ -188,9 +190,12 @@ TEST_CASE( "List", "[default]" )
       // When top-position is at the very end and the bottom is at the beginning,
       // adding an additional entry must not be allowed. Stack would become
       // "empty" but all entries are marked 'valid'.
-      ring.setBottomTop(0, ring.getMaxEntriesDuplicated() - 1 );
+      ring.setFrontBack(0, ring.getMaxEntriesDuplicated() - 1 );
       REQUIRE ( ring.tryReserve() == (ringIndex_t)-1 );
-      REQUIRE ( ring.push_back( 10 ) == false );
+
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         REQUIRE ( ring.push_back( 10 ) == false );
+      #endif
    }
 
    SECTION( "Average" )

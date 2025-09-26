@@ -237,10 +237,13 @@ class CList
          }
          
          m_buffers = (T*)data;
+         
+         #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
          // Can not use huge loops in counter when super big lists are used
          // e.g. for blocks of SD card
          m_maxEntriesDuplicated = ( maxEntries *
                ( (m_maxEntries>0x10000) ? 0x4 : DUPLICATE_FACTOR ) );
+         #endif
          
          return;
       }
@@ -475,7 +478,10 @@ class CList
                // This is only usefull on "pseudo" lists without own data
             }
             m_maxEntries = maxEntries;
-            m_maxEntriesDuplicated = maxEntries * DUPLICATE_FACTOR;
+            
+            #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+               m_maxEntriesDuplicated = maxEntries * DUPLICATE_FACTOR;
+            #endif
          }
          m_frontPos=( front MOD_DUPLICATED );
          m_backPos=( back MOD_DUPLICATED );

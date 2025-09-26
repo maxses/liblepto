@@ -106,6 +106,7 @@ class CBaseString
 
       CBaseString(const T *buf);
       CBaseString(const CBaseString& r)
+         :CBaseString()
       {
          *this = r;
       }

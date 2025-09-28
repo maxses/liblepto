@@ -1,3 +1,9 @@
+# Changes for v0.6.2
+
+* [#694] CList: Add method for searching for item
+* [#632] Add diag.h to optionally track statistics
+* Minor fixes
+
 # Changes for v0.6.1
 
 * [#685] Support for expandable lists

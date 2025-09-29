@@ -17,6 +17,7 @@
 
 #define SEC_PER_MIN     60l
 #define MIN_PER_HOUR    60l
+#define MIN_PER_DAY     ( MIN_PER_HOUR * 24l )
 #define SEC_PER_HOUR    3600l
 #define SEC_PER_DAY     ( SEC_PER_HOUR * 24l)
 // SEC_PER_YEAR: Without leap years of course, just for approach

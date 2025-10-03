@@ -46,7 +46,7 @@
    #define lDebug(a,...)
 #endif
 
-#if defined LEPTO_LOG_DEBUG || defined LEPTO_LOG_DEBUG_ASSERT
+#if defined LEPTO_LOG_DEBUG || defined LEPTO_LOG_DEBUG_ASSERT || USE_FULL_ASSERT
    #define lDebugAssert(a, ...) if(! (a)){ lFatal("Assertion false: '" #a "'. " __VA_ARGS__ ); }
 #else
    #define lDebugAssert(a, ...)

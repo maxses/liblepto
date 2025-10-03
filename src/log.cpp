@@ -103,6 +103,8 @@ void lVLogSimplePrint(ELogCode code, const char *format, va_list &list )
    return;
 }
 
+#if IS_ENABLED( CONFIG_LEPTO_LOG_USE_PRETTY_PRINT )
+
 void lVLogPrettyPrint(const char*file, int line, ELogCode code, const char *format, va_list &list ) __attribute__ ( ( weak ) );
 void lVLogPrettyPrint(const char*file, int line, ELogCode code, const char *format, va_list &list )
 {
@@ -130,6 +132,8 @@ void lVLogPrettyPrint(const char*file, int line, ELogCode code, const char *form
 
    return;
 }
+
+#endif
 
 void lLogSimplePrint( ELogCode code, const char *format, ... )
 {

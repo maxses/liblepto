@@ -50,7 +50,7 @@ class CPendingSignalPoolStatic
          CSignal<void>* signal;
          while( ( signal=pendingSignalList.pop() ) )
          {
-            signal->emitSignal();
+            signal->emit();
          }
       };
 };

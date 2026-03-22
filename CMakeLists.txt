@@ -47,6 +47,7 @@ set(
       include/lepto/crc8.h
       include/lepto/print.h
       include/lepto/bufferRing.hpp
+      include/lepto/tuple.hpp
 )
 
 set(

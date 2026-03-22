@@ -47,6 +47,7 @@ set(
       include/lepto/crc8.h
       include/lepto/print.h
       include/lepto/bufferRing.hpp
+      include/lepto/eventLoop.hpp
       include/lepto/tuple.hpp
 )
 
@@ -61,6 +62,7 @@ set(
       src/crc8.cpp
       src/base64.cpp
       src/print.cpp
+      src/eventLoop.cpp
 )
 
 add_library(

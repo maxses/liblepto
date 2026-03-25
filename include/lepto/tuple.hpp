@@ -5,8 +5,8 @@
  * @file    tupel.hpp
  * @brief   Struct for tupels
  *
- * This is needed for defered signal class. Variadic template arguments can be
- * stored in a struct.
+ * This is needed for defered signals. Variadic template arguments can be
+ * stored in a tuple struct.
  *
  * @date   20260319
  * @author Maximilian Seesslen <mes@seesslen.net>
@@ -34,46 +34,48 @@ template<>
 struct STuple<> {};
 
 template<typename T, typename... Ts>
-struct STuple<T, Ts...> {
+struct STuple<T, Ts...>
+{
     T head;
     STuple<Ts...> tail;
     STuple() = default;
     STuple(T&& h, Ts&&... ts)
-        : head(my_forward<T>(h)), tail(my_forward<Ts>(ts)...) {}
+        : head(doForward<T>(h)), tail(doForward<Ts>(ts)...) {}
 };
 
 // No remaining arguments-> call method
 template<typename Obj, typename Method, typename... Collected>
 void callMethodWithTuple_impl(
-    Obj* obj,
-    Method m,
-    const STuple<>&,
-    Collected&&... collected
-) {
-    (obj->*m)(doForward<Collected>(collected)...);
+   Obj* obj,
+   Method m,
+   const STuple<>&,
+   Collected&&... collected )
+{
+   (obj->*m)(doForward<Collected>(collected)...);
 }
 
 // Add head recursively
 template<typename Obj, typename Method, typename T, typename... Ts, typename... Collected>
 void callMethodWithTuple_impl(
-    Obj* obj,
-    Method m,
-    const STuple<T, Ts...>& t,
-    Collected&&... collected
-) {
-    callMethodWithTuple_impl(
-        obj,
-        m,
-        t.tail,
-        doForward<Collected>(collected)...,
-        t.head
-    );
+   Obj* obj,
+   Method m,
+   const STuple<T, Ts...>& t,
+   Collected&&... collected )
+{
+   callMethodWithTuple_impl(
+      obj,
+      m,
+      t.tail,
+      doForward<Collected>(collected)...,
+      t.head
+   );
 }
 
 // Public function
 template<typename Obj, typename Method, typename... Ts>
-void callMethodWithTuple(Obj* obj, Method m, const STuple<Ts...>& t) {
-    callMethodWithTuple_impl(obj, m, t);
+void callMethodWithTuple(Obj* obj, Method m, const STuple<Ts...>& t)
+{
+   callMethodWithTuple_impl(obj, m, t);
 }
 
 

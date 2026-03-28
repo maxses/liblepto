@@ -58,6 +58,11 @@
    #define LEPTO_SIGNAL_DO_VIRTUAL           0
 #endif
 
+#if defined emit
+   // Might be set as macro by Qt when compiling for linux platform
+   #undef emit
+#endif
+
 template <typename sigReturn, typename ... sigTypes>
 class CSignal;
 

@@ -162,7 +162,8 @@ TEST_CASE( "Signal", "[default]" )
    {
       C1 obj;
       constexpr int sigCount=0x10;
-      CSignalDeferred<void> sig( sigCount );
+      // "+1" Depending on configuration, 1 element is not usable
+      CSignalDeferred<void> sig( sigCount + 1 );
       
       sig.connect(&obj, &C1::_slot3);
       

@@ -23,6 +23,8 @@
 #else
    #define virtual_eventLoop
    #define override_eventLoop
+   #define activateEventLoop( a )
+   #define deactivateEventLoop( a )
 #endif
 
 
@@ -35,7 +37,9 @@ class CEventLoop
    private:
       static CEventLoop* m_first;
       CEventLoop* m_next=nullptr;
-      //bool m_active=false;
+      #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
+      bool m_active=false;
+      #endif
 
    public:
       CEventLoop()
@@ -65,14 +69,22 @@ class CEventLoop
       virtual_eventLoop void cleanup()
       {
       }
+      
+      static void globalCleanup(); // __attribute__((error("Dont call this function!")));
 
       void activateEventLoop( bool active=true )
       {
-         //m_active=active;
+         #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
+            m_active=active;
+         #endif
       }
-
-      //static void allEventLoops()
-      static void globalCleanup(); // __attribute__((error("Dont call this function!")));
+      
+      void deactivateEventLoop( bool active=true )
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
+            activateEventLoop( false );
+         #endif
+      }
 #endif
       
    public:

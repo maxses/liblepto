@@ -30,7 +30,9 @@ void CEventLoop::globalEventLoop()
    CEventLoop* p=m_first;
    while(p)
    {
-      //if(p->m_active)
+      #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
+      if(p->m_active)
+      #endif
       {
          p->eventLoop();
       }

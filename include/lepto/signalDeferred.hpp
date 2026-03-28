@@ -23,6 +23,11 @@
 #include <lepto/ring.hpp>
 #include <lepto/tuple.hpp>
 
+// Should be unset in signal.hpp; gets set somewhere again
+#if defined emit
+#undef emit
+#endif
+
 
 /*--- Declarations ---------------------------------------------------------*/
 

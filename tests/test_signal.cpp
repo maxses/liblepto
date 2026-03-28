@@ -26,7 +26,7 @@
 #include <lepto/signal.hpp>
 #include <lepto/signalPool.hpp>
 #include <lepto/signalPoolStatic.hpp>
-
+#include <lepto/signalDeferred.hpp>
 
 #define TEST_ALL
 #define STOP_ON_FAIL
@@ -156,6 +156,28 @@ TEST_CASE( "Signal", "[default]" )
       pool.handlePendingSignals();
 
       REQUIRE( obj.getCounter() == 0x10 + START_VALUE );
+   }
+   
+   SECTION( "Deferred Signal" )
+   {
+      C1 obj;
+      constexpr int sigCount=0x10;
+      CSignalDeferred<void> sig( sigCount );
+      
+      sig.connect(&obj, &C1::_slot3);
+      
+      //lHint << "Checking adding to list";
+      for(int i1=0; i1<sigCount; i1++)
+      {
+         sig.emitDeferred();
+      }
+      
+      // Nothing should have happen yet
+      REQUIRE( obj.getCounter() == START_VALUE );
+      
+      sig.eventLoop();
+      
+      REQUIRE( obj.getCounter() == START_VALUE + sigCount );
    }
 }
 

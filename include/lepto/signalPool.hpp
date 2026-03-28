@@ -54,7 +54,7 @@ class CPendingSignal: public CPendingSignalBase
       };
       virtual void shot() // overload;
       {
-         m_signal.emitSignal( m_storedArg );
+         m_signal.emit( m_storedArg );
       };
 };
 
@@ -126,14 +126,14 @@ class CPendingSignalPool
       template <typename sigReturn, typename sigType1>
       void enqueueSignal( CSignal<sigReturn, sigType1> &signal, sigType1 arg)
       {
-         pendingSignalList.push_back( new CPendingSignal( signal, arg ) );
+         pendingSignalList.push_back( new CPendingSignal<sigReturn, sigType1>( signal, arg ) );
          return;
       };
 
       template <typename sigReturn, typename sigType1, typename sigType2>
       void enqueueSignal( CSignal<sigReturn, sigType1, sigType2> &signal, sigType1 arg1, sigType2 arg2)
       {
-         pendingSignalList.push_back( new CPendingSignal2( signal, arg1, arg2 ) );
+         pendingSignalList.push_back( new CPendingSignal2<sigReturn, sigType1, sigType2>( signal, arg1, arg2 ) );
          return;
       };
 
@@ -148,7 +148,7 @@ class CPendingSignalPool
       template <typename sigReturn>
       void enqueueSignal( CSignal<sigReturn> &signal)
       {
-         pendingSignalList.push_back( new CPendingSignal0( signal ) );
+         pendingSignalList.push_back( new CPendingSignal0<sigReturn>( signal ) );
          return;
       };
 };

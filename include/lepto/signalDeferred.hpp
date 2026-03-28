@@ -46,11 +46,14 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
 
    public:
 
-      constexpr CSignalDeferred(int count=3)
+      constexpr CSignalDeferred( int count = 16 )
          :functor{0}
            ,p( count )
       {
-         #if IS_ENABLED( CONFIG_GLOBAL_EVENT_LOOP )
+         // "count=16" worked ok with button as input. But don't print too much
+         // in the slot.
+         
+         #if IS_ENABLED( CONFIG_LEPTO_GLOBAL_EVENT_LOOP )
          activateEventLoop(true);
          #endif
       };
@@ -64,13 +67,13 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
          {
             lFatal("CNPS");
          }
-         p.push_back( STuple<sigTypes ...>( my_forward<sigTypes>(args)... ) );
+         p.push_back( STuple<sigTypes ...>( doForward<sigTypes>(args)... ) );
       }
 
       virtual_eventLoop void eventLoop() override_eventLoop
       {
          STuple<sigTypes ...> *argTuple;
-         while( ( argTuple =p.frontEntry() ) )
+         while( ( argTuple = p.frontEntry() ) )
          {
             callMethodWithTuple( this, &CSignalDeferred::emit, *argTuple );
             p.dropFront();

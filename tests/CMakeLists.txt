@@ -5,10 +5,10 @@
 #------------------------------------------------------------------------------
 
 
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10.2)
 project(lepto_tests)
 
-find_package( Catch2 3 )
+find_package( Catch2 )
 if( NOT Catch2_FOUND )
    find_package( Catch )
    if( NOT Catch_FOUND )
@@ -27,8 +27,12 @@ if( NOT Catch2_FOUND )
    endif( NOT Catch_FOUND )
    add_definitions( "-DCATCH_V1" )
 else( NOT Catch2_FOUND)
-   add_definitions( "-DCATCH_V3" )
-   set( CATCH_LIBRARY "Catch2::Catch2WithMain" )
+   if( EXISTS /usr/include/catch2/catch_test_macros.hpp )
+      add_definitions( "-DCATCH_V3" )
+      set( CATCH_LIBRARY "Catch2::Catch2WithMain" )
+   else( )
+      add_definitions( "-DCATCH_V2" )
+   endif( )
 endif( NOT Catch2_FOUND )
 
 set(

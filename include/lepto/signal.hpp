@@ -66,7 +66,7 @@ class CFunctor
 {
    friend class CSignal<sigReturn, sigTypes...>;
        typedef const CFunctor<sigReturn, sigTypes...> CConstFunctor;
-       CFunctor *m_next;
+       CFunctor *m_next=nullptr;
    public:
       virtual sigReturn emitSignal( sigTypes ... args ) const = 0;
 };

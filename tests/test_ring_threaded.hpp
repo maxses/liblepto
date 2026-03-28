@@ -18,7 +18,7 @@
 #include <lepto/bufferRing.hpp>
 #include <QThread>
 #include <QCoreApplication>
-
+#include <QElapsedTimer>
 
 #define TEST_ALL
 #define STOP_ON_FAIL
@@ -96,7 +96,7 @@ class CConsumer: public QThread
 {
    private:
       CRing<SElement> m_ring;
-      CProducer m_producers[ PRODUCERS ];
+      CProducer *m_producers[ PRODUCERS ];
       bool m_finished[ PRODUCERS ];
       int m_counters[ PRODUCERS ];
       int m_loops=0;
@@ -106,49 +106,21 @@ class CConsumer: public QThread
    public:
       CConsumer()
          :m_ring( RING_SIZE )
-         ,m_producers{
-               {0, m_finished[0], m_ring},
-               {1, m_finished[1], m_ring},
-               #if PRODUCERS >= 4
-                  {2, m_finished[2], m_ring},
-                  {3, m_finished[3], m_ring},
-               #if PRODUCERS >= 6
-                  {4, m_finished[4], m_ring},
-                  {5, m_finished[5], m_ring},
-               #if PRODUCERS >= 8
-                  {6, m_finished[6], m_ring},
-                  {7, m_finished[7], m_ring},
-               #if PRODUCERS >= 10
-                  {8, m_finished[8], m_ring},
-                  {9, m_finished[9], m_ring},
-               #endif // >= 10
-               #endif // >= 8
-               #endif // >= 6
-               #endif // >= 4
-          }
-         ,m_finished{0}
-         ,m_counters{
-               0,
-               10000,
-               #if PRODUCERS >= 4
-                  20000,
-                  30000,
-               #endif
-               #if PRODUCERS >= 8
-                  40000,
-                  50000,
-                  60000,
-                  70000,
-               #endif
-             }
       {
+         // Static list does not work with GCC 10
+         for (int i1 = 0; i1 < PRODUCERS; ++i1)
+         {
+            m_counters[i1]=10000*i1;
+            m_finished[i1]=false;
+            m_producers[i1]=new CProducer(i1, m_finished[i1], m_ring);
+         }
          return;
       }
       void run() override
       {
          for(int i1=0; i1<PRODUCERS; i1++)
          {
-            m_producers[i1].start();
+            m_producers[i1]->start();
          }
 
          if( allProducerFinished() )

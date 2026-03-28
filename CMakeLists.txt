@@ -5,9 +5,11 @@
 #------------------------------------------------------------------------------
 
 
-cmake_minimum_required(VERSION 3.11)
-project(lepto LANGUAGES CXX)
+# 3.18.4: Debian Bullsyeye
+# 3.10.2: Ubuntu Bionic
+cmake_minimum_required(VERSION 3.10.2)
 
+project(lepto LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -15,7 +17,7 @@ if( ( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" ) OR HOST )
    set(CMAKE_AUTOUIC ON)
    set(CMAKE_AUTOMOC ON)
    set(CMAKE_AUTORCC ON)
-   set( QT_COMPONENTS Core Widgets Network Xml )
+   set( QT_COMPONENTS Core Network Xml )
 
    # Check either Qt6 or Qt5
    find_package( QT NAMES Qt5 Qt6 COMPONENTS ${QT_COMPONENTS} REQUIRED )
@@ -25,7 +27,7 @@ if( ( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" ) OR HOST )
    set( MCU_PLATFORM "linux" )
 endif()
 
-if( PROJECT_IS_TOP_LEVEL )
+if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
    # Let the tests work out of box
    add_definitions(
       -DCONFIG_LEPTO_RING_SUPPORT_VOLATILE=1
@@ -33,7 +35,9 @@ if( PROJECT_IS_TOP_LEVEL )
    )
 endif()
 
-set( USE_LEPTO 1 PARENT_SCOPE )
+if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
+   set( USE_LEPTO 1 PARENT_SCOPE )
+endif()
 
 set(
    headers

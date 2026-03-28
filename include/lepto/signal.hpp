@@ -241,6 +241,14 @@ class CSignal
          
          return;
       };
+      sigReturn emitSingle( sigTypes ... args ) const
+      {
+         if(functor)
+         {
+            return( functor->emitSignal( args ... ) );
+         }
+         return(0);
+      }
 
       #if 0
       const CSignal<sigReturn, sigTypes...> *operator =(const CFunctor<sigReturn, sigTypes...> *_functor)

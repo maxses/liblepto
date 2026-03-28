@@ -54,7 +54,7 @@ class CPendingSignal: public CPendingSignalBase
       };
       virtual void shot() // overload;
       {
-         m_signal.emit( m_storedArg );
+         m_signal.emitSignal( m_storedArg );
       };
 };
 

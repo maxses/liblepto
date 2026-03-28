@@ -91,7 +91,7 @@ TEST_CASE( "Signal", "[default]" )
 
       //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
-         sig.emit(0, i1);
+         sig.emitSignal(0, i1);
 
       // 15 + 14 ... + 3 + 2 + 1
       REQUIRE( obj.getCounter() == 0x78 + START_VALUE );
@@ -105,7 +105,7 @@ TEST_CASE( "Signal", "[default]" )
 
       //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
-         sig.emit(i1);
+         sig.emitSignal(i1);
 
       // 15 + 14 ... + 3 + 2 + 1
       REQUIRE( getCounter() == 0x78 + START_VALUE );
@@ -123,7 +123,7 @@ TEST_CASE( "Signal", "[default]" )
       for(int i1=0; i1<0x10; i1++)
       {
          pool.enqueueSignal(sig,i1);
-         //sig.emit(i1);
+         //sig.emitSignal(i1);
       }
 
       // Nothing should have happen yet
@@ -147,7 +147,7 @@ TEST_CASE( "Signal", "[default]" )
       for(int i1=0; i1<0x10; i1++)
       {
          pool.enqueueSignal(sig);
-         //sig.emit(i1);
+         //sig.emitSignal(i1);
       }
 
       // Nothing should have happen yet

@@ -58,11 +58,6 @@
    #define LEPTO_SIGNAL_DO_VIRTUAL           0
 #endif
 
-#if defined emit
-   // Might be set as macro by Qt when compiling for linux platform
-   #undef emit
-#endif
-
 template <typename sigReturn, typename ... sigTypes>
 class CSignal;
 
@@ -235,7 +230,7 @@ class CSignal
       };
       #endif
 
-      void emit( sigTypes ... args ) const
+      void emitSignal( sigTypes ... args ) const
       {
          const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&functor;
          while(*pFunctor)

@@ -23,11 +23,6 @@
 #include <lepto/ring.hpp>
 #include <lepto/tuple.hpp>
 
-// Should be unset in signal.hpp; gets set somewhere again
-#if defined emit
-#undef emit
-#endif
-
 
 /*--- Declarations ---------------------------------------------------------*/
 
@@ -80,7 +75,7 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
          STuple<sigTypes ...> *argTuple;
          while( ( argTuple = p.frontEntry() ) )
          {
-            callMethodWithTuple( this, &CSignalDeferred::emit, *argTuple );
+            callMethodWithTuple( this, &CSignalDeferred::emitSignal, *argTuple );
             p.dropFront();
          }
          

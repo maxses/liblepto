@@ -59,8 +59,14 @@
 #endif
 
 template <typename sigReturn, typename ... sigTypes>
+class CSignal;
+
+template <typename sigReturn, typename ... sigTypes>
 class CFunctor
 {
+   friend class CSignal<sigReturn, sigTypes...>;
+       typedef const CFunctor<sigReturn, sigTypes...> CConstFunctor;
+       CFunctor *m_next=nullptr;
    public:
       virtual sigReturn emitSignal( sigTypes ... args ) const = 0;
 };
@@ -174,7 +180,8 @@ class CSignal
    private:
 
       #if LEPTO_SIGNAL_DO_VIRTUAL
-         const CFunctor<sigReturn, sigTypes...> *functor;
+         // Can not be const when chain mechanism is used.
+         CFunctor<sigReturn, sigTypes...> *functor;
       #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
          const CFunctorFunction<sigReturn, sigTypes...> *functor;
       #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
@@ -205,7 +212,13 @@ class CSignal
       template <class slotClass >
       void connect( slotClass *slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
       {
-         functor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, _methodPtr);
+         //functor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, _methodPtr);
+         CFunctor<sigReturn, sigTypes...> **pFunctor=&functor;
+         while(*pFunctor)
+         {
+            pFunctor=&((*pFunctor)->m_next);
+         }
+         *pFunctor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, _methodPtr);
       };
       #endif
 
@@ -217,15 +230,25 @@ class CSignal
       };
       #endif
 
-      sigReturn emitSignal( sigTypes ... args ) const
+      void emitSignal( sigTypes ... args ) const
+      {
+         const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&functor;
+         while(*pFunctor)
+         {
+            (*pFunctor)->emitSignal( args ... );
+            pFunctor=&((*pFunctor)->m_next);
+         }
+         
+         return;
+      };
+      sigReturn emitSingle( sigTypes ... args ) const
       {
          if(functor)
          {
             return( functor->emitSignal( args ... ) );
          }
-
-         return( (sigReturn)0 );
-      };
+         return(0);
+      }
 
       #if 0
       const CSignal<sigReturn, sigTypes...> *operator =(const CFunctor<sigReturn, sigTypes...> *_functor)

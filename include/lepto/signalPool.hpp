@@ -81,6 +81,26 @@ class CPendingSignal2: public CPendingSignalBase
 };
 
 
+template <typename sigReturn, typename sigType1>
+class CPendingSignal1: public CPendingSignalBase
+{
+   //CSignalMethod<sigReturn, sigType1> &m_signal;
+   CSignal<sigReturn, sigType1> &m_signal;
+   sigType1 m_storedArg1;
+   
+   public:
+   CPendingSignal1( CSignal<sigReturn, sigType1> &signal, sigType1 arg1 )
+       :m_signal(signal)
+       ,m_storedArg1( arg1 )
+   {
+   };
+   virtual void shot() // overload;
+   {
+      m_signal.emitSignal( m_storedArg1 );
+   };
+};
+
+
 template <typename sigReturn>
 class CPendingSignal0:public  CPendingSignalBase
 {

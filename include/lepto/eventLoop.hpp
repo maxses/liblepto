@@ -16,6 +16,7 @@
 
 
 #include <lepto/lepto.h>
+#include <lepto/log.h>
 
 #if IS_ENABLED( CONFIG_LEPTO_GLOBAL_EVENT_LOOP )
    #define virtual_eventLoop virtual
@@ -58,7 +59,21 @@ class CEventLoop
             p->m_next=this;
          }
       }
-
+      ~CEventLoop()
+      {
+         //lFatal("Destruct");
+         CEventLoop** p=&m_first;
+         while( *p != this  )
+         {
+            p=&( (*p)->m_next );
+            if(!p)
+            {
+               lFatal("Destruct");
+            }
+         }
+         *p=m_next;
+      }
+      
       virtual_eventLoop void eventLoop() = 0;
 #if 0
       {

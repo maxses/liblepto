@@ -31,11 +31,13 @@
 #define USEC_PER_MSEC   ( 1000l )
 #define SUBSEC_PER_SEC  0x100
 #define MSEC_PER_SUBSEC (1000/0x100)
+#define HOUR_PER_DAY    ( 24l )
 
 #define BYTES_PER_MB    ( 1024 * 1024 )
 
 #define SECONDS_SINCE_EPOCH_ON_MILLENNIUM       ( 946684800l )
 #define DAYS_SINCE_EPOCH_ON_MILLENNIUM          ( 10957l )
+#define DIV_HZ_TO_MHZ   ( 1000ul * 1000ul )
 
 
 /*--- Fin ------------------------------------------------------------------*/

@@ -46,7 +46,7 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
 
    public:
 
-      constexpr CSignalDeferred( int count = 16 )
+      constexpr CSignalDeferred( int count = 32 )
          :functor{0}
            ,p( count )
       {
@@ -65,7 +65,7 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
       {
          if( ! p.pushable() )
          {
-            lFatal("CNPS");
+            lCritical("CNPS");
          }
          p.push_back( STuple<sigTypes ...>( doForward<sigTypes>(args)... ) );
       }

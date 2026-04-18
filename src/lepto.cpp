@@ -16,6 +16,16 @@
 
 
 #include <lepto/lepto.h>
+#include <lepto/log.h>
+
+
+//---Implementation------------------------------------------------------------
+
+
+void leptoEventLoop()
+{
+   logEventLoop();
+}
 
 
 /*--- Fin ------------------------------------------------------------------*/

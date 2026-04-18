@@ -44,6 +44,7 @@ set(
       include/lepto/ansi.h
       include/lepto/lepto.h
       include/lepto/log.h
+      include/lepto/logPrinter.h
       include/lepto/ring.hpp
       include/lepto/list.hpp
       include/lepto/string.hpp
@@ -59,6 +60,7 @@ set(
    sources
       src/lepto.cpp
       src/log.cpp
+      src/logPrinter.cpp
       src/ring.cpp
       src/string.cpp
       src/signal.cpp

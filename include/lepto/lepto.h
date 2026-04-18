@@ -56,14 +56,14 @@
 // This was for checking if some overloading worked correctly. May be removed soon.
 #define LEPTO_CODE            0x1
 
-// When CONFIG_LEPTO_LOG_USE_PRETTY_PRINT is not defined, enable it only when
+// When CONFIG_LEPTO_LOG_PRETTY_PRINT is not defined, enable it only when
 // CONFIG_LEPTO_LOG_DOWNSIZE is not set.
 // Make it a nice default configuration.
-#if ! defined CONFIG_LEPTO_LOG_USE_PRETTY_PRINT
+#if ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT
    #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DOWNSIZE )
-      #define CONFIG_LEPTO_LOG_USE_PRETTY_PRINT          1
+      #define CONFIG_LEPTO_LOG_PRETTY_PRINT          1
    #endif
-#endif // ? ! defined CONFIG_LEPTO_LOG_USE_PRETTY_PRINT
+#endif // ? ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT
 
 
 /*--- Fin ------------------------------------------------------------------*/

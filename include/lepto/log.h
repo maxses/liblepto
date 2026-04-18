@@ -5,16 +5,14 @@
  * @file    log.h
  * @brief   Logging with lepto
  *
- * Corresponding to loging functions in Qt there are following functions:
+ * Logging functions analog to Qt.
+ * There are following basic functions:
  *
  *    lInfo(msg, ...)
  *    lCaution(msg, ... )
  *    lWarning(msg, ... )
  *    lCritical(msg, ... )
  *    lFatal(msg, ... )
- *
- * These underlying functions can be optionaly overloaded. Libbiwak does this
- * for example to make logging available in ISRs.
  *
  * @date      20140107
  * @author    Maximilian Seesslen <mes@seesslen.net>
@@ -34,9 +32,9 @@
 
 
 // #if ! defined LEPTO_LOG_NO_USE_ANSI
-#if IS_ENABLED( CONFIG_LEPTO_LOG_USE_PRETTY_PRINT )
-   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_USE_ANSI )
-      #define CONFIG_LEPTO_LOG_USE_ANSI
+#if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_ANSI_COLORS )
+      #define CONFIG_LEPTO_LOG_ANSI_COLORS
    #endif
 #endif
 
@@ -80,7 +78,7 @@ enum class ELogCategory
    //Loop        = 10,
 };
 
-// THe ELogCode allways contains the cathegory
+// The ELogCode allways contains the cathegory
 enum class ELogCode: int;
 
 inline constexpr ELogCode operator| (ELogCategory cat, int i)
@@ -148,27 +146,38 @@ const char* shrinkFileName( const char* const filename )
    #endif
 #endif
 
-#if IS_ENABLED( CONFIG_LEPTO_LOG_USE_PRETTY_PRINT )
-   #define lLog( ... ) lLogPrettyPrint( __FILE_NAME__, __LINE__, __VA_ARGS__ )
+#if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
+   #define lLog( ... ) lLogPretty( __FILE_NAME__, __LINE__, __VA_ARGS__ )
 #else
-   #define lLog( ... ) lLogSimplePrint( __VA_ARGS__ )
+   #define lLog( ... ) lLogSimple( __VA_ARGS__ )
 #endif
+
+struct SLogEntry;
+//__attribute__((weak))
+void logCallBack( const SLogEntry *le );
 
 extern "C"
 {
    #if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
+
       extern const char *categoryMessages[];
-      void lVLogSimplePrint(ELogCode code, const char *format, va_list &list );
-      void lVLogPrettyPrint(const char*file, int line, ELogCode code, const char *format, va_list &list );
-      void lLogSimplePrint(ELogCode code, const char *format, ... );
-      void lLogPrettyPrint(const char*file, int line, ELogCode code, const char *format, ... );
-      /** \brief Check which implementation is used
-       */
-      int lLogInfo();
+      void lVLogSimple(ELogCode code, const char *format, va_list &list );
+      void lVLogPretty(const char*file, int line, ELogCode code, const char *format, va_list &list );
+      void lLogSimple(ELogCode code, const char *format, ... );
+      void lLogPretty(const char*file, int line, ELogCode code, const char *format, ... );
+      
    #else
+
       void lVLog( ELogCategory category, const char *format, ... );
       void lLog( ELogCategory category, const char *format, ... );
+      
    #endif
+      
+   void logEventLoop();
+   
+   // Only for unit tests
+   int logPendingCount();
+   const char *logPending();
 }
 
 

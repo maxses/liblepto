@@ -243,7 +243,8 @@ void logEventLoop()
 }
 
 
-__weak void logCallBack( const SLogEntry *le )
+__attribute__(( weak ))
+void logCallBack( const SLogEntry *le )
 {
    // Just test if strong functions was used
    // printf("DLCB\n");

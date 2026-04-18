@@ -197,7 +197,7 @@ class CSignal
    public:
 
       constexpr CSignal()
-         :m_pFunctor{0}
+         :m_pFunctor{ nullptr }
       {
       };
       ~CSignal()

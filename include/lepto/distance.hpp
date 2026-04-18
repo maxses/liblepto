@@ -10,8 +10,15 @@
  * are lost. E.g. you would check
  * "counter_new_package > counter_old_package". This will fail on
  * overflow border.
- * But distance( counter_old_package, counter_new_package) will be
- * correctly "1".
+ * 
+ * Also "counter_new_package-counter_old_package" can provide the wrong result.
+ * The compiler will convert both to integers.
+ * Example: 
+ *    Timepoint A:0x7f=127;
+ *    Timepoint B:0x80=-128;
+ *    Result B-A: -255
+ * "distance( counter_old_package, counter_new_package)" will return
+ * the correct "1".
  *
  * @date       20250413
  * @author     Maximilian Seesslen <mes@seesslen.net>

@@ -66,7 +66,11 @@ class CFunctor
 {
    friend class CSignal<sigReturn, sigTypes...>;
        typedef const CFunctor<sigReturn, sigTypes...> CConstFunctor;
+   
+       #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
        CFunctor *m_next=nullptr;
+       #endif
+       
    public:
       virtual sigReturn emitSignal( sigTypes ... args ) const = 0;
 };
@@ -181,7 +185,7 @@ class CSignal
 
       #if LEPTO_SIGNAL_DO_VIRTUAL
          // Can not be const when chain mechanism is used.
-         CFunctor<sigReturn, sigTypes...> *functor;
+         CFunctor<sigReturn, sigTypes...> *m_pFunctor;
       #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
          const CFunctorFunction<sigReturn, sigTypes...> *functor;
       #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
@@ -193,7 +197,7 @@ class CSignal
    public:
 
       constexpr CSignal()
-         :functor{0}
+         :m_pFunctor{0}
       {
       };
       ~CSignal()
@@ -203,7 +207,7 @@ class CSignal
       #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
       void connect( sigReturn (*_func)( sigTypes ... args ) )
       {
-         functor=new CFunctorFunction<sigReturn, sigTypes...>(_func);
+         m_pFunctor=new CFunctorFunction<sigReturn, sigTypes...>(_func);
       };
       #endif
 
@@ -212,13 +216,17 @@ class CSignal
       template <class slotClass >
       void connect( slotClass *slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
       {
-         //functor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, _methodPtr);
-         CFunctor<sigReturn, sigTypes...> **pFunctor=&functor;
+         #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         CFunctor<sigReturn, sigTypes...> **pFunctor=&m_pFunctor;
          while(*pFunctor)
          {
             pFunctor=&((*pFunctor)->m_next);
          }
          *pFunctor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, _methodPtr);
+         #else
+         lAssert( m_pFunctor == nullptr );
+         m_pFunctor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, _methodPtr);
+         #endif
       };
       #endif
 
@@ -232,20 +240,37 @@ class CSignal
 
       void emitSignal( sigTypes ... args ) const
       {
-         const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&functor;
+         #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&m_pFunctor;
          while(*pFunctor)
          {
             (*pFunctor)->emitSignal( args ... );
             pFunctor=&((*pFunctor)->m_next);
          }
+         #else
+         if( m_pFunctor )
+         {
+            m_pFunctor->emitSignal( args ... );
+         }
+         #endif
          
          return;
       };
+      
+      /**
+       * @brief Emit single signal and return its return value
+       * 
+       * 'single' is not a typo of 'signal'. This method is needed when return 
+       * code matters.
+       * 
+       * @param args
+       * @return 
+       */
       sigReturn emitSingle( sigTypes ... args ) const
       {
-         if(functor)
+         if( m_pFunctor )
          {
-            return( functor->emitSignal( args ... ) );
+            return( m_pFunctor->emitSignal( args ... ) );
          }
          return(0);
       }

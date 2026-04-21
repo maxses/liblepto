@@ -22,6 +22,12 @@
 //---Implementation------------------------------------------------------------
 
 
+void leptoInit()
+{
+   leptoInitLog();
+}
+
+
 void leptoEventLoop()
 {
    logEventLoop();

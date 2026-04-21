@@ -178,6 +178,7 @@ extern "C"
    // Only for unit tests
    int logPendingCount();
    const char *logPending();
+   void leptoInitLog();
 }
 
 

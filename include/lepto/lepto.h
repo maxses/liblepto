@@ -65,6 +65,7 @@
    #endif
 #endif // ? ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT
 
+void leptoInit();
 void leptoEventLoop();
 
 

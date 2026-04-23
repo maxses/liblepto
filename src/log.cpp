@@ -217,6 +217,14 @@ void lLogSimple( ELogCode code, const char *format, ... )
 
 #endif // ? CONFIG_LEPTO_LOG_PRETTY_PRINT ELSE
 
+#if IS_ENABLED( CONFIG_LEPTO_LOG_SIGNAL )
+CSignal<void, ELogCode> m_signalLog;
+CSignal<void, ELogCode>& signalLog()
+{
+   return( m_signalLog );
+};
+#endif
+
 void logEventLoop()
 {
    const SLogEntry* le;
@@ -232,6 +240,9 @@ void logEventLoop()
       logCallBack( le );
    #endif
       
+   #if IS_ENABLED( CONFIG_LEPTO_LOG_SIGNAL )
+      m_signalLog.emitSignal( le->code );
+   #endif // ? CONFIG_BIWAK_LOG_SIGNAL
       logs.dropFront();
    }
    

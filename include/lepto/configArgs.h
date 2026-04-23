@@ -87,6 +87,15 @@
    #error IS_ENABLED does not work [6]
 #endif
 
+#if IS_ENABLED( CONFIGARG_TEST_DOES_NOT_EXIST )
+   #error IS_ENABLED does not work [6]
+#endif
+
+#if ! IS_ENABLED( CONFIGARG_TEST_DOES_NOT_EXIST )
+#else
+   #error IS_ENABLED does not work [6]
+#endif
+
 
 /*--- Fin -------------------------------------------------------------------*/
 #endif // ? ! LEPTO_CONFIG_ARGS_H

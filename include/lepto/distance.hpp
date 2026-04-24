@@ -30,16 +30,13 @@
 /*--- Includes -------------------------------------------------------------*/
 
 
-#include <type_traits>
-
-
 /*--- Definitions ----------------------------------------------------------*/
 
 
 template<typename T>
 constexpr T distance( T old, T _new)
 {
-   static_assert(std::is_signed<T>::value, "Requires signed type");
+   static_assert( (T)((T)0-(T)1) < 0, "Requires signed type");
    return( _new - old );
 }
 

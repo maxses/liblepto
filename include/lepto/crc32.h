@@ -31,6 +31,7 @@
 
 
 #include <cstdint>
+#include <stdint.h>
 #include <lepto/lepto.h>
 
 // For regular linux builds 'LEPTO_CONFIGURABLE_CRC32' should be enabled by

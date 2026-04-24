@@ -34,16 +34,16 @@
    #define CONFIG_LEPTO_LOG_MAX_ENTRIES 24
 #else
    #if CONFIG_LEPTO_LOG_LENGTH
-      #define MAX_LOG_STRING CONFIG_LEPTO_LOG_LENGTH
+      #define CONFIG_LEPTO_LOG_MAX_LOG_STRING CONFIG_LEPTO_LOG_LENGTH
    #else
-      #define MAX_LOG_STRING 20
+      #define CONFIG_LEPTO_LOG_MAX_STRING_LENGTH 20
    #endif
    // Entries: 4 not enough for mainswitch, 7 not for miniminutnik
-   #define MAX_LOG_ENTRIES 8
+   #define CONFIG_LEPTO_LOG_MAX_ENTRIES 8
 
-   // #define MAX_LOG_STRING 80
+   // #define CONFIG_LEPTO_LOG_MAX_LOG_STRING 80
    // Entries: 4 not enough for mainswitch, 7 not for miniminutnik
-   // #define MAX_LOG_ENTRIES 8
+   // #define CONFIG_LEPTO_LOG_MAX_LOG_ENTRIES 8
 #endif
 
 #if ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT

@@ -254,12 +254,16 @@ void logEventLoop()
 }
 
 
+#if IS_ENABLED( CONFIG_LEPTO_LOG_CALLBACK )
+
 __attribute__(( weak ))
 void logCallBack( const SLogEntry *le )
 {
    // Just test if strong functions was used
    // printf("DLCB\n");
 };
+
+#endif
 
 
 /*--- Fin ------------------------------------------------------------------*/

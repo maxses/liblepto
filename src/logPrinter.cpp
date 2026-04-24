@@ -71,7 +71,6 @@ const char *categoryMessages[]=
      [(int)ELogCategory::Critical]=ANSI_RED "Error: ",
      [(int)ELogCategory::Fatal]=ANSI_RED "Fatal: " };
 #else
-    asd
    { [ (int)ELogCategory::Debug ]="",
      [(int)ELogCategory::Caution ]="C:",
      [(int)ELogCategory::Warning ]="W:",
@@ -112,7 +111,7 @@ void logPrintPretty( const SLogEntry* le )
    
 #else
 
-void logPrintSimple( const SLogEntry* le );
+void logPrintSimple( const SLogEntry* le )
 {
    fputs( categoryMessages[ (int)toCategory(le->code) ], stdout );
    // fputs does not print an newline

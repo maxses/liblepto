@@ -31,6 +31,10 @@
 /*--- Implementation -------------------------------------------------------*/
 
 
+#if ! defined ( CONFIG_LEPTO_LOG_CALLBACK )
+   #define CONFIG_LEPTO_LOG_CALLBACK               1
+#endif
+
 // #if ! defined LEPTO_LOG_NO_USE_ANSI
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
    #if ! IS_ENABLED( CONFIG_LEPTO_LOG_ANSI_COLORS )

@@ -230,12 +230,15 @@ void logEventLoop()
    const SLogEntry* le;
    while( ( le = (const SLogEntry*)logs.frontEntry() ) )
    {
+      // Dont crash due to missing category string. Text is empty anyways.
+      if( (int)toCategory(le->code) < (int)ELogCategory::Function )
+      {
       #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
          logPrintPretty(le);
       #else
          logPrintSimple(le);
       #endif
-
+      }
    #if IS_ENABLED( CONFIG_LEPTO_LOG_CALLBACK )
       logCallBack( le );
    #endif

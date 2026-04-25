@@ -111,6 +111,7 @@ inline constexpr ELogCategory toCategory(ELogCode code)
    #define lWarning(msg, ... ) lLog(ELogCategory::Warning|0, msg, ##__VA_ARGS__ )
    #define lCritical(msg, ... ) lLog(ELogCategory::Critical|0, msg, ##__VA_ARGS__ )
    #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, msg, ##__VA_ARGS__ )
+   #define lCalm() lLog(ELogCategory::Calm|0, "" )
 #else
    #define lDebugReal(msg, ...) lLog(ELogCategory::Debug, "" )
    #define lInfo(msg, ...) lLog(ELogCategory::Info, "" )
@@ -118,6 +119,7 @@ inline constexpr ELogCategory toCategory(ELogCode code)
    #define lWarning(msg, ... ) lLog(ELogCategory::Warning, "" )
    #define lCritical(msg, ... ) lLog(ELogCategory::Critical, "" )
    #define lFatal(msg, ... ) lLog(ELogCategory::Fatal, "" )
+   #define lCalm() lLog(ELogCategory::Calm, "" )
 #endif
 
 // You can use the LDS macro to give two different messages depending on the

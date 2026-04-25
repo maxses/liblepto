@@ -183,8 +183,7 @@ void lVLogSimple(ELogCode code, const char *format, va_list &list )
          abort();
       #else
          printf("FATAL: %s\n", le->logString);
-         *((int*)0)=1;
-         throw("Assertion wrong");
+         throw( le->logString );
       #endif
    }
    

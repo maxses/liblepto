@@ -217,11 +217,7 @@ void lLogSimple( ELogCode code, const char *format, ... )
 #endif // ? CONFIG_LEPTO_LOG_PRETTY_PRINT ELSE
 
 #if IS_ENABLED( CONFIG_LEPTO_LOG_SIGNAL )
-CSignal<void, ELogCode> m_signalLog;
-CSignal<void, ELogCode>& signalLog()
-{
-   return( m_signalLog );
-};
+   #error CONFIG_LEPTO_LOG_SIGNAL is obsolete. Use CONFIG_BIWAK_LOG_SIGNAL
 #endif
 
 void logEventLoop()

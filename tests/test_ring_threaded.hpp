@@ -128,7 +128,13 @@ class CConsumer: public QThread
             lWarning("Not plausible");
          }
          int noDAtaCounter=0;
-         QElapsedTimer timer;
+         
+         #if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
+            QElapsedTimer timer;
+         #else
+            QTimer timer;
+         #endif
+
          timer.start();
          qint64 maxNoData=0;
          

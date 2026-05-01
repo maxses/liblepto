@@ -259,8 +259,8 @@ class CSignal
       
       int slotCount( ) const
       {
-#if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
          int count=0;
+#if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
          const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&m_pFunctor;
          while(*pFunctor)
          {

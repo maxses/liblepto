@@ -140,6 +140,29 @@ target_include_directories(
       include/
 )
 
+install(
+   TARGETS 
+      ${PROJECT_NAME}
+   RUNTIME DESTINATION 
+      lib
+)
+
+install (
+   DIRECTORY 
+      include/lepto
+   DESTINATION
+      include
+)
+
+install (
+   FILES
+      LICENSE
+   DESTINATION
+      share/doc/liblepto
+)
+
+
+
 if( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR HOST )
     add_subdirectory( tests )
 endif()

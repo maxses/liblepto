@@ -7,11 +7,14 @@
 
 # 3.18.4: Debian Bullsyeye
 # 3.10.2: Ubuntu Bionic
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required( VERSION 3.10.2 )
 
-project(lepto LANGUAGES CXX)
+project( lepto LANGUAGES CXX VERSION 1.0.0 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set( lepto_VERSION 1.0.0 )
+
+include(GenerateExportHeader)
 
 if( ( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" ) OR HOST )
    set(CMAKE_AUTOUIC ON)
@@ -85,6 +88,15 @@ target_compile_definitions(
       -DUSE_LEPTO
 )
 
+set_property(TARGET ${PROJECT_NAME} PROPERTY VERSION 1)
+set_property(TARGET ${PROJECT_NAME} PROPERTY SOVERSION 1)
+set_property(TARGET ${PROJECT_NAME} PROPERTY
+   INTERFACE_${PROJECT_NAME}_MAJOR_VERSION 3)
+set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY
+   COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION
+)
+
+
 if ( COMMON_CONFIG_HEADER )
    set ( LEPTO_CONFIG_HEADER "${COMMON_CONFIG_HEADER}" )
 elseif( EXISTS "${CMAKE_SYSROOT}/usr/include/lepto/config.h" )
@@ -135,23 +147,30 @@ endif()
 target_include_directories(
    ${PROJECT_NAME}
    PRIVATE
-      include/
+      include
    INTERFACE
-      include/
+      include
+   PUBLIC
+      include
 )
+
+generate_export_header( ${PROJECT_NAME} )
 
 install(
-   TARGETS 
-      ${PROJECT_NAME}
-   RUNTIME DESTINATION 
-      lib
+   TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+   INCLUDES DESTINATION include
 )
 
-install (
-   DIRECTORY 
-      include/lepto
+# Includes have to be installed manually for some reason
+install(
+   DIRECTORY
+      include/lepto 
    DESTINATION
       include
+   COMPONENT Devel
 )
 
 install (
@@ -161,6 +180,33 @@ install (
       share/doc/liblepto
 )
 
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+  VERSION ${Upstream_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+export(EXPORT ${PROJECT_NAME}Targets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
+  NAMESPACE Upstream::
+)
+
+configure_file(cmake/${PROJECT_NAME}Config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
+  COPYONLY
+)
+
+install(
+  FILES
+    cmake/${PROJECT_NAME}Config.cmake
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+  DESTINATION
+    lib/cmake/${PROJECT_NAME}
+  COMPONENT
+    Devel
+)
 
 
 if( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR HOST )

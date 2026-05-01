@@ -257,6 +257,26 @@ class CSignal
          return;
       };
       
+      int slotCount( ) const
+      {
+#if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         int count=0;
+         const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&m_pFunctor;
+         while(*pFunctor)
+         {
+            count++;
+            pFunctor=&((*pFunctor)->m_next);
+         }
+#else
+         if( m_pFunctor )
+         {
+            count++;
+         }
+#endif
+         
+         return(count);
+      };
+      
       /**
        * @brief Emit single signal and return its return value
        * 

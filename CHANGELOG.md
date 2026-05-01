@@ -1,3 +1,10 @@
+# Changes for v1.0.0
+
+* Added buffered logging from biwak
+* Added class for deferred signals
+* Added class for event loops
+* Minor fixes
+
 # Changes for v0.6.2
 
 * [#694] CList: Add method for searching for item

@@ -61,8 +61,7 @@ class CEventLoop
       }
       ~CEventLoop()
       {
-         //lFatal("Destruct");
-         #if defined HOST
+         #if ! defined STM32
          CEventLoop** p=&m_first;
          while( *p != this  )
          {

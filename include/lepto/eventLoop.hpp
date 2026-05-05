@@ -62,6 +62,7 @@ class CEventLoop
       ~CEventLoop()
       {
          //lFatal("Destruct");
+         #if defined HOST
          CEventLoop** p=&m_first;
          while( *p != this  )
          {
@@ -72,6 +73,7 @@ class CEventLoop
             }
          }
          *p=m_next;
+         #endif
       }
       
       virtual_eventLoop void eventLoop() = 0;

@@ -113,13 +113,13 @@ inline constexpr ELogCategory toCategory(ELogCode code)
    #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, msg, ##__VA_ARGS__ )
    #define lCalm() lLog(ELogCategory::Calm|0, "" )
 #else
-   #define lDebugReal(msg, ...) lLog(ELogCategory::Debug, "" )
-   #define lInfo(msg, ...) lLog(ELogCategory::Info, "" )
-   #define lCaution(msg, ... ) lLog(ELogCategory::Caution, "" )
-   #define lWarning(msg, ... ) lLog(ELogCategory::Warning, "" )
-   #define lCritical(msg, ... ) lLog(ELogCategory::Critical, "" )
-   #define lFatal(msg, ... ) lLog(ELogCategory::Fatal, "" )
-   #define lCalm() lLog(ELogCategory::Calm, "" )
+   #define lDebugReal(msg, ...) lLog(ELogCategory::Debug|0, "" )
+   #define lInfo(msg, ...) lLog(ELogCategory::Info|0, "" )
+   #define lCaution(msg, ... ) lLog(ELogCategory::Caution|0, "" )
+   #define lWarning(msg, ... ) lLog(ELogCategory::Warning|0, "" )
+   #define lCritical(msg, ... ) lLog(ELogCategory::Critical|0, "" )
+   #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, "" )
+   #define lCalm() lLog(ELogCategory::Calm|0, "" )
 #endif
 
 // You can use the LDS macro to give two different messages depending on the
@@ -174,8 +174,8 @@ extern "C"
       
    #else
 
-      void lVLog( ELogCategory category, const char *format, ... );
-      void lLog( ELogCategory category, const char *format, ... );
+      void lVLog( ELogCode code, const char *format, ... );
+      void lLog( ELogCode code, const char *format, ... );
       
    #endif
       

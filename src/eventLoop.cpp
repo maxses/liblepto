@@ -16,7 +16,9 @@
 #include <stdio.h>
 #include <lepto/lepto.h>
 #include <lepto/log.h>
+#define EVENT_LOOP_COMPILE_UNIT
 #include <lepto/eventLoop.hpp>
+#undef EVENT_LOOP_COMPILE_UNIT
 
 
 /*--- Declarations ---------------------------------------------------------*/
@@ -42,8 +44,8 @@ void CEventLoop::globalEventLoop()
    return;
 }
 
-
 CEventLoop* CEventLoop::m_first = nullptr;
+
 #else
 
 void CEventLoop::globalEventLoop()

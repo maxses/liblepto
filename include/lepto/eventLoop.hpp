@@ -104,7 +104,13 @@ class CEventLoop
 #endif
       
    public:
-      static void globalEventLoop(); // __attribute__((error("Dont call this function!")));
+      static void globalEventLoop()
+         #if ! IS_ENABLED( CONFIG_LEPTO_GLOBAL_EVENT_LOOP )
+               #if defined EVENT_LOOP_COMPILE_UNIT
+                  __attribute__( (weak) )
+               #endif
+         #endif
+         ;
 };
 
 

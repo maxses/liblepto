@@ -119,19 +119,19 @@ class CFunctorMethod final
       #endif
 {
    public:
-      slotClass *slotObject;
-      sigReturn (slotClass::*methodPtr)( sigTypes ... args );
+      slotClass *m_slotObject;
+      sigReturn (slotClass::*m_methodPtr)( sigTypes ... args );
 
-      constexpr CFunctorMethod( slotClass *_slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
-         :slotObject(_slotObject)
-         ,methodPtr(_methodPtr)
+      constexpr CFunctorMethod( slotClass *slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ))
+         :m_slotObject( slotObject )
+         ,m_methodPtr( methodPtr )
       {
       }
 
       LEPTO_SIGNAL_VIRTUAL
       sigReturn emitSignal( sigTypes ... args ) const //final
       {
-         return( (slotObject->*(this->methodPtr))( args... ) );
+         return( (m_slotObject->*(this->m_methodPtr))( args... ) );
       }
 };
 
@@ -139,25 +139,42 @@ template <typename sigReturn, typename ... sigTypes>
 class CFunctorMethodAsFunction final
 {
    public:
-   void* slotObject;
-   sigReturn (*methodPtr)( void *, sigTypes ... args );
+   void* m_slotObject;
+   sigReturn (*m_methodPtr)( void *, sigTypes ... args );
    
    #pragma GCC diagnostic push
    #pragma GCC diagnostic ignored "-Wpmf-conversions"
    
    template <class slotClass>
-   constexpr CFunctorMethodAsFunction( slotClass* _slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
-       :slotObject(_slotObject)
-       ,methodPtr((sigReturn (*)( void *, sigTypes ... args ))_methodPtr)
+   constexpr CFunctorMethodAsFunction( slotClass* slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ))
+       :m_slotObject( slotObject )
+       ,m_methodPtr( (sigReturn (*)( void *, sigTypes ... args ))methodPtr )
    {
    }
+
+   #if 1
+   constexpr CFunctorMethodAsFunction( )
+       :m_methodPtr( nullptr )
+   {
+   }
+   template <class slotClass>
+   void connect( slotClass* _slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
+   {
+      m_slotObject=_slotObject;
+      m_methodPtr=(sigReturn (*)( void *, sigTypes ... args ))_methodPtr;
+   }
+   #endif
    
    #pragma GCC diagnostic pop
    
    LEPTO_SIGNAL_VIRTUAL
        sigReturn emitSignal( sigTypes ... args ) const //final
    {
-      return( (*(this->methodPtr))( slotObject, args... ) );
+      return( (*(this->m_methodPtr))( m_slotObject, args... ) );
+   }
+   const bool isConnected() const
+   {
+      return( m_methodPtr != nullptr );
    }
 };
 
@@ -218,7 +235,11 @@ class CSignal
          const CFunctorFunction<sigReturn, sigTypes...> *m_pFunctor;
       #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
          //const CFunctorMethod<sigReturn, slotClass, sigTypes...>* m_pFunctor;
-         const CFunctorMethodAsFunction<sigReturn, sigTypes...> *m_pFunctor;
+         #if 1
+            CFunctorMethodAsFunction<sigReturn, sigTypes...> m_pFunctor;
+         #else
+            const CFunctorMethodAsFunction<sigReturn, sigTypes...> *m_pFunctor;
+         #endif
       #else
          #error "Could not check signal configuration"
       #endif
@@ -226,7 +247,10 @@ class CSignal
    public:
 
       constexpr CSignal()
-         :m_pFunctor{ nullptr }
+         #if 1
+         #else
+            :m_pFunctor{ nullptr }
+         #endif
       {
       };
       ~CSignal()
@@ -245,7 +269,7 @@ class CSignal
       #if LEPTO_SIGNAL_DO_VIRTUAL || 1
       template <class slotClass >
       #endif
-      void connect( slotClass *slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
+      void connect( slotClass *slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ))
       {
          #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
          CFunctor<sigReturn, sigTypes...> **pFunctor=&m_pFunctor;
@@ -253,11 +277,19 @@ class CSignal
          {
             pFunctor=&((*pFunctor)->m_next);
          }
-         *pFunctor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, _methodPtr);
+         *pFunctor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, methodPtr);
          #else
-         lAssert( m_pFunctor == nullptr );
-         m_pFunctor=new CFunctorMethodAsFunction( slotObject, _methodPtr );
-         
+            #if 1
+               lAssert( ! m_pFunctor.isConnected() );
+            #else
+               lAssert( m_pFunctor == nullptr );
+            #endif
+               
+            #if 1
+               m_pFunctor.connect(slotObject, methodPtr);
+            #else
+               m_pFunctor=new CFunctorMethodAsFunction( slotObject, methodPtr );
+            #endif
          #endif
       };
       #endif
@@ -280,10 +312,17 @@ class CSignal
             pFunctor=&((*pFunctor)->m_next);
          }
          #else
-         if( m_pFunctor )
-         {
-            m_pFunctor->emitSignal( args ... );
-         }
+            #if 1
+               if( m_pFunctor.isConnected() )
+               {
+                  m_pFunctor.emitSignal( args ... );
+               }
+            #else
+               if( m_pFunctor )
+               {
+                  m_pFunctor->emitSignal( args ... );
+               }
+            #endif
          #endif
          
          return;
@@ -320,10 +359,17 @@ class CSignal
        */
       sigReturn emitSingle( sigTypes ... args ) const
       {
-         if( m_pFunctor )
-         {
-            return( m_pFunctor->emitSignal( args ... ) );
-         }
+         #if 1
+            if( m_pFunctor.isConnected() )
+            {
+               return( m_pFunctor.emitSignal( args ... ) );
+            }
+         #else
+            if( m_pFunctor )
+            {
+               return( m_pFunctor->emitSignal( args ... ) );
+            }
+         #endif
          return(0);
       }
 

@@ -55,7 +55,7 @@
 #endif
 
 #define lAssert( assertion, ... ) if ( ! (assertion) ) \
-         { lFatal( "ASRT" /*SW " __VA_ARGS__*/ ); };
+         { lFatal( "" ); };
 
 #if USE_FULL_ASSERT
    #define lFullAssert( assertion, ... ) if ( ! (assertion) ) \

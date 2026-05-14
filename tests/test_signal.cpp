@@ -97,6 +97,8 @@ TEST_CASE( "Signal", "[default]" )
       REQUIRE( obj.getCounter() == 0x78 + START_VALUE );
    }
 
+   #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
+   
    SECTION( "Signal function" )
    {
       CSignal<void, int>sig;
@@ -111,6 +113,8 @@ TEST_CASE( "Signal", "[default]" )
       REQUIRE( getCounter() == 0x78 + START_VALUE );
    }
 
+   #endif // ? CONFIG_LEPTO_SIGNAL_FUNCTION
+   
    SECTION( "Pending Signal Pool" )
    {
       C1 obj;

@@ -66,7 +66,7 @@
 #  define CONFIG_LEPTO_RING_DEFAULT_SIZE 0x0
 #endif
 
-#define CONFIG_LEPTO_LIST_INCREMENT       10
+#define CONFIG_LEPTO_LIST_INCREMENT       24
 
 #if ! defined(LEPTO_CONFIGURED)
    #error LEPTO_CONFIGURED not defined. The configuration header was probably not involved.
@@ -427,7 +427,11 @@ class CList
       bool isFull(ringIndex_t front, ringIndex_t back) const
       {
          #if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-            return(  ( back + 1 ) % m_maxEntries==  front );
+            if( ! m_maxEntries )
+            {
+               return( true );
+            }
+            return(  ( back + 1ul ) % m_maxEntries==  front );
          #else
             // Cornercase: When back-position is at the very end and the front is
             // at the beginning, adding an additional entry must not be allowed.
@@ -696,7 +700,8 @@ bool CList<T>::push_back(const T value)
                return(false);
             }
       #else
-            return(false);
+         abort();
+         return(false);
       #endif
    }
    *reservedEntry(index)=value;

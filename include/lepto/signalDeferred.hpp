@@ -32,6 +32,7 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
 {
    private:
 
+#if 0
       #if LEPTO_SIGNAL_DO_VIRTUAL
          CFunctor<sigReturn, sigTypes...> *functor;
       #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
@@ -41,14 +42,13 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
       #else
          #error "Could not check signal configuration"
       #endif
-
+#endif
       CRing< STuple<sigTypes...> > p;
 
    public:
 
       constexpr CSignalDeferred( int count = 32 )
-         :functor{0}
-           ,p( count )
+         :p( count )
       {
          // "count=16" worked ok with button as input. But don't print too much
          // in the slot.

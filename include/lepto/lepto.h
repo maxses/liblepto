@@ -39,6 +39,7 @@
 // Because Qt has QT_STRINGIFY
 #define L_STRINGIFY2(exp) "" #exp ""
 #define L_STRINGIFY(exp) L_STRINGIFY2(exp)
+#define LEPTO_KEEP(sym) __asm__ __volatile__("" :: "m" (sym));
 
 #define arraySize(array) (int)(sizeof(array)/sizeof(array[0]) )
 

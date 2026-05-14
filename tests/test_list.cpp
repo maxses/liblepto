@@ -240,7 +240,30 @@ TEST_CASE( "List", "[default]" )
       REQUIRE( iterator.realIndex() == 0 );
       iterator++;
       REQUIRE( iterator.realIndex() == 1 );
+   }
+   
+   SECTION( "C++ iterate" )
+   {
+      CList<int> list(0);
+      int cnt=0;
+      for(const int &element: list )
+      {
+         cnt++;
+      }
+      REQUIRE( cnt == 0 );
       
+      list.push_back(0x22);
+      cnt=0;
+      
+      for(const int &element: list )
+      {
+         cnt++;
+      }
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         REQUIRE( cnt == 1 );
+      #else
+         REQUIRE( cnt == 0 );
+      #endif
    }
 }
 

@@ -45,12 +45,11 @@
 
 #else
 
-#if 0
-   // By default, use virtual signals supportunǵ fungtions and methods
-   #if ! defined ( CONFIG_LEPTO_SIGNAL_FUNCTION ) && ! defined ( CONFIG_LEPTO_SIGNAL_METHOD )
-      #define CONFIG_LEPTO_SIGNAL_FUNCTION      1
-      #define CONFIG_LEPTO_SIGNAL_METHOD        1
-   #endif
+// By default, use virtual signals supportunǵ methods but not functions. This
+// may lead to CFunctorMethodAsFunction being used. 
+#if ! defined ( CONFIG_LEPTO_SIGNAL_FUNCTION ) && ! defined ( CONFIG_LEPTO_SIGNAL_METHOD )
+   #undef CONFIG_LEPTO_SIGNAL_FUNCTION
+   #define CONFIG_LEPTO_SIGNAL_METHOD        1
 #endif
 
 #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION ) && IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )

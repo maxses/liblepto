@@ -62,6 +62,10 @@
    #define LEPTO_SIGNAL_DO_VIRTUAL           0
 #endif
 
+#if LEPTO_SIGNAL_DO_VIRTUAL || IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
+   #define LEPTO_SIGNAL_FUNCTOR_ALLOCATED    1
+#endif
+
 // The template 'sclotClass' can never be part of the signals class declaration
 // because the class of the slot is not known at this timepoint of course.
 template <typename sigReturn, typename ... sigTypes>
@@ -247,9 +251,9 @@ class CSignal
    public:
 
       constexpr CSignal()
-         #if 1
-         #else
+         #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
             :m_pFunctor{ nullptr }
+         #else
          #endif
       {
       };

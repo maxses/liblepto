@@ -259,7 +259,11 @@ TEST_CASE( "List", "[default]" )
       {
          cnt++;
       }
-      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+      
+      // when CONFIG_LEPTO_RING_DEFAULT_SIZE is 0, the list will get vitalized
+      // when pushing values. It is still not resizable as long as
+      // CONFIG_LEPTO_LIST_RESIZABLE is not set.
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE ) || ( CONFIG_LEPTO_RING_DEFAULT_SIZE == 0 )
          REQUIRE( cnt == 1 );
       #else
          REQUIRE( cnt == 0 );

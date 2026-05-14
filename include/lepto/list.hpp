@@ -66,7 +66,7 @@
 #  define CONFIG_LEPTO_RING_DEFAULT_SIZE 0x0
 #endif
 
-#define CONFIG_LEPTO_LIST_INCREMENT       24
+#define CONFIG_LEPTO_LIST_INCREMENT       8
 
 #if ! defined(LEPTO_CONFIGURED)
    #error LEPTO_CONFIGURED not defined. The configuration header was probably not involved.

@@ -140,6 +140,9 @@ class CFunctorMethod final
 
 template <typename sigReturn, typename ... sigTypes>
 class CFunctorMethodAsFunction final
+      #if LEPTO_SIGNAL_DO_VIRTUAL
+          : public CFunctor<sigReturn, sigTypes...>
+      #endif
 {
    public:
    void* m_slotObject;
@@ -282,16 +285,16 @@ class CSignal
          }
          *pFunctor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, methodPtr);
          #else
-            #if 1
-               lAssert( ! m_pFunctor.isConnected() );
-            #else
+            #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
                lAssert( m_pFunctor == nullptr );
+            #else
+               lAssert( ! m_pFunctor.isConnected() );
             #endif
                
-            #if 1
-               m_pFunctor.connect(slotObject, methodPtr);
-            #else
+            #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
                m_pFunctor=new CFunctorMethodAsFunction( slotObject, methodPtr );
+            #else
+               m_pFunctor.connect(slotObject, methodPtr);
             #endif
          #endif
       };
@@ -315,15 +318,15 @@ class CSignal
             pFunctor=&((*pFunctor)->m_next);
          }
          #else
-            #if 1
-               if( m_pFunctor.isConnected() )
-               {
-                  m_pFunctor.emitSignal( args ... );
-               }
-            #else
+            #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
                if( m_pFunctor )
                {
                   m_pFunctor->emitSignal( args ... );
+               }
+            #else
+               if( m_pFunctor.isConnected() )
+               {
+                  m_pFunctor.emitSignal( args ... );
                }
             #endif
          #endif
@@ -362,15 +365,15 @@ class CSignal
        */
       sigReturn emitSingle( sigTypes ... args ) const
       {
-         #if 1
-            if( m_pFunctor.isConnected() )
-            {
-               return( m_pFunctor.emitSignal( args ... ) );
-            }
-         #else
+         #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
             if( m_pFunctor )
             {
                return( m_pFunctor->emitSignal( args ... ) );
+            }
+         #else
+            if( m_pFunctor.isConnected() )
+            {
+               return( m_pFunctor.emitSignal( args ... ) );
             }
          #endif
          return(0);

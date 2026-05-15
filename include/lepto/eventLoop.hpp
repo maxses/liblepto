@@ -74,6 +74,9 @@ class CEventLoop
          }
          *p=m_next;
          #else
+            #if ! STM32
+               #error Please enable CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR for host
+            #endif
             abort();
          #endif
       }

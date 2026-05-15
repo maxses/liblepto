@@ -61,7 +61,7 @@
    #define LEPTO_SIGNAL_DO_VIRTUAL           0
 #endif
 
-#if LEPTO_SIGNAL_DO_VIRTUAL || IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
+#if LEPTO_SIGNAL_DO_VIRTUAL || IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION ) || IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
    #define LEPTO_SIGNAL_FUNCTOR_ALLOCATED    1
 #endif
 
@@ -144,6 +144,12 @@ class CFunctorMethodAsFunction final
           : public CFunctor<sigReturn, sigTypes...>
       #endif
 {
+      friend class CSignal<sigReturn, sigTypes...>;
+      
+      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         CFunctorMethodAsFunction *m_next=nullptr;
+      #endif
+
    public:
    void* m_slotObject;
    sigReturn (*m_methodPtr)( void *, sigTypes ... args );
@@ -227,6 +233,16 @@ class CSignalMethod
 #endif // 0
 
 
+#if LEPTO_SIGNAL_DO_VIRTUAL
+   #define CFunctorAbstract CFunctor
+#elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
+   #define CFunctorAbstract CFunctorFunction
+#elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
+   #define CFunctorAbstract CFunctorMethodAsFunction
+   #define CFunctorMethodConcrete CFunctorMethodAsFunction
+#endif
+
+
 // The template 'sclotClass' can never be part of the signals class declaration
 // because the class of the slot is not known at this timepoint of course.
 template <typename sigReturn, typename ... sigTypes>
@@ -241,10 +257,10 @@ class CSignal
          const CFunctorFunction<sigReturn, sigTypes...> *m_pFunctor;
       #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
          //const CFunctorMethod<sigReturn, slotClass, sigTypes...>* m_pFunctor;
-         #if 1
-            CFunctorMethodAsFunction<sigReturn, sigTypes...> m_pFunctor;
+         #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
+            CFunctorMethodAsFunction<sigReturn, sigTypes...> *m_pFunctor;
          #else
-            const CFunctorMethodAsFunction<sigReturn, sigTypes...> *m_pFunctor;
+            CFunctorMethodAsFunction<sigReturn, sigTypes...> m_pFunctor;
          #endif
       #else
          #error "Could not check signal configuration"
@@ -278,12 +294,22 @@ class CSignal
       void connect( slotClass *slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ))
       {
          #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
-         CFunctor<sigReturn, sigTypes...> **pFunctor=&m_pFunctor;
-         while(*pFunctor)
-         {
-            pFunctor=&((*pFunctor)->m_next);
-         }
-         *pFunctor=new CFunctorMethod<sigReturn, slotClass, sigTypes...>(slotObject, methodPtr);
+         
+            #if LEPTO_SIGNAL_DO_VIRTUAL
+               CFunctor<sigReturn, sigTypes...> **pFunctor=&m_pFunctor;
+            #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
+               CFunctorFunction<sigReturn, sigTypes...>**pFunctor=&m_pFunctor;
+            #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
+               CFunctorMethodAsFunction<sigReturn, sigTypes...>**pFunctor=&m_pFunctor;
+            #else
+               #error "Could not check signal configuration"
+            #endif
+            
+            while(*pFunctor)
+            {
+               pFunctor=&((*pFunctor)->m_next);
+            }
+            *pFunctor=new CFunctorMethodAsFunction(slotObject, methodPtr);
          #else
             #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
                lAssert( m_pFunctor == nullptr );
@@ -311,12 +337,25 @@ class CSignal
       void emitSignal( sigTypes ... args ) const
       {
          #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
-         const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&m_pFunctor;
-         while(*pFunctor)
-         {
-            (*pFunctor)->emitSignal( args ... );
-            pFunctor=&((*pFunctor)->m_next);
-         }
+            #if ! LEPTO_SIGNAL_FUNCTOR_ALLOCATED
+               #error CONFIG_LEPTO_SIGNAL_CHAIN Only works with allocated functors
+            #endif
+         
+            #if LEPTO_SIGNAL_DO_VIRTUAL
+               const CFunctor<sigReturn, sigTypes...> * const*pFunctor=&m_pFunctor;
+            #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
+               const CFunctorFunction<sigReturn, sigTypes...>* const *pFunctor=&m_pFunctor;
+            #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
+               const CFunctorMethodAsFunction<sigReturn, sigTypes...>* const *pFunctor=&m_pFunctor;
+            #else
+               #error "Could not check signal configuration"
+            #endif
+
+            while(*pFunctor)
+            {
+               (*pFunctor)->emitSignal( args ... );
+               pFunctor=&((*pFunctor)->m_next);
+            }
          #else
             #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
                if( m_pFunctor )

@@ -85,9 +85,18 @@ TEST_CASE( "Signal", "[default]" )
    SECTION( "Signal C++ method" )
    {
       C1 obj;
+      
+      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         C1 obj2;
+      #endif
+         
       CSignal<void, int, int>sig;
 
       sig.connect(&obj, &C1::_slot1);
+      
+      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         sig.connect(&obj2, &C1::_slot1);
+      #endif
 
       //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
@@ -95,6 +104,10 @@ TEST_CASE( "Signal", "[default]" )
 
       // 15 + 14 ... + 3 + 2 + 1
       REQUIRE( obj.getCounter() == 0x78 + START_VALUE );
+      
+      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         REQUIRE( obj2.getCounter() == 0x78 + START_VALUE );
+      #endif
    }
 
    #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )

@@ -29,6 +29,12 @@
    #define deactivateEventLoop( a )
 #endif
 
+#if ! defined( CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR )
+   #if ! defined STM32
+      #define CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR      1
+   #endif
+#endif
+
 
 /*--- Declarations ---------------------------------------------------------*/
 
@@ -74,7 +80,7 @@ class CEventLoop
          }
          *p=m_next;
          #else
-            #if ! STM32
+            #if ! defined STM32
                #error Please enable CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR for host
             #endif
             abort();

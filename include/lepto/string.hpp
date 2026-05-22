@@ -264,6 +264,16 @@ class CString: public CBaseString<char>
       {
       };
 
+      CString& operator= (const char* r)
+      {
+         checkSpace( strlen(r), false);
+         memcpy(m_buf, r, strlen(r)+1);
+         #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+            m_length=strlen(m_buf);
+         #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+         return( *this );
+      }
+
       // Used by CANDis
       int printf(const char format[], ...)
       {
@@ -365,7 +375,7 @@ constexpr CBaseString<T>::CBaseString()
 template <typename T>
 CBaseString<T>::CBaseString(const T *buf)
 {
-   int i1=strlen(buf)+1;
+   unsigned int i1=strlen(buf)+1;
    allocate(i1);
    memcpy(m_buf, buf, i1);
    #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )

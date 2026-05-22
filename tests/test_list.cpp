@@ -216,7 +216,7 @@ TEST_CASE( "List", "[default]" )
       #if LEPTO_RING_SPARE_ENTRIES == 1
             REQUIRE ( ring.average() == ( ( 2.0 + 3.0 + 4.0) / 3.0) );
       #else
-            REQUIRE ( ring.average() == ( (1.0+2.0+3.0+4.0)/4.0) );
+            REQUIRE ( ring.average() == ( ( 1.0f + 2.0f + 3.0f + 4.0f ) / 4.0f ) );
       #endif
             
       for(int i1=0; i1<5; i1++)
@@ -229,7 +229,7 @@ TEST_CASE( "List", "[default]" )
          REQUIRE ( ring.average() == ( ( 3.0 + 4.0 + 5.0 ) / 3.0 ) );
       #else
          REQUIRE ( ring.count() == 4 );
-         REQUIRE ( ring.average() == ( ( 2.0 + 3.0 + 4.0 + 5.0 ) / 4.0 ) );
+         REQUIRE ( ring.average() == ( ( 2.0f + 3.0f + 4.0f + 5.0f ) / 4.0f ) );
       #endif
    }
    
@@ -248,6 +248,7 @@ TEST_CASE( "List", "[default]" )
       int cnt=0;
       for(const int &element: list )
       {
+         (void)element;
          cnt++;
       }
       REQUIRE( cnt == 0 );
@@ -257,6 +258,7 @@ TEST_CASE( "List", "[default]" )
       
       for(const int &element: list )
       {
+         (void)element;
          cnt++;
       }
       

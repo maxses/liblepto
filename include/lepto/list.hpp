@@ -434,6 +434,8 @@ class CList
        */
       void pushReserved( ringIndex_t index )
       {
+         (void)index;
+
          #if ! IS_ENABLED( CONFIG_LEPTO_RING_NO_THREADS )
             __atomic_sub_fetch( &m_busyProducing, 1, __ATOMIC_SEQ_CST);
          #endif

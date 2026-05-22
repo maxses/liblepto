@@ -44,6 +44,8 @@ class C1
    public:
       void _slot1(int dummy, int add)
       {
+         (void)dummy;
+
          REQUIRE( add > m_last );
          m_counter+=add;
          m_last = add;

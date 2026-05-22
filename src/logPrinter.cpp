@@ -94,7 +94,7 @@ void logPrintPretty( const SLogEntry* le )
 void logPrintPretty( const SLogEntry* le )
 {
    #if IS_ENABLED( CONFIG_LEPTO_LOG_TIMESTAMPS )
-      printf("[%08d] ",  le->timeStamp );
+      printf("[%08d] ",  (int)le->timeStamp );
    #endif
 
    int len=printf("%s(%d)" , le->file, le->line);

@@ -79,6 +79,17 @@ TEST_CASE( "String", "[default]" )
       CString s5 = s3 + s4;
       REQUIRE ( s5 == "Hallo Welt!" );
    }
+   SECTION( "Copy" )
+   {
+      CString s1("Hello World");
+      CString s2(s1);
+
+      // Strings are equal
+      REQUIRE ( strcmp( s1.data(), s2.data() ) == 0 );
+
+      // s2 needs "fresh" allocated memory.
+      REQUIRE ( s1.data() != s2.data() );
+   }
 }
 
 

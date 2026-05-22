@@ -58,8 +58,8 @@ struct SSettingDesctriptor
 typedef SSettingDesctriptor SSettingDesctriptors[ ];
 typedef const char** SSettingDesctriptorsI[ MAX_VALUE_TEXTS ];
 
-extern SSettingDesctriptor* descriptors;
-extern int descriptorCount;
+//extern SSettingDesctriptor* descriptors;
+//extern int descriptorCount;
 
 template<typename T>
 class CRegConfig

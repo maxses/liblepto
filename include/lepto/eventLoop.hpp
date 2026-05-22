@@ -104,6 +104,8 @@ class CEventLoop
       {
          #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
             m_active=active;
+         #else
+            (void)active;
          #endif
       }
       
@@ -111,6 +113,8 @@ class CEventLoop
       {
          #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
             activateEventLoop( false );
+         #else
+            (void)active;
          #endif
       }
 #endif

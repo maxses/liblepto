@@ -32,9 +32,10 @@
 /*--- Defines --------------------------------------------------------------*/
 
 
-// Too small values actually waste RAM due to fragmentation. even 10 is bad
-#define MEMORY_GAP   20
-#define  CONFIG_LEPTO_STRING_FREE_ON_CLEAR         0  // costs 8 bytes but may
+// Too small values actually waste RAM due to fragmentation.
+// 16 gaves best result on 'miniminutnik'. ( Heap usage is not linear)
+#define MEMORY_GAP   16
+#define  CONFIG_LEPTO_STRING_FREE_ON_CLEAR         1  // costs 8 bytes but may
                                                       // lead to fragmentation
 #define CONFIG_LEPTO_STRING_CACHED_LENGTH          1  // brings bytes
 
@@ -159,7 +160,7 @@ class CBaseString
        * @param   doPreserve  If set the the old data will be copied when
        *                      reallocating space.
        */
-      void checkSpace(int length, bool doPreserve = true);
+      void checkSpace(int length, bool doPreserve = true );
 
       /**
        * @brief   Cut the sttring at a position
@@ -432,12 +433,13 @@ void CBaseString<T>::checkSpace(int newLength, bool doPreserve /*=true*/ )
 {
    T *oldBuf=m_buf;
    int oldLength=length();
-
+   
    // We need size+1 to keep a zero
-   if(newLength+1>m_maxSize)
+   if( (newLength+1) > m_maxSize )
    {
       // Only extend with a gap when there is a byte by byte increasement.
-      if( newLength+1 == m_maxSize + 1  )
+      //if( newLength == ( m_maxSize + 1 )  )
+      //while( newLength > m_maxSize + 1 )  )
       {
          newLength+=MEMORY_GAP;
       }

@@ -1,3 +1,9 @@
+# Changes for v1.1.0
+
+* Minor fixes
+* Signal: Support allocation-free connections
+* Signal: Added CFunctorMethodAsFunction
+
 # Changes for v1.0.0
 
 * Added buffered logging from biwak

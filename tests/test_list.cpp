@@ -240,7 +240,34 @@ TEST_CASE( "List", "[default]" )
       REQUIRE( iterator.realIndex() == 0 );
       iterator++;
       REQUIRE( iterator.realIndex() == 1 );
+   }
+   
+   SECTION( "C++ iterate" )
+   {
+      CList<int> list(0);
+      int cnt=0;
+      for(const int &element: list )
+      {
+         cnt++;
+      }
+      REQUIRE( cnt == 0 );
       
+      list.push_back(0x22);
+      cnt=0;
+      
+      for(const int &element: list )
+      {
+         cnt++;
+      }
+      
+      // when CONFIG_LEPTO_RING_DEFAULT_SIZE is 0, the list will get vitalized
+      // when pushing values. It is still not resizable as long as
+      // CONFIG_LEPTO_LIST_RESIZABLE is not set.
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE ) || ( CONFIG_LEPTO_RING_DEFAULT_SIZE == 0 )
+         REQUIRE( cnt == 1 );
+      #else
+         REQUIRE( cnt == 0 );
+      #endif
    }
 }
 

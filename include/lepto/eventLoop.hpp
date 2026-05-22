@@ -17,6 +17,7 @@
 
 #include <lepto/lepto.h>
 #include <lepto/log.h>
+#include <stdlib.h>
 
 #if IS_ENABLED( CONFIG_LEPTO_GLOBAL_EVENT_LOOP )
    #define virtual_eventLoop virtual
@@ -26,6 +27,12 @@
    #define override_eventLoop
    #define activateEventLoop( a )
    #define deactivateEventLoop( a )
+#endif
+
+#if ! defined( CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR )
+   #if ! defined STM32
+      #define CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR      1
+   #endif
 #endif
 
 
@@ -61,7 +68,7 @@ class CEventLoop
       }
       ~CEventLoop()
       {
-         #if ! defined STM32
+         #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR )
          CEventLoop** p=&m_first;
          while( *p != this  )
          {
@@ -72,6 +79,11 @@ class CEventLoop
             }
          }
          *p=m_next;
+         #else
+            #if ! defined STM32
+               #error Please enable CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR for host
+            #endif
+            abort();
          #endif
       }
       

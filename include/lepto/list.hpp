@@ -66,7 +66,7 @@
 #  define CONFIG_LEPTO_RING_DEFAULT_SIZE 0x0
 #endif
 
-#define CONFIG_LEPTO_LIST_INCREMENT       10
+#define CONFIG_LEPTO_LIST_INCREMENT       8
 
 #if ! defined(LEPTO_CONFIGURED)
    #error LEPTO_CONFIGURED not defined. The configuration header was probably not involved.
@@ -187,6 +187,16 @@ class CList
       
       CList(int maxEntries = CONFIG_LEPTO_RING_DEFAULT_SIZE);
       ~CList();
+
+      #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
+      
+      /**
+       * @brief Initially allocate memory when 
+       */
+      void vitalize();
+      
+      #endif
+      
       void clear();
       bool isDataAvailableBasically() const;
       bool isDataAvailable() const;
@@ -386,6 +396,14 @@ class CList
          bool valid;
          ringIndex_t nextBack;
          ringIndex_t reserved;
+         
+         #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
+            if( m_maxEntries == 0 )
+            {
+               vitalize();
+            }
+         #endif
+         
 
          #if ! IS_ENABLED( CONFIG_LEPTO_RING_NO_THREADS )
             __atomic_add_fetch(&m_busyProducing, 1, __ATOMIC_SEQ_CST);
@@ -426,8 +444,19 @@ class CList
        */
       bool isFull(ringIndex_t front, ringIndex_t back) const
       {
+         #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
+            if( m_maxEntries == 0)
+            {
+               return( false );
+            }
+         #endif
+         
          #if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-            return(  ( back + 1 ) % m_maxEntries==  front );
+            if( ! m_maxEntries )
+            {
+               return( true );
+            }
+            return(  ( back + 1ul ) % m_maxEntries==  front );
          #else
             // Cornercase: When back-position is at the very end and the front is
             // at the beginning, adding an additional entry must not be allowed.
@@ -607,6 +636,21 @@ CList<T>::~CList()
 };
 
 
+#if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
+
+template <typename T>
+void CList<T>::vitalize()
+{
+   lAssert( m_maxEntries == 0 );
+   m_maxEntries = CONFIG_LEPTO_LIST_INCREMENT;
+   m_buffers=new T[ m_maxEntries ];
+   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+      m_maxEntriesDuplicated= m_maxEntries * DUPLICATE_FACTOR ;
+   #endif
+}
+
+#endif
+
 template <typename T>
 void CList<T>::clear()
 {
@@ -678,6 +722,13 @@ void CList<T>::dropFront()
 template <typename T>
 bool CList<T>::push_back(const T value)
 {
+   #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
+      if( m_maxEntries == 0 )
+      {
+         vitalize();
+      }
+   #endif
+   
    #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
    if( isFull() && m_volatile )
    {
@@ -696,7 +747,10 @@ bool CList<T>::push_back(const T value)
                return(false);
             }
       #else
-            return(false);
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_ABORT_FAILING_PUSH )
+            abort();
+         #endif
+         return(false);
       #endif
    }
    *reservedEntry(index)=value;

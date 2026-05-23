@@ -55,7 +55,7 @@
 #endif
 
 #define lAssert( assertion, ... ) if ( ! (assertion) ) \
-         { lFatal( "" ); };
+      { abort(); };
 
 #if USE_FULL_ASSERT
    #define lFullAssert( assertion, ... ) if ( ! (assertion) ) \

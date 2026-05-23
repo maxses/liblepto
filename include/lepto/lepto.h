@@ -56,6 +56,7 @@
 
 // This was for checking if some overloading worked correctly. May be removed soon.
 #define LEPTO_CODE            0x1
+#define lUNUSED(a) (void)a
 
 // When CONFIG_LEPTO_LOG_PRETTY_PRINT is not defined, enable it only when
 // CONFIG_LEPTO_LOG_DOWNSIZE is not set.

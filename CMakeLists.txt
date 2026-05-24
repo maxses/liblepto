@@ -57,6 +57,11 @@ set(
       include/lepto/bufferRing.hpp
       include/lepto/eventLoop.hpp
       include/lepto/tuple.hpp
+      include/lepto/signal.hpp
+      include/lepto/signalDeferred.hpp
+      include/lepto/signalPool.hpp
+      include/lepto/signalPoolStatic.hpp
+      ${COMMON_CONFIG_HEADER}
 )
 
 set(

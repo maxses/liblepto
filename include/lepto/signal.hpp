@@ -52,7 +52,8 @@
    #define CONFIG_LEPTO_SIGNAL_METHOD        1
 #endif
 
-#if IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION ) && IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
+#if ( IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION ) && IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD ) ) || \
+    ( IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )   && CONFIG_LEPTO_SIGNAL_NO_METHOD_AS_FUNCTION )
    #define LEPTO_SIGNAL_VIRTUAL              virtual
    #define LEPTO_SIGNAL_DO_VIRTUAL           1
 #else
@@ -238,8 +239,13 @@ class CSignalMethod
 #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
    #define CFunctorAbstract CFunctorFunction
 #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
-   #define CFunctorAbstract CFunctorMethodAsFunction
-   #define CFunctorMethodConcrete CFunctorMethodAsFunction
+   #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_NO_METHOD_AS_FUNCTION )
+      #define CFunctorAbstract CFunctorMethod
+      #define CFunctorMethodConcrete CFunctorMethod
+   #else
+      #define CFunctorAbstract CFunctorMethodAsFunction
+      #define CFunctorMethodConcrete CFunctorMethodAsFunction
+   #endif
 #endif
 
 
@@ -260,7 +266,7 @@ class CSignal
          #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
             CFunctorMethodAsFunction<sigReturn, sigTypes...> *m_pFunctor;
          #else
-            CFunctorMethodAsFunction<sigReturn, sigTypes...> m_pFunctor;
+            CFunctorMethodConcrete<sigReturn, sigTypes...> m_pFunctor;
          #endif
       #else
          #error "Could not check signal configuration"

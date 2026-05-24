@@ -34,7 +34,9 @@
 
 // Too small values actually waste RAM due to fragmentation.
 // 16 gaves best result on 'miniminutnik'. ( Heap usage is not linear)
-#define MEMORY_GAP   16
+#if ! defined CONFIG_LEPTO_STRING_MEMORY_HIKE
+   #define CONFIG_LEPTO_STRING_MEMORY_HIKE   16
+#endif
 #define  CONFIG_LEPTO_STRING_FREE_ON_CLEAR         1  // costs 8 bytes but may
                                                       // lead to fragmentation
 #define CONFIG_LEPTO_STRING_CACHED_LENGTH          1  // brings bytes
@@ -451,7 +453,7 @@ void CBaseString<T>::checkSpace(int newLength, bool doPreserve /*=true*/ )
       //if( newLength == ( m_maxSize + 1 )  )
       //while( newLength > m_maxSize + 1 )  )
       {
-         newLength+=MEMORY_GAP;
+         newLength += CONFIG_LEPTO_STRING_MEMORY_HIKE;
       }
       allocate( newLength + 1 );
       if( doPreserve )

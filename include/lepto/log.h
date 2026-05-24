@@ -26,6 +26,7 @@
 
 #include <stdarg.h>
 #include <lepto/lepto.h>               // IS_ENABLED( )
+#include <stdlib.h>                    // abort()
 
 
 /*--- Implementation -------------------------------------------------------*/

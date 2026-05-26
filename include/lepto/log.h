@@ -55,8 +55,13 @@
    #define lDebugAssert(a, ...)
 #endif
 
-#define lAssert( assertion, ... ) if ( ! (assertion) ) \
-      { abort(); };
+#if defined ( STM32 )
+   #define lAssert( assertion, ... ) if ( ! (assertion) ) \
+         { abort(); };
+#else
+   #define lAssert( assertion, ... ) if ( ! (assertion) ) \
+      { throw("Addertion wrong"); };
+#endif
 
 #if USE_FULL_ASSERT
    #define lFullAssert( assertion, ... ) if ( ! (assertion) ) \

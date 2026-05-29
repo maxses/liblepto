@@ -59,6 +59,7 @@ extern "C"
    extern crc32_t (*calcCrc32)( const void *buf, uint32_t len );
 
    enum ECrc32Mode {
+      Unknown,
       Default,
       Mpeg,
    };

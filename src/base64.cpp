@@ -44,16 +44,16 @@ char CBase64::alphabet(char index)
    switch( index )
    {
       case 0 ... 25:
-         return 'A'+index;
+         return 'A' + ( index );
          break;
       case 26 ... 51:
-         return 'a'+ ( index - 26 );
+         return 'a' + ( index - 26 );
          break;
-      case 52 ... 62:
-         return '0'+ ( index - 52 );
+      case 52 ... 61:
+         return '0' + ( index - 52 );
          break;
       default:
-         return "+/="[index-63];
+         return "+/="[ index - 62 ];
          break;
    }
 }
@@ -94,8 +94,10 @@ int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destS
          }
       }
    }
+
    if(destPos>=0)
       dest[destPos]=0;
+
    return(destPos);
 }
 
@@ -158,14 +160,17 @@ int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destS
             case '0'...'9':
                rawValue=(src[srcPos]-'0')+(26*2);
                break;
+            // Hasndle "+/="
             case '+':
-               rawValue=(src[srcPos]-'+')+(26*2)+10;
-               break;
+               // [fall-through]
             case '/':
-               rawValue=(src[srcPos]-'/')+(26*2)+10+1;
+               rawValue=(src[srcPos]-'/')+(26*2)+10;
+               break;
+            case '=':
+               rawValue=0;
                break;
             default:
-               rawValue=0;
+               return(-1);
                break;
          }
          value= (value<<6) | ( rawValue & 0x3f );
@@ -174,18 +179,19 @@ int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destS
          srcPos++;
       }
 
-      for(int i2=0; (i2<3) && (destPos+i2<(int)destSize); i2++)
+      for(int i2=0; ( i2 < 3 ) && (destPos+i2<(int)destSize); i2++)
       {
          dest[destPos+i2]= ( value >> ( (2-i2) * 8 ) )&0xff;
       }
       destPos+=3-reduced;
 
-      if(destPos>(int)destSize)
+      if( (destPos>(int)destSize) && ( srcPos<(int)srcSize ) )
       {
          destPos=-1;
          break;
       }
    }
+
    return(destPos);
 }
 

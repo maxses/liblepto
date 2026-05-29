@@ -60,7 +60,7 @@
          { abort(); };
 #else
    #define lAssert( assertion, ... ) if ( ! (assertion) ) \
-      { throw("Addertion wrong"); };
+      { throw("Assertion wrong: " #assertion); };
 #endif
 
 #if USE_FULL_ASSERT
@@ -159,7 +159,12 @@ const char* shrinkFileName( const char* const filename )
 #endif
 
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
-   #define lLog( ... ) lLogPretty( __FILE_NAME__, __LINE__, __VA_ARGS__ )
+   #if IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+      #define lLog( ... ) lLogPretty( __FILE_NAME__, __LINE__, __VA_ARGS__ ); \
+               logEventLoop();
+   #else
+      #define lLog( ... ) lLogPretty( __FILE_NAME__, __LINE__, __VA_ARGS__ )
+   #endif
 #else
    #define lLog( ... ) lLogSimple( __VA_ARGS__ )
 #endif

@@ -45,6 +45,7 @@ endif()
 set(
    headers
       include/lepto/ansi.h
+      include/lepto/base64.h
       include/lepto/lepto.h
       include/lepto/log.h
       include/lepto/logPrinter.h

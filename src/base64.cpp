@@ -21,12 +21,44 @@
 /*--- Declarations ---------------------------------------------------------*/
 
 
+#if IS_ENABLED( CONFIG_LEPTO_BASE64_STATIC_ALPHABET )
 /* static */
-const char *CBase64::alphabet =
+const char *CBase64::m_alphabet =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       "abcdefghijklmnopqrstuvwxyz"
       "0123456789+/=";
+#endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET
 
+
+#if IS_ENABLED( CONFIG_LEPTO_BASE64_STATIC_ALPHABET )
+
+char CBase64::alphabet(char index)
+{
+   return( m_alphabet[ index ] );
+}
+
+#else
+
+char CBase64::alphabet(char index)
+{
+   switch( index )
+   {
+      case 0 ... 25:
+         return 'A'+index;
+         break;
+      case 26 ... 51:
+         return 'a'+ ( index - 26 );
+         break;
+      case 52 ... 62:
+         return '0'+ ( index - 52 );
+         break;
+      default:
+         return "+/="[index-63];
+         break;
+   }
+}
+
+#endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET ELSE
 
 int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destSize) /**/
 {
@@ -48,7 +80,7 @@ int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destS
          // second output char.
          if(srcPos<(int)srcSize)
          {
-            dest[destPos++]=alphabet[ (value >> ((3-i1)*6)) & 0x3f ];
+            dest[destPos++]=alphabet( (value >> ((3-i1)*6)) & 0x3f );
          }
          else
             dest[destPos++]='=';
@@ -91,7 +123,7 @@ int CBase64::encode(const CByteArray &src, CString &dest) /**/
          // second output char.
          if(srcPos<(int)srcSize)
          {
-            dest+=alphabet[ (value >> ((3-i1)*6)) & 0x3f ];
+            dest+=alphabet( (value >> ((3-i1)*6)) & 0x3f );
          }
          else
             dest+='=';

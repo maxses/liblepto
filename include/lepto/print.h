@@ -12,10 +12,31 @@
  *--------------------------------------------------------------------------*/
 
 
+/*--- Includes -------------------------------------------------------------*/
+
+
+#include <lepto/lepto.h>
+
+
 /*--- Declarations ---------------------------------------------------------*/
 
 
-void hexDump(const void *buf, int size, bool printHeader=true );
+#if IS_ENABLED( CONFIG_LEPTO_HEX_DUMP_RANGE_COLOR )
+
+struct SHexDumpRange
+{
+   int start;
+   int size;
+   const char* colorCode;
+};
+
+#endif
+
+void hexDump(const void *buf, int size, bool printHeader=true
+   #if IS_ENABLED( CONFIG_LEPTO_HEX_DUMP_RANGE_COLOR )
+             , SHexDumpRange* range = nullptr
+   #endif
+);
 
 
 /*--- Fin ------------------------------------------------------------------*/

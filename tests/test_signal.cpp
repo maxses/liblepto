@@ -23,6 +23,14 @@
    #error "Either 'catch' or 'catch2' has to be installed"
 #endif
 
+#if 0
+   #undef CONFIG_LEPTO_SIGNAL_CHAIN
+   #define CONFIG_LEPTO_SIGNAL_NO_METHOD_AS_FUNCTION        0
+#else
+   #define CONFIG_LEPTO_SIGNAL_CHAIN                        1
+   #define CONFIG_LEPTO_SIGNAL_NO_METHOD_AS_FUNCTION        1
+#endif
+
 #include <lepto/signal.hpp>
 #include <lepto/signalPool.hpp>
 #include <lepto/signalPoolStatic.hpp>
@@ -198,6 +206,32 @@ TEST_CASE( "Signal", "[default]" )
       sig.eventLoop();
       
       REQUIRE( obj.getCounter() == START_VALUE + sigCount );
+   }
+
+   SECTION( "Sizes" )
+   {
+      CSignal<int, int> sig;
+
+      printf( "Size signal: %d\n", sizeof( sig ) );
+      printf( "Size functor: %d\n", sizeof( CFunctorMethodAsFunction<int, int> ) );
+      #if LEPTO_SIGNAL_DO_VIRTUAL
+         printf( "Virtual function is used\n" );
+      #else
+         printf( "Virtual function is NOT used\n" );
+      #endif
+
+      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+         printf( "Signal chain is supported\n" );
+      #else
+         printf( "Signal chain is NOT supported\n" );
+      #endif
+
+      #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
+         printf( "Connection is allocated\n" );
+      #else
+         printf( "Connection is NOT allocated\n" );
+      #endif
+
    }
 }
 

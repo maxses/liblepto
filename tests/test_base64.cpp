@@ -43,15 +43,15 @@ TEST_CASE( "Base64", "[default]" )
 
       {
          CBase64 b64;
-         CString encoded;
+         CString encodedStr;
          CByteArray ba;
-         encoded.allocate(1);
+         encodedStr.allocate(1);
 
-         b64.encode( CByteArray( data ), encoded );
-         printf("Encoded: %s\n", encoded.data());
-         REQUIRE ( encoded == "SGVsbG8gd29ybGQhIExvcmkgaXBzdW0gdW0gZGllIFdlbHQ=" );
+         b64.encode( CByteArray( data ), encodedStr );
+         printf("Encoded: %s\n", encodedStr.data());
+         REQUIRE ( encodedStr == "SGVsbG8gd29ybGQhIExvcmkgaXBzdW0gdW0gZGllIFdlbHQ=" );
 
-         b64.decode( encoded, ba);
+         b64.decode( encodedStr, ba);
          REQUIRE ( memcmp( ba.data(), data, ba.length()) == 0 );
       }
    }
@@ -149,8 +149,8 @@ TEST_CASE( "Base64", "[default]" )
          "8TeD45MYBIfOqIseuFjOrT==",
       };
       char dest1[200];
-
-      for( int i1=0; i1<sizeof(strings)/ sizeof(strings[0]); i1++ )
+      
+      for( int i1=0; i1< (int)( sizeof(strings) / sizeof(strings[0]) ); i1++ )
       {
          REQUIRE ( b64.decode( strings[i1], strlen(strings[i1]), (uint8_t*)dest1, 200 ) == 0x10 );
       }

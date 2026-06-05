@@ -212,8 +212,8 @@ TEST_CASE( "Signal", "[default]" )
    {
       CSignal<int, int> sig;
 
-      printf( "Size signal: %d\n", sizeof( sig ) );
-      printf( "Size functor: %d\n", sizeof( CFunctorMethodAsFunction<int, int> ) );
+      printf( "Size signal: %d\n", (int)sizeof( sig ) );
+      printf( "Size functor: %d\n", (int)sizeof( CFunctorMethodAsFunction<int, int> ) );
       #if LEPTO_SIGNAL_DO_VIRTUAL
          printf( "Virtual function is used\n" );
       #else

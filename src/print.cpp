@@ -70,11 +70,11 @@ void hexDump(const void *_buf, int size, bool printHeader /*=true*/
             #if IS_ENABLED( CONFIG_LEPTO_HEX_DUMP_RANGE_COLOR )
             if(range)
             {
-               for(int i1=0; range[i1].start>=0; i1++)
+               for(int i3=0; range[i3].start>=0; i3++)
                {
-                  if( ( off >= range[i1].start ) && ( off < range[i1].start + range[i1].size ) )
+                  if( ( off >= range[i3].start ) && ( off < range[i3].start + range[i3].size ) )
                   {
-                     printf( range[i1].colorCode );
+                     fputs( range[i3].colorCode, stdout );
                      break;
                   }
                }

@@ -155,6 +155,46 @@ TEST_CASE( "Base64", "[default]" )
          REQUIRE ( b64.decode( strings[i1], strlen(strings[i1]), (uint8_t*)dest1, 200 ) == 0x10 );
       }
    }
+   
+   SECTION( "Cornercases decode" )
+   {
+      CBase64 b64;
+      const char* strings[]{
+         "vjdY+AAEABkASgHQ"
+      };
+      const uint8_t* decodings[]{
+         (uint8_t[]){0xbe, 0x37, 0x58, 0xf8, 0x00, 0x04, 0x00, 0x19, 0x00, 0x4a, 0x01, 0xd0 }
+      };
+      char dest1[200];
+      
+      for( int i1=0; i1< (int)( sizeof(strings) / sizeof(strings[0]) ); i1++ )
+      {
+         REQUIRE ( b64.decode( strings[i1], strlen(strings[i1]), (uint8_t*)dest1, 200 ) == 0xC );
+         REQUIRE ( memcmp( decodings[i1], dest1, 0xC ) == 0 );
+      }
+   }
+   
+   SECTION( "Cornercases encode" )
+   {
+      CBase64 b64;
+      // The last character was calculated for invalid data
+      const char* strings[]{
+          "SBAAAQACAQAGAAAA5gcBEQ=="
+      };
+      const uint8_t* decodings[]{
+         (uint8_t[]){ 0x48, 0x10, 0x00, 0x01, 0x00, 0x02, 0x01, 0x00, 0x06, 0x00, 0x00, 0x00, 0xe6, 0x07, 0x01, 0x11 }
+      };
+      char dest1[200];
+      
+      for( int i1=0; i1< (int)( sizeof(strings) / sizeof(strings[0]) ); i1++ )
+      {
+         REQUIRE ( b64.encode( decodings[i1], 0x10, (char*)dest1, 200 ) == 0x18 );
+         printf("\n\nEncoded A: %s\n", dest1);
+         
+         REQUIRE ( strcmp( strings[i1], dest1 ) == 0 );
+      }
+   }
+   
 }
 
 

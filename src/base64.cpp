@@ -60,6 +60,27 @@ char CBase64::alphabet(char index)
 
 #endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET ELSE
 
+uint32_t CBase64::triPortion( const uint8_t *src, size_t srcSize )
+{
+   uint32_t value=0;
+   
+   for(uint32_t i1=0; i1<3; i1++)
+   {
+      value=(value<<8) |
+              ( i1 < srcSize
+                   ?(uint8_t)src[ i1 ] : 0 );
+   }
+   
+   return( value );
+}
+
+
+int CBase64::alphabetIndex(int value, int pos)
+{
+   return( (value >> ((3-pos)*6)) & 0x3f );
+}
+
+
 int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destSize) /**/
 {
    int destPos=0, srcPos=0;
@@ -67,11 +88,7 @@ int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destS
 
    while(srcPos<(int)srcSize)
    {
-      value = 0;
-      for(uint32_t i1=0; i1<3; i1++)
-      {
-         value=(value<<8) | (uint8_t)src[srcPos+i1];
-      }
+      value = triPortion( &src[ srcPos ], srcSize - srcPos );
 
       for(uint32_t i1=0; i1<4; i1++)
       {
@@ -80,7 +97,7 @@ int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destS
          // second output char.
          if(srcPos<(int)srcSize)
          {
-            dest[destPos++]=alphabet( (value >> ((3-i1)*6)) & 0x3f );
+            dest[destPos++]=alphabet( alphabetIndex(value, i1) );
          }
          else
             dest[destPos++]='=';
@@ -110,13 +127,7 @@ int CBase64::encode(const CByteArray &src, CString &dest) /**/
 
    while(srcPos<(int)srcSize)
    {
-      value = 0;
-      for(int i1=0; i1<3; i1++)
-      {
-         value=(value<<8) |
-               ( ( srcPos+i1 ) < srcSize
-                  ?(uint8_t)src.at(srcPos+i1):0);
-      }
+      value = triPortion( (uint8_t*)&src.data()[ srcPos ], srcSize - srcPos );
 
       for(uint32_t i1=0; i1<4; i1++)
       {
@@ -125,7 +136,7 @@ int CBase64::encode(const CByteArray &src, CString &dest) /**/
          // second output char.
          if(srcPos<(int)srcSize)
          {
-            dest+=alphabet( (value >> ((3-i1)*6)) & 0x3f );
+            dest+=alphabet( alphabetIndex(value, i1) );
          }
          else
             dest+='=';
@@ -164,7 +175,7 @@ int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destS
             case '+':
                // [fall-through]
             case '/':
-               rawValue=(src[srcPos]-'/')+(26*2)+10;
+               rawValue=(src[srcPos]-'+')+(26*2)+10;
                break;
             case '=':
                rawValue=0;

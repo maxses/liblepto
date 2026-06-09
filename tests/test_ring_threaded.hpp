@@ -4,7 +4,7 @@
  * @brief      test thread safety for CRing::tryReserve()
  *
  * @date       20250801
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

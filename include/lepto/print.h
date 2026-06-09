@@ -6,7 +6,7 @@
  * @brief   Helper functions to print stuff
  *
  * @date      20150711
- * @author    Maximilian Seesslen <mes@seesslen.net>
+ * @author    Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

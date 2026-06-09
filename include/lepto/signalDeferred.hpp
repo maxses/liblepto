@@ -9,7 +9,7 @@
  * in applications event loop.
  *
  * @date   20260321
- * @author Maximilian Seesslen <mes@seesslen.net>
+ * @author Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

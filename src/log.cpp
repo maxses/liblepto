@@ -13,7 +13,7 @@
  *    lFatal(msg, ... )
  *
  * @date      20140107
- * @author    Maximilian Seesslen <mes@seesslen.net>
+ * @author    Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

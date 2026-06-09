@@ -21,7 +21,7 @@
  * the correct "1".
  *
  * @date       20250413
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

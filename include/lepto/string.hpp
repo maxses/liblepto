@@ -12,7 +12,7 @@
  * This class is used in 'libfosh'.
  *
  * @date   20150622
- * @author Maximilian Seesslen <mes@seesslen.net>
+ * @author Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

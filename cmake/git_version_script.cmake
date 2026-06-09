@@ -7,7 +7,7 @@
 #				if the content differs to the current content. So there are no
 #				unneccessary rebuilds.
 #
-# \author	Maximilian Seesslen <mes@seesslen.net>
+# \author	Maximilian Seesslen <src@seesslen.net>
 #
 #-----------------------------------------------------------------------------
 

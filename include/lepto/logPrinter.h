@@ -8,7 +8,7 @@
  * Should not be used directly. See log.h for loging mechanisms.
  *
  * @date      20260416
- * @author    Maximilian Seesslen <mes@seesslen.net>
+ * @author    Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

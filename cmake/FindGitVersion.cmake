@@ -21,7 +21,7 @@
 #           It is needed to find the matching elf file for debugging an
 #           flashed firmware. Just the same firmware-version is not sufficient.
 #
-# \author	Maximilian Seesslen <mes@seesslen.net>
+# \author	Maximilian Seesslen <src@seesslen.net>
 #
 #-----------------------------------------------------------------------------
 

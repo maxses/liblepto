@@ -7,7 +7,7 @@
 ///         -
 //
 /// \date   20250202
-/// \author Maximilian Seesslen <mes@seesslen.net>
+/// \author Maximilian Seesslen <src@seesslen.net>
 ///
 //----------------------------------------------------------------------------
 

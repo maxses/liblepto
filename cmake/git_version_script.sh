@@ -21,7 +21,7 @@
 #				The script also iterates through all submodules and generates
 #				defines like 'GIT_LONG_<submodule>'.
 #
-# \author	Maximilian Seesslen <mes@seesslen.net>
+# \author	Maximilian Seesslen <src@seesslen.net>
 #
 #-----------------------------------------------------------------------------
 

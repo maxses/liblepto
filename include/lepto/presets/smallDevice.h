@@ -20,6 +20,8 @@
 #define CONFIG_LEPTO_LOG_PRETTY_PRINT              0
 #define CONFIG_LEPTO_RING_DOWNSIZE                 1
 
+#define LEPTO_CONFIGURED                  1
+
 
 //---fin-----------------------------------------------------------------------
 #endif // ? ! LEPTO_PRESET_CONFIG_SMALL_DEVICE_H

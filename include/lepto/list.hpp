@@ -106,6 +106,8 @@
 template <typename T>
 class CList
 {
+   friend class CString;
+
    private:
       T* m_buffers;
       #if ! IS_ENABLED( CONFIG_LEPTO_RING_NO_THREADS )

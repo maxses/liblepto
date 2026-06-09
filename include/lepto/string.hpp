@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <stdio.h>            // vsnprintf
 #include <lepto/lepto.h>      // IS_ENABLED
+#include <lepto/list.hpp>       // CONFIG_LEPTO_LIST_AS_STRING
 
 
 /*--- Defines --------------------------------------------------------------*/
@@ -44,6 +45,171 @@
 
 /*--- Declarations ---------------------------------------------------------*/
 
+
+#if 1
+
+class CString: private CList<char>
+{
+
+   public:
+      int length() const
+      {
+         return( count() );
+      }
+      char* data() const
+      {
+         lAssert( m_backPos >= m_frontPos );
+         // TBD: check overflow
+         return( getBuffers() );
+      }
+      CString( )
+      {}
+      CString( const char* str ): CList( strlen(str) + 1 )
+      {
+         memset( getBuffers(), 0, getMaxEntries() );
+         strcpy( getBuffers(), str);
+         m_backPos=strlen( getBuffers() );
+      }
+      //CString(const CString&) = delete;
+
+      CString( const CString& str ): CList( str.getMaxEntries() )
+      {
+         memcpy( getBuffers(), str.getBuffers(), str.length() );
+         m_backPos=str.m_backPos;
+      }
+      CString& operator +=(char c)
+      {
+         push_back( c );
+         // No space for '0'?
+         if( length() >= getMaxEntries() )
+         {
+            expand();
+         }
+         m_buffers[m_backPos]=0;
+         return( *this );
+      }
+      CString& operator +=(const char* str)
+      {
+         // Not very efficient
+         for(int i1=0; str[i1]; i1++)
+            *this+=str[i1];
+
+         return( *this );
+      }
+      CString& operator +=( const CString& str)
+      {
+         // Not very efficient
+         int len=str.length();
+         for(int i1=0; i1<len; i1++)
+            *this+=str[i1];
+         return( *this );
+      }
+      CString operator +( const CString& strB )
+      {
+         CString str( *this );
+         str+=strB;
+         //push_back( c );
+         return( str );
+      }
+      char at(int pos) const
+      {
+         return( *getEntry( pos ) );
+      };
+      char operator[](int pos) const
+      {
+         return( *getEntry( pos ) );
+      };
+      bool operator==(const char* str) const
+      {
+         return( strcmp( getBuffers(), str ) == 0 );
+      }
+      void remove(int pos, int size)
+      {
+         if(pos<0)
+         {
+            pos=length()+pos;
+            /*
+            m_backPos-=size;
+            if( m_backPos < 0 )
+            {
+               m_backPos=0;
+            }
+            memset( &(getBuffers()[m_backPos]), 0, getMaxEntries() - m_backPos);
+            */
+         }
+
+         if( pos + size > length() )
+         {
+            getBuffers()[pos]=0;
+            m_backPos=pos;
+         }
+         else
+         {
+            memcpy( &(getBuffers()[pos]), &(getBuffers()[pos+size]),
+                     length()-pos-size );
+
+            // Caution: probably no sign available in position type
+            if( m_backPos >= size )
+            {
+               m_backPos-=size;
+            }
+            else
+            {
+               m_backPos=0;
+            }
+            //memset( &(getBuffers()[m_backPos]), 0, getMaxEntries() - m_backPos);
+         }
+         m_buffers[m_backPos]=0;
+      }
+      void operator =(const char* str)
+      {
+         if( getMaxEntries() )
+         {
+            delete[] m_buffers;
+            m_frontPos = m_backPos = 0;
+            m_maxEntries = m_maxEntriesDuplicated = 0;
+         }
+         allocate( strlen(str) + 1 );
+         strcpy( m_buffers, str);
+         m_frontPos = 0;
+         m_backPos = strlen(str);
+         return;
+      }
+      CString& operator=(CString const&) = delete;
+      void allocate(int size)
+      {
+         return( CList::allocate( size ) );
+      }
+      void clear()
+      {
+         CList::clear();
+         if( m_maxEntries )
+         {
+            m_buffers[0]=0;
+         }
+      }
+};
+
+class CByteArray: public CString
+{
+   public:
+      CByteArray( const char* str ): CString(str)
+      {
+      }
+
+      CByteArray( )
+      {
+      }
+
+   /*
+      int length() const
+      {
+         return( count() );
+      }
+   */
+};
+
+#else
 
 #if IS_ENABLED( CONFIG_LEPTO_CCHAR )
 
@@ -596,6 +762,7 @@ CBaseString<T>& CBaseString<T>::remove(int pos, int number)
    return(*this);
 }
 
+#endif
 
 /*--- Fin ------------------------------------------------------------------*/
 #endif // ? ! LEPTO_STRING_HPP

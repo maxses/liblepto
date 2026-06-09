@@ -26,6 +26,11 @@
 
 /*--- Implementation -------------------------------------------------------*/
 
+#if 1
+
+
+#else
+
 
 CString::~CString()
 {
@@ -63,6 +68,8 @@ CBaseString<T> &CBaseString<T>::insert(int insertPos, T _char)
 
 
 template CBaseString<char> &CBaseString<char>::insert(int pos, char _char);
+
+#endif
 
 
 /*--- Fin ------------------------------------------------------------------*/

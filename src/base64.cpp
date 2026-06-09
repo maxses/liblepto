@@ -241,23 +241,23 @@ lsize_t CBase64::decode(const CString &src, CByteArray &dest)
       reduced=0;
       for(i1=0; i1<4; i1++)
       {
-         unsigned char cell=src.cell( srcPos );
-         switch( cell )
+         unsigned char ch=src.at( srcPos );
+         switch( ch )
          {
             case 'A'...'Z':
-               rawValue=(cell-'A');
+               rawValue=(ch-'A');
                break;
             case 'a'...'z':
-               rawValue=(cell-'a')+26;
+               rawValue=(ch-'a')+26;
                break;
             case '0'...'9':
-               rawValue=(cell-'0')+(26*2);
+               rawValue=(ch-'0')+(26*2);
                break;
             case '+':
-               rawValue=(cell-'+')+(26*2)+10;
+               rawValue=(ch-'+')+(26*2)+10;
                break;
             case '/':
-               rawValue=(cell-'/')+(26*2)+10+1;
+               rawValue=(ch-'/')+(26*2)+10+1;
                break;
             default:
                rawValue=0;

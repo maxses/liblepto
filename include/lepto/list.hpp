@@ -35,12 +35,16 @@
  * Configs: CONFIG_LEPTO_RING_DEFAULT_SIZE
  *          CONFIG_LEPTO_RING_SUPPORT_VOLATILE
  *             Automatically pop entries from front when buffer is full and new
- *             value is going to be pushed
+ *             value is going to be pushed. To activate this behaviour, the
+ *             method "setVolatile( true )" has to be called.
  *          CONFIG_LEPTO_RING_DOWNSIZE
  *             Can safe around 380 bytes on an stm32f042 application.
+ *          CONFIG_LEPTO_LIST_RESIZABLE
+ *             Support automatic expanding os lists when pushing data to a
+ *             full list. This can be decactivated by calling the method
+ *             "setExpandable( false )".
  *
- * The behaviour is similar to QList/std::list but the list does not expand.
- * It has an fixed sizee.
+ * The behaviour is similar to QList/std::list.
  *
  * @date   20141201
  * @author Maximilian Seesslen <src@seesslen.net>
@@ -124,6 +128,10 @@ class CList
       #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
       bool m_volatile;
       #endif // ? BIWAK_SUPPORT_VOLATILE_RING
+
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+      bool m_resizable = true;
+      #endif
 
    public:
 
@@ -350,6 +358,10 @@ class CList
          return( m_maxEntries );
       }
       
+      T* getBuffers() const
+      {
+         return( m_buffers );
+      }
       /**
        * @brief  Get the number of entries that can pushed till ringbuffer is full
        */
@@ -478,6 +490,11 @@ class CList
        */
       bool isFull() const
       {
+         // Avoid division by zero via modulo 0
+         if( !m_maxEntries )
+         {
+            return( true );
+         }
          return(  isFull( m_frontPos, m_backPos ) );
       }
       
@@ -557,6 +574,24 @@ class CList
       {
          front=mid;
       }
+
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+
+      /**
+       * @brief Set weather the list can be resized automatically or not
+       *
+       * E.g. Interrupt service routines must not allocate memory. Buffers sohuld
+       * not be allowed to automatically resize.
+       *
+       * @param resizable true: List will get resized if necessary
+       */
+      void setResizable( bool resizable )
+      {
+         m_resizable = resizable;
+      }
+
+      #endif
+
       /**
        * @brief Find element in list.
        *
@@ -590,6 +625,9 @@ class CList
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
       bool expand( void );
       #endif
+
+      void allocate( int size );
+
 };
 
 
@@ -743,17 +781,22 @@ bool CList<T>::push_back(const T value)
    if( index == (ringIndex_t)-1 )
    {
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         if( m_resizable )
+         {
             expand();
             if( (index=tryReserve()) == (ringIndex_t)-1 )
             {
                return(false);
             }
-      #else
+         }
+         else
+      #endif
+         {
          #if IS_ENABLED( CONFIG_LEPTO_LIST_ABORT_FAILING_PUSH )
             abort();
          #endif
          return(false);
-      #endif
+         }
    }
    *reservedEntry(index)=value;
    pushReserved( index );
@@ -900,6 +943,11 @@ typename CList<T>::CIterator& CList<T>::CIterator::operator +=(int number)
 template <typename T>
 bool CList<T>::expand( )
 {
+   if( !m_resizable )
+   {
+      return(false);
+   }
+
    T *oldBuffers=m_buffers;
    int size=count();
    m_maxEntries+= CONFIG_LEPTO_LIST_INCREMENT;
@@ -919,6 +967,18 @@ bool CList<T>::expand( )
 };
 
 #endif // ? CONFIG_LEPTO_LIST_RESIZABLE
+
+
+template <typename T>
+void CList<T>::allocate( int size )
+{
+   m_maxEntries = size;
+   m_buffers=new T[ m_maxEntries ];
+   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+   m_maxEntriesDuplicated= m_maxEntries * DUPLICATE_FACTOR;
+   #endif
+}
+
 
 template <typename T> template<typename C>
 typename CList<T>::CIterator CList<T>::find(const C& candidate)

@@ -130,7 +130,6 @@ class CString: private CList<char>
       CString& operator +=(const char* str)
       {
          tryAppend( str );
-
          return( *this );
       }
       CString& operator +=( const CString& str)

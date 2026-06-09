@@ -47,6 +47,7 @@ subDirectory()
       DIRTY="$(git diff --quiet --exit-code || echo +)"
       TAG="$(git describe --tags  --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*')"
       SHA="$(git log --pretty=format:'%h' -n 1)"
+      SHORT_SHA="${SHA:0:4}"
       DISTANCE="$(git rev-list HEAD ^${TAG} --count)"
       
       if [ "$format" == "text" ]; then
@@ -57,6 +58,7 @@ subDirectory()
          echo "#define GIT_SHA_$project \"$(git log --pretty=format:'%h' -n 1)\""
          echo "#define GIT_SHA_INT_$project  0x$(git log --pretty=format:'%h' -n 1)"
          echo "#define GIT_SHORT_$project \"${TAG}-${DISTANCE}${DIRTY}\""
+         echo "#define GIT_SEMI_$project \"${TAG}-${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
          echo "#define GIT_REV_$project \"$(git describe --tags --dirty --match 'v[0-9]*.[0-9]*.[0-9]*')\""
          echo "#define GIT_BRANCH_$project \"$(git symbolic-ref --short HEAD)\""
          echo "#define VERSION_CODE_$project ${VERSION_CODE}"

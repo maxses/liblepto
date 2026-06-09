@@ -32,17 +32,6 @@ class CSignalDeferred: public CSignal<sigReturn, sigTypes...>, CEventLoop
 {
    private:
 
-#if 0
-      #if LEPTO_SIGNAL_DO_VIRTUAL
-         CFunctor<sigReturn, sigTypes...> *functor;
-      #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
-         const CFunctorFunction<sigReturn, sigTypes...> *functor;
-      #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
-         const CFunctorMethod<sigReturn, slotClass, sigTypes...> *functor;
-      #else
-         #error "Could not check signal configuration"
-      #endif
-#endif
       CRing< STuple<sigTypes...> > p;
 
    public:

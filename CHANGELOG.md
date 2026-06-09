@@ -1,3 +1,11 @@
+# Changes for v1.2.0
+
+* Base64: Fixed de-/encoding in some cornercases
+* hexdump: Support showing different areas in different colors
+* CBase64: Support for CONFIG_LEPTO_BASE64_STATIC_ALPHABET
+* Signal: Use correct CFunctorMethod depending on configuration
+* Minor fixes
+
 # Changes for v1.1.0
 
 * Minor fixes
@@ -22,7 +30,7 @@
 * [#685] Support for expandable lists
 * [#684] Add unit tests for text strings
 * Avoid signed division to shrink binary size
-* minor fixes
+* Minor fixes
 
 # Changes for v0.6.0
 
@@ -39,23 +47,23 @@
 
 # Changes for v0.5.1
 
-* minor changes and fixes
+* Minor changes and fixes
 
 # Changes for v0.5.0
 
 * GitVersion: create files per instance
-* minor fixes
-* removed tdt; its an seperate library now
-* added macro IS_SET()
+* Minor fixes
+* Removed tdt; its an seperate library now
+* Added macro IS_SET()
 
 # Changes for v0.4.2
 
-* fixed compiling on older distributions
-* tdt: updated commands/objects/units
+* Fixed compiling on older distributions
+* Tdt: updated commands/objects/units
 
 # Changes for v0.4.1
 
-* fixed using canpong test
+* Fixed using canpong test
 
 # Changes for v0.4.0
 

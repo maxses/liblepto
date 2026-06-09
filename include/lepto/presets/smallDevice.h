@@ -22,6 +22,8 @@
 
 #define LEPTO_CONFIGURED                  1
 
+#define LEPTO_CONFIGURED                  1
+
 
 //---fin-----------------------------------------------------------------------
 #endif // ? ! LEPTO_PRESET_CONFIG_SMALL_DEVICE_H

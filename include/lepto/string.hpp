@@ -58,6 +58,8 @@ class CString: private CList<char>
       }
       char* data() const // Not a "const char*"; e.g. libfosh manipulates the string
       {
+         lAssert( m_backPos >= m_frontPos );
+         // TBD: check overflow
          lHostAssert( m_backPos >= m_frontPos );
          lHostAssert( m_frontPos == 0 );
 
@@ -95,7 +97,6 @@ class CString: private CList<char>
       {
          push_back( c );
          push_back( 0 );
-         //m_buffers[m_backPos]=0;
          return( *this );
       };
 

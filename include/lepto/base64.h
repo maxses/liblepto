@@ -38,11 +38,11 @@ class CBase64
       #endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET
    public:
       static char alphabet(char index);
-      static int alphabetIndex(int value, int pos);
-      static uint32_t triPortion( const uint8_t *src, size_t srcSize );
-      static int encode(const uint8_t *src, size_t srcSize, char *dest, size_t destSize);
+      static char alphabetIndex(int value, int pos);
+      static uint32_t triPortion( const uint8_t *src, lsize_t srcSize );
+      static int encode(const uint8_t *src, lsize_t srcSize, char *dest, lsize_t destSize);
       static int encode(const CByteArray &src, CString &dest);
-      static int decode(const char *src, size_t srcSize, uint8_t *dest, size_t destSize);
+      static int decode(const char *src, lsize_t srcSize, uint8_t *dest, lsize_t destSize);
       static int decode(const CString &src, CByteArray &dest);
 };
 

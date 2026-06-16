@@ -26,6 +26,9 @@
 #-----------------------------------------------------------------------------
 
 
+# set -e -u
+
+
 if [ ! -e ".git" ]; then
    cd ..
 fi
@@ -43,7 +46,7 @@ subDirectory()
    project=$2
    
    pushd $submodule &> /dev/null
-   
+      git describe --tags &> /dev/null || ( echo "Error: No version for $PWD" >&2 )
       DIRTY="$(git diff --quiet --exit-code || echo +)"
       TAG="$(git describe --tags  --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*')"
       SHA="$(git log --pretty=format:'%h' -n 1)"

@@ -66,7 +66,7 @@ TEST_CASE( "Base64", "[default]" )
          int destlength=0;
          while( strlen( src ) )
          {
-            destlength+=b64.decode( src, MIN(4, strlen(src)), (uint8_t*)dst, 3 );
+            destlength+=b64.decode( src, MIN(4, (lsize_t)strlen(src)), (uint8_t*)dst, 3 );
             src+=4;
             dst+=3;
          }
@@ -84,27 +84,27 @@ TEST_CASE( "Base64", "[default]" )
          // Zero-length data
          b64.encode( (const uint8_t*)"", 0, (char*)dest1, 100 );
          REQUIRE ( strlen(dest1) == 0 );
-         REQUIRE ( b64.decode( dest1, strlen(dest1), (uint8_t*)dest2, 100 ) == 0 );
+         REQUIRE ( b64.decode( dest1, (lsize_t)strlen(dest1), (uint8_t*)dest2, 100 ) == 0 );
 
          // One byte data
          b64.encode( (const uint8_t*)"A", 1, (char*)dest1, 100 );
          REQUIRE ( strlen(dest1) == 4 );
-         REQUIRE ( b64.decode( dest1, strlen(dest1), (uint8_t*)dest2, 100 ) == 1 );
+         REQUIRE ( b64.decode( dest1, (lsize_t)strlen(dest1), (uint8_t*)dest2, 100 ) == 1 );
 
          // Two bytes data
          b64.encode( (const uint8_t*)"AB", 2, (char*)dest1, 100 );
          REQUIRE ( strlen(dest1) == 4 );
-         REQUIRE ( b64.decode( dest1, strlen(dest1), (uint8_t*)dest2, 100 ) == 2 );
+         REQUIRE ( b64.decode( dest1, (lsize_t)strlen(dest1), (uint8_t*)dest2, 100 ) == 2 );
 
          // Three bytes data
          b64.encode( (const uint8_t*)"ABC", 3, (char*)dest1, 100 );
          REQUIRE ( strlen(dest1) == 4 );
-         REQUIRE ( b64.decode( dest1, strlen(dest1), (uint8_t*)dest2, 100 ) == 3 );
+         REQUIRE ( b64.decode( dest1, (lsize_t)strlen(dest1), (uint8_t*)dest2, 100 ) == 3 );
 
          // For bytes data
          b64.encode( (const uint8_t*)"ABCD", 4, (char*)dest1, 100 );
          REQUIRE ( strlen(dest1) == 8 );
-         REQUIRE ( b64.decode( dest1, strlen(dest1), (uint8_t*)dest2, 100 ) == 4 );
+         REQUIRE ( b64.decode( dest1, (lsize_t)strlen(dest1), (uint8_t*)dest2, 100 ) == 4 );
       }
    }
 
@@ -152,7 +152,7 @@ TEST_CASE( "Base64", "[default]" )
       
       for( int i1=0; i1< (int)( sizeof(strings) / sizeof(strings[0]) ); i1++ )
       {
-         REQUIRE ( b64.decode( strings[i1], strlen(strings[i1]), (uint8_t*)dest1, 200 ) == 0x10 );
+         REQUIRE ( b64.decode( strings[i1], (lsize_t)strlen(strings[i1]), (uint8_t*)dest1, 200 ) == 0x10 );
       }
    }
    
@@ -168,7 +168,7 @@ TEST_CASE( "Base64", "[default]" )
       
       for( int i1=0; i1< (int)( sizeof(strings) / sizeof(strings[0]) ); i1++ )
       {
-         REQUIRE ( b64.decode( strings[i1], strlen(strings[i1]), (uint8_t*)dest1, 200 ) == 0xC );
+         REQUIRE ( b64.decode( strings[i1], (lsize_t)strlen(strings[i1]), (uint8_t*)dest1, 200 ) == 0xC );
          REQUIRE ( memcmp( decoding, dest1, 0xC ) == 0 );
       }
    }

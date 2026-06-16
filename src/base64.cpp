@@ -60,11 +60,11 @@ char CBase64::alphabet(char index)
 
 #endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET ELSE
 
-uint32_t CBase64::triPortion( const uint8_t *src, size_t srcSize )
+uint32_t CBase64::triPortion( const uint8_t *src, lsize_t srcSize )
 {
    uint32_t value=0;
    
-   for(uint32_t i1=0; i1<3; i1++)
+   for(lsize_t i1=0; i1<3; i1++)
    {
       value=(value<<8) |
               ( i1 < srcSize
@@ -75,15 +75,16 @@ uint32_t CBase64::triPortion( const uint8_t *src, size_t srcSize )
 }
 
 
-int CBase64::alphabetIndex(int value, int pos)
+char CBase64::alphabetIndex(int value, int pos)
 {
    return( (value >> ((3-pos)*6)) & 0x3f );
 }
 
 
-int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destSize) /**/
+int CBase64::encode(const uint8_t *src, lsize_t srcSize, char *dest, lsize_t destSize) /**/
 {
-   int destPos=0, srcPos=0;
+   lsize_t destPos=0;
+   lsize_t srcPos=0;
    uint32_t value;
 
    while(srcPos<(int)srcSize)
@@ -148,7 +149,7 @@ int CBase64::encode(const CByteArray &src, CString &dest) /**/
 }
 
 
-int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destSize)
+int CBase64::decode(const char *src, lsize_t srcSize, uint8_t *dest, lsize_t destSize)
 {
    int destPos=0, srcPos=0, i1, reduced;
    uint32_t value;
@@ -207,12 +208,12 @@ int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destS
 }
 
 
-int CBase64::decode(const CString &src, CByteArray &dest)
+lsize_t CBase64::decode(const CString &src, CByteArray &dest)
 {
    int srcPos=0, i1, reduced;
    uint32_t value;
    uint32_t rawValue;
-   int srcSize=src.length();
+   lsize_t srcSize=src.length();
 
    while(srcPos<(int)srcSize)
    {
@@ -257,7 +258,7 @@ int CBase64::decode(const CString &src, CByteArray &dest)
       */
 
       for(int i2=0; i2 < (3-reduced) ; i2++)
-         dest+= ( value >> ( (2-i2) * 8 ) )&0xff;
+         dest+= ( char )( ( value >> ( (2-i2) * 8 ) ) & 0xff );
    }
    return(dest.length());
 }

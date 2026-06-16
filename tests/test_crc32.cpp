@@ -45,8 +45,8 @@ TEST_CASE( "CRC32", "[default]" )
       {
          crc32_t crc;
          crc=crc32Init();
-         crc=crc32Update(crc, data1, strlen(data1));
-         crc=crc32Update(crc, data2, strlen(data2));
+         crc=crc32Update(crc, data1, (lsize_t)strlen(data1));
+         crc=crc32Update(crc, data2, (lsize_t)strlen(data2));
          crc=crc32Finalize(crc);
          
          REQUIRE ( crc == 0x1C291CA3 );
@@ -55,8 +55,8 @@ TEST_CASE( "CRC32", "[default]" )
       {
          crc32_t crc;
          crc=crc32MpegInit();
-         crc=crc32MpegUpdate(crc, data1, strlen(data1));
-         crc=crc32MpegUpdate(crc, data2, strlen(data2));
+         crc=crc32MpegUpdate(crc, data1, (lsize_t)strlen(data1));
+         crc=crc32MpegUpdate(crc, data2, (lsize_t)strlen(data2));
          crc=crc32MpegFinalize(crc);
          
          REQUIRE ( crc == 0x94E58351 );
@@ -64,7 +64,7 @@ TEST_CASE( "CRC32", "[default]" )
       
       {
          crc32_t crc=0;
-         crc = calcCrc32( data, strlen(data) );
+         crc = calcCrc32( data, (lsize_t)strlen(data) );
          
          REQUIRE ( crc ==  0x1C291CA3 );
       }

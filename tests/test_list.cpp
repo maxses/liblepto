@@ -208,7 +208,7 @@ TEST_CASE( "List", "[default]" )
       ring.setVolatile(true);
 
       for(int i1=0; i1<4; i1++)
-         ring.push_back(i1+1);
+         ring.push_back( (float)(i1+1) );
 
       // lHint << "IV: " << ring.average();
       printf("Count: %d\n", ring.count() );
@@ -220,7 +220,7 @@ TEST_CASE( "List", "[default]" )
       #endif
             
       for(int i1=0; i1<5; i1++)
-         ring.push_back(i1+1);
+         ring.push_back( (float)(i1+1) );
 
       // lHint << "IV: " << ring.average();
       // lHint << "SV: " << ( (    2.0+3.0+4.0+5.0 ) / 4.0 );

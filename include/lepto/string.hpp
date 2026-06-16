@@ -99,9 +99,9 @@ class CBaseString
    private:
       //static const T * const staticZeroString;
       #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
-      int m_length;
+      lsize_t m_length;
       #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
-      int m_maxSize;
+      lsize_t m_maxSize;
 
    public:
       constexpr CBaseString();
@@ -119,12 +119,12 @@ class CBaseString
          checkSpace(r.length(), false);
          memcpy(m_buf, r.m_buf, r.length()+1);
          #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
-            m_length=strlen(m_buf);
+            m_length=(lsize_t)strlen(m_buf);
          #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
          return( *this );
       }
       void clear();
-      int length() const
+      lsize_t length() const
       {
          #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
             return( m_length );
@@ -132,11 +132,11 @@ class CBaseString
             return( strlen(m_buf) );
          #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
       }
-      int maxLength() const
+      lsize_t maxLength() const
       {
          return(m_maxSize-1);
       }
-      int maxSize() const
+      lsize_t maxSize() const
       {
          return(m_maxSize);
       }
@@ -162,7 +162,7 @@ class CBaseString
        * @param   doPreserve  If set the the old data will be copied when
        *                      reallocating space.
        */
-      void checkSpace(int length, bool doPreserve = true );
+      void checkSpace( lsize_t length, bool doPreserve = true );
 
       /**
        * @brief   Cut the sttring at a position
@@ -268,10 +268,10 @@ class CString: public CBaseString<char>
 
       CString& operator= (const char* r)
       {
-         checkSpace( strlen(r), false);
+         checkSpace( (lsize_t)strlen(r), false);
          memcpy(m_buf, r, strlen(r)+1);
          #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
-            m_length=strlen(m_buf);
+            m_length=(lsize_t)strlen(m_buf);
          #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
          return( *this );
       }
@@ -280,14 +280,14 @@ class CString: public CBaseString<char>
       int printf(const char format[], ...)
       {
          va_list va;
-         int newSize;
-         int oldLength=0; // length();
+         lsize_t newSize;
+         lsize_t oldLength=0; // length();
 
          va_start(va, format);
          // the +32 is not the gap, its the assumed arguments overhead
-         checkSpace( length() + strlen(format) + 32 );
+         checkSpace( length() + (lsize_t)strlen(format) + 32 );
          newSize=vsnprintf(&data()[oldLength], maxSize() - oldLength, format, va);
-         if(newSize>maxLength()+oldLength)
+         if( newSize > maxLength() + oldLength )
          {
             while(1)
             {}
@@ -377,7 +377,7 @@ constexpr CBaseString<T>::CBaseString()
 template <typename T>
 CBaseString<T>::CBaseString(const T *buf)
 {
-   unsigned int i1=strlen(buf)+1;
+   lsize_t i1=(lsize_t)strlen(buf)+1;
    allocate(i1);
    memcpy(m_buf, buf, i1);
    #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
@@ -441,10 +441,10 @@ void CBaseString<T>::allocate(int size)
 
 
 template <typename T>
-void CBaseString<T>::checkSpace(int newLength, bool doPreserve /*=true*/ )
+void CBaseString<T>::checkSpace(lsize_t newLength, bool doPreserve /*=true*/ )
 {
    T *oldBuf=m_buf;
-   int oldLength=length();
+   lsize_t oldLength=length();
    
    // We need size+1 to keep a zero
    if( (newLength+1) > m_maxSize )
@@ -510,11 +510,16 @@ CBaseString<T> &CBaseString<T>::operator <<(const T _char)
    return( ( (*this) += _char ) );
 }
 
-
+/*
+operator lsize_t( size_t v )
+{
+   return(0);
+}
+*/
 template <typename T>
 CBaseString<T> &CBaseString<T>::operator +=(const T *_pChar)
 {
-   return( append(_pChar, strlen(_pChar)) );
+   return( append(_pChar, (lsize_t)strlen(_pChar)) );
 }
 
 
@@ -585,7 +590,7 @@ CBaseString<T>& CBaseString<T>::remove(int pos, int number)
          m_buf[i1]=m_buf[i1+number];
       }
       #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
-         m_length=strlen( m_buf );
+         m_length=(lsize_t)strlen( m_buf );
       #endif // ? CONFIG_LEPTO_STRING_CACHED_LENGTH
    }
    return(*this);

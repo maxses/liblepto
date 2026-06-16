@@ -79,6 +79,7 @@ TEST_CASE( "String", "[default]" )
       CString s5 = s3 + s4;
       REQUIRE ( s5 == "Hallo Welt!" );
    }
+
    SECTION( "Copy" )
    {
       CString s1("Hello World");
@@ -89,6 +90,70 @@ TEST_CASE( "String", "[default]" )
 
       // s2 needs "fresh" allocated memory.
       REQUIRE ( s1.data() != s2.data() );
+   }
+
+   SECTION( "Concenate chars" )
+   {
+      // Keep the string growing
+
+      const char* lorem=
+               "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, "
+               "sed diam nonumy eirmod tempor invidunt ut labore et dolore "
+               "magna aliquyam erat, sed diam voluptua. At vero eos et accusam "
+               "et justo duo dolores et ea rebum. Stet clita kasd gubergren, "
+               "no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem "
+               "ipsum dolor sit amet, consetetur sadipscing elitr, sed diam "
+               "nonumy eirmod tempor invidunt ut labore et dolore magna "
+               "aliquyam erat, sed diam voluptua. At vero eos et accusam et "
+               "justo duo dolores et ea rebum. Stet clita kasd gubergren, no "
+               "sea takimata sanctus est Lorem ipsum dolor sit amet.";
+      CString s1;
+
+      for(int i1=0; i1<strlen(lorem); i1++)
+      {
+         s1+=lorem[i1];
+      }
+
+      // Strings are equal
+      REQUIRE ( s1 == lorem );
+   }
+
+   SECTION( "Concenate strings" )
+   {
+      // Grow the string when the substrings are longer than CONFIG_LEPTO_LIST_INCREMENT
+
+      const char* lorem=
+               "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, "
+               "sed diam nonumy eirmod tempor invidunt ut labore et dolore "
+               "magna aliquyam erat, sed diam voluptua. At vero eos et accusam "
+               "et justo duo dolores et ea rebum. Stet clita kasd gubergren, "
+               "no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem "
+               "ipsum dolor sit amet, consetetur sadipscing elitr, sed diam "
+               "nonumy eirmod tempor invidunt ut labore et dolore magna "
+               "aliquyam erat, sed diam voluptua. At vero eos et accusam et "
+               "justo duo dolores et ea rebum. Stet clita kasd gubergren, no "
+               "sea takimata sanctus est Lorem ipsum dolor sit amet.";
+      const char* lorem_substrings[]={
+               "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, ",
+               "sed diam nonumy eirmod tempor invidunt ut labore et dolore ",
+               "magna aliquyam erat, sed diam voluptua. At vero eos et accusam ",
+               "et justo duo dolores et ea rebum. Stet clita kasd gubergren, ",
+               "no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ",
+               "ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ",
+               "nonumy eirmod tempor invidunt ut labore et dolore magna ",
+               "aliquyam erat, sed diam voluptua. At vero eos et accusam et ",
+               "justo duo dolores et ea rebum. Stet clita kasd gubergren, no ",
+               "sea takimata sanctus est Lorem ipsum dolor sit amet.",
+      };
+      CString s1;
+
+      for(int i1=0; i1<sizeof(lorem_substrings) / sizeof(lorem_substrings[0]); i1++)
+      {
+         s1+=lorem_substrings[i1];
+      }
+
+      // Strings are equal
+      REQUIRE ( s1 == lorem );
    }
 }
 

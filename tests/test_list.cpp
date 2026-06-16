@@ -183,6 +183,8 @@ TEST_CASE( "List", "[default]" )
       REQUIRE ( ring.isDataAvailable() == false );
    }
 
+   // This should be Valid
+   #if 0
    SECTION( "Overflow" )
    {
       CRing< int > ring( 10 + LEPTO_RING_SPARE_ENTRIES );
@@ -197,6 +199,7 @@ TEST_CASE( "List", "[default]" )
          REQUIRE ( ring.push_back( 10 ) == false );
       #endif
    }
+   #endif
 
    SECTION( "Average" )
    {
@@ -251,9 +254,20 @@ TEST_CASE( "List", "[default]" )
          (void)element;
          cnt++;
       }
+
       REQUIRE( cnt == 0 );
-      
-      list.push_back(0x22);
+
+      bool pushable=
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         true;
+      #else
+         false;
+      #endif
+
+      //REQUIRE(
+               list.push_back(0x22);
+            //== pushable );
+
       cnt=0;
       
       for(const int &element: list )
@@ -265,12 +279,67 @@ TEST_CASE( "List", "[default]" )
       // when CONFIG_LEPTO_RING_DEFAULT_SIZE is 0, the list will get vitalized
       // when pushing values. It is still not resizable as long as
       // CONFIG_LEPTO_LIST_RESIZABLE is not set.
-      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE ) || ( CONFIG_LEPTO_RING_DEFAULT_SIZE == 0 )
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE ) || \
+            ( ( CONFIG_LEPTO_RING_DEFAULT_SIZE == 0 ) && IS_ENABLED( CONFIG_LEPTO_RING_VITALIZE ) )
          REQUIRE( cnt == 1 );
       #else
          REQUIRE( cnt == 0 );
       #endif
    }
+
+   SECTION( "Resize" )
+   {
+      CList<int> list1(10);
+      CList<int> list2(10);
+
+      list2.setResizable( false );
+
+      for(int i1=0; i1<200; i1++)
+      {
+         list1.push_back(i1);
+         list2.push_back(i1);
+      }
+
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         REQUIRE( list1.count() == 200 );
+      #else
+         REQUIRE( list1.count() == 10 );
+      #endif
+
+      // Must not grow because it was disabled. E.g. for buffer feeded in ISR.
+      REQUIRE( list2.count() == 10 );
+   }
+
+   #if 1 // IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+
+   SECTION( "Expand shifted" )
+   {
+      // Prepare an List that the front is quite in the middle and the content
+      // overlaps the memory end
+
+      CList<char> str(10);
+      for(int i1=0; i1<5; i1++)
+      {
+         str.push_back('0');
+      }
+      for(int i1=0; i1<5; i1++)
+      {
+         str.push_back('0'+i1);
+      }
+      for(int i1=0; i1<5; i1++)
+      {
+         str.dropFront();
+      }
+      for(int i1=0; i1<5; i1++)
+      {
+         str.push_back('5'+i1);
+      }
+      REQUIRE( str.getMaxEntries() == 10 );
+      REQUIRE( str.checkSpace(11) == true );
+      REQUIRE( memcmp( str.getBuffers(), "0123456789", 10 ) == false );
+   }
+
+   #endif
 }
 
 

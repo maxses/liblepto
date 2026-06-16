@@ -52,97 +52,116 @@ class CString: private CList<char>
 {
 
    public:
-      int length() const
+      constexpr int length() const
       {
          return( count() );
       }
-      char* data() const
+      char* data() const // Not a "const char*"; e.g. libfosh manipulates the string
       {
-         lAssert( m_backPos >= m_frontPos );
-         // TBD: check overflow
-         return( getBuffers() );
+         lHostAssert( m_backPos >= m_frontPos );
+         lHostAssert( m_frontPos == 0 );
+
+         // Checks costs 24 bytes. Returning 'nullptr' is valid.
+         return( m_buffers );
       }
       CString( )
-      {}
+      {};
+      #if 0
       CString( const char* str ): CList( strlen(str) + 1 )
       {
-         memset( getBuffers(), 0, getMaxEntries() );
+         //memset( getBuffers(), 0, getMaxEntries() );
          strcpy( getBuffers(), str);
          m_backPos=strlen( getBuffers() );
-      }
+         //m_buffers[m_backPos]=0;
+      };
+      #else
+      CString( const char* str ): CList( 0 )
+      {
+         int len=strlen( str );
+         allocate( len+1 );
+         memcpy( getBuffers(), str, len+1);
+         m_backPos=len;
+      };
+      #endif
       //CString(const CString&) = delete;
 
       CString( const CString& str ): CList( str.getMaxEntries() )
       {
-         memcpy( getBuffers(), str.getBuffers(), str.length() );
+         memcpy( getBuffers(), str.getBuffers(), str.length() + 1 );
          m_backPos=str.m_backPos;
-      }
+      };
+
       CString& operator +=(char c)
       {
          push_back( c );
-         // No space for '0'?
-         if( length() >= getMaxEntries() )
-         {
-            #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
-               expand();
-            #else
-               abort();
-            #endif
-         }
-         m_buffers[m_backPos]=0;
+         push_back( 0 );
+         //m_buffers[m_backPos]=0;
          return( *this );
-      }
+      };
+
       CString& operator +=(const char* str)
       {
-         // Not very efficient
-         for(int i1=0; str[i1]; i1++)
-            *this+=str[i1];
-
+         int len=strlen(str);
+         if ( ! checkSpace( length() + len + 1 ) )
+         {
+            return( *this );
+         }
+         memcpy(&m_buffers[m_backPos], str, len);
+         m_backPos+=len;
+         m_buffers[m_backPos]=0;
          return( *this );
       }
       CString& operator +=( const CString& str)
       {
-         // Not very efficient
          int len=str.length();
-         for(int i1=0; i1<len; i1++)
-            *this+=str[i1];
+         if( !checkSpace( length() + len + 1 ) )
+         {
+            return( *this );
+         }
+         memcpy(&m_buffers[m_backPos], str.data(), len);
+         m_backPos+=len;
+         m_buffers[m_backPos]=0;
+
          return( *this );
       }
-      CString operator +( const CString& strB )
+      #if ! defined STM32
+      CString operator +( const CString& strB ) const
       {
          CString str( *this );
          str+=strB;
-         //push_back( c );
          return( str );
       }
+      #endif
       char at(int pos) const
       {
-         return( *getEntry( pos ) );
+         return( m_buffers[ pos ] );
       };
       char operator[](int pos) const
       {
-         return( *getEntry( pos ) );
+         return( at( pos ) );
       };
       bool operator==(const char* str) const
       {
-         //return( strcmp( getBuffers(), str ) == 0 );
-         int pos=0;
-
-         while(str[pos])
-         {
-            if( str[pos] != m_buffers[pos] )
-            {
-               return(false);
-            }
-            pos++;
-         }
-         // One string longer than the other?
-         if( str[pos] != m_buffers[pos] )
+         if(!m_buffers)
          {
             return(false);
          }
+         #if 0
+            return( strcmp( getBuffers(), str ) == 0 );
+         #else
+            int pos=-1;
 
-         return(true);
+            do
+            {
+               pos++;
+               if( str[pos] != m_buffers[pos] )
+               {
+                  return(false);
+               }
+            }while(str[pos]);
+
+            return( m_buffers[pos] == 0 );
+         #endif
       }
       void remove(int pos, int size)
       {
@@ -170,7 +189,7 @@ class CString: private CList<char>
                      length()-pos-size );
 
             // Caution: probably no sign available in position type
-            if( m_backPos >= size )
+            if( m_backPos >= (ringIndex_t)size )
             {
                m_backPos-=size;
             }
@@ -184,19 +203,16 @@ class CString: private CList<char>
       }
       void operator =(const char* str)
       {
-         if( getMaxEntries() )
+         int len=strlen(str);
+
+         if( ! checkSpace(len+1) )
          {
-            delete[] m_buffers;
-            m_frontPos = m_backPos = 0;
-            m_maxEntries = 0;
-            #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-               m_maxEntriesDuplicated = 0;
-            #endif // ! ? CONFIG_LEPTO_RING_DOWNSIZE
+            return;
          }
-         allocate( strlen(str) + 1 );
-         strcpy( m_buffers, str);
+         memcpy( m_buffers, str, len + 1);
          m_frontPos = 0;
-         m_backPos = strlen(str);
+         m_backPos = len;
+
          return;
       }
       CString& operator=(CString const&) = delete;

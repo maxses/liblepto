@@ -214,7 +214,7 @@ TEST_CASE( "List", "[default]" )
       printf("Count: %d\n", ring.count() );
       
       #if LEPTO_RING_SPARE_ENTRIES == 1
-            REQUIRE ( ring.average() == ( ( 2.0 + 3.0 + 4.0) / 3.0) );
+            REQUIRE ( ring.average() == ( ( 2.0f + 3.0f + 4.0f ) / 3.0f ) );
       #else
             REQUIRE ( ring.average() == ( ( 1.0f + 2.0f + 3.0f + 4.0f ) / 4.0f ) );
       #endif
@@ -226,7 +226,7 @@ TEST_CASE( "List", "[default]" )
       // lHint << "SV: " << ( (    2.0+3.0+4.0+5.0 ) / 4.0 );
       #if LEPTO_RING_SPARE_ENTRIES == 1
          REQUIRE ( ring.count() == 3 );
-         REQUIRE ( ring.average() == ( ( 3.0 + 4.0 + 5.0 ) / 3.0 ) );
+         REQUIRE ( ring.average() == ( ( 3.0f + 4.0f + 5.0f ) / 3.0f ) );
       #else
          REQUIRE ( ring.count() == 4 );
          REQUIRE ( ring.average() == ( ( 2.0f + 3.0f + 4.0f + 5.0f ) / 4.0f ) );

@@ -189,6 +189,10 @@ class CFunctorMethodAsFunction final
    {
       return( m_methodPtr != nullptr );
    }
+   void disconnect()
+   {
+      m_methodPtr = nullptr;
+   }
 };
 
 #endif // ? CONFIG_LEPTO_SIGNAL_METHOD
@@ -331,6 +335,23 @@ class CSignal
          #endif
       };
       #endif
+
+      void disconnect()
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+            lFatal("Not implemented");
+         #else
+            #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
+               if( m_pFunctor )
+               {
+                  delete m_pFunctor;
+                  m_pFunctor = nullptr;
+               }
+            #else
+               m_pFunctor.disconnect();
+            #endif
+         #endif
+      }
 
       #if 0
       // An connection 'costs' 16 Bytes of RAM;

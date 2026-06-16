@@ -83,7 +83,11 @@ class CString: private CList<char>
          // No space for '0'?
          if( length() >= getMaxEntries() )
          {
-            expand();
+            #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+               expand();
+            #else
+               abort();
+            #endif
          }
          m_buffers[m_backPos]=0;
          return( *this );
@@ -121,7 +125,24 @@ class CString: private CList<char>
       };
       bool operator==(const char* str) const
       {
-         return( strcmp( getBuffers(), str ) == 0 );
+         //return( strcmp( getBuffers(), str ) == 0 );
+         int pos=0;
+
+         while(str[pos])
+         {
+            if( str[pos] != m_buffers[pos] )
+            {
+               return(false);
+            }
+            pos++;
+         }
+         // One string longer than the other?
+         if( str[pos] != m_buffers[pos] )
+         {
+            return(false);
+         }
+
+         return(true);
       }
       void remove(int pos, int size)
       {
@@ -167,7 +188,10 @@ class CString: private CList<char>
          {
             delete[] m_buffers;
             m_frontPos = m_backPos = 0;
-            m_maxEntries = m_maxEntriesDuplicated = 0;
+            m_maxEntries = 0;
+            #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+               m_maxEntriesDuplicated = 0;
+            #endif // ! ? CONFIG_LEPTO_RING_DOWNSIZE
          }
          allocate( strlen(str) + 1 );
          strcpy( m_buffers, str);
@@ -472,7 +496,7 @@ class CString: public CBaseString<char>
          };
       #endif // ? CONFIG_LEPTO_CCHAR
 
-      char cell(int pos) const
+      char at(int pos) const
       {
          return( m_buf[pos] );
       };

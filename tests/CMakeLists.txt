@@ -7,33 +7,16 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 project(lepto_tests)
+find_package(Catch2 3 QUIET)
+if (Catch2_FOUND)
+    add_definitions( "-DCATCH_V3" )
+    set(CATCH2_TARGET Catch2::Catch2WithMain)
+else()
+    find_package(Catch2 2 REQUIRED)
+    add_definitions( "-DCATCH_V2" )
+    set(CATCH2_TARGET Catch2::Catch2)
+endif()
 
-find_package( Catch2 )
-if( NOT Catch2_FOUND )
-   find_package( Catch )
-   if( NOT Catch_FOUND )
-      # find_package does not work for Catch, at least on ubuntu 20.04
-      if( EXISTS /usr/include/catch )
-         add_definitions( "-DCATCH_V1" )
-      elseif( EXISTS /usr/include/catch2 )
-         if( EXISTS /usr/include/catch2/catch_test_macros.hpp )
-            add_definitions( "-DCATCH_V3" )
-         else()
-            add_definitions( "-DCATCH_V2" )
-         endif()
-      else( EXISTS /usr/include/catch2 )
-         message( FATAL_ERROR "Install eeither Catch or Catch2")
-      endif( EXISTS /usr/include/catch )
-   endif( NOT Catch_FOUND )
-   add_definitions( "-DCATCH_V1" )
-else( NOT Catch2_FOUND)
-   if( EXISTS /usr/include/catch2/catch_test_macros.hpp )
-      add_definitions( "-DCATCH_V3" )
-      set( CATCH_LIBRARY "Catch2::Catch2WithMain" )
-   else( )
-      add_definitions( "-DCATCH_V2" )
-   endif( )
-endif( NOT Catch2_FOUND )
 
 set(
    headers
@@ -67,7 +50,7 @@ target_link_libraries(
    lepto_tests
    PRIVATE
       lepto
-      ${CATCH_LIBRARY}
+      ${CATCH2_TARGET}
 )
 
 

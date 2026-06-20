@@ -1,5 +1,6 @@
 # Changes for v1.2.0
 
+* Support disconnecting signal
 * Base64: Fixed de-/encoding in some cornercases
 * hexdump: Support showing different areas in different colors
 * CBase64: Support for CONFIG_LEPTO_BASE64_STATIC_ALPHABET

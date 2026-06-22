@@ -165,7 +165,7 @@ if [ "$format" == "text" ]; then
    echo -n
 else
    echo "#define VERSION_CODE $VERSION_CODE"
-   echo "#define VERSION_CODE_${PROJECT} $VERSION_CODE"
+   # echo "#define VERSION_CODE_${PROJECT} $VERSION_CODE"
    echo "#define PROJECT_CODE_${PROJECT} $PROJECT_CODE	// SHA over project name."
    echo "// MAJOR: $MAJOR; MINOR: $MINOR; PATCH: $PATCH; DIST: $DISTANCE; DISTCODE: $DISTCODE"
    

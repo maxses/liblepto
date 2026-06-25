@@ -20,6 +20,7 @@
 #define QQueue CRing
 #define QByteArray CByteArray
 #define QSharedPointer CSharedPointer
+#define QTimer CSoftTimer
 
 #define Q_OBJECT
 #define NO_QT

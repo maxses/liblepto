@@ -18,6 +18,7 @@
 #include <lepto/bufferRing.hpp>
 #include <QThread>
 #include <QCoreApplication>
+#include <QElapsedTimer>
 
 
 #define TEST_ALL

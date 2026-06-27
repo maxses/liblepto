@@ -4,7 +4,7 @@
  * @brief      Test CString
  *
  * @date       20250915
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -78,6 +78,17 @@ TEST_CASE( "String", "[default]" )
       CString s4="Welt!";
       CString s5 = s3 + s4;
       REQUIRE ( s5 == "Hallo Welt!" );
+   }
+   SECTION( "Copy" )
+   {
+      CString s1("Hello World");
+      CString s2(s1);
+
+      // Strings are equal
+      REQUIRE ( strcmp( s1.data(), s2.data() ) == 0 );
+
+      // s2 needs "fresh" allocated memory.
+      REQUIRE ( s1.data() != s2.data() );
    }
 }
 

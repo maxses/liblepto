@@ -6,7 +6,7 @@
  * @brief      Base64 encoder/decoder
  *
  * @date       20170814
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 
 #include <stdint.h>
+#include <lepto/lepto.h>
 
 #if defined( STM32 )
    #include <lepto/string.hpp>
@@ -32,11 +33,16 @@
 class CBase64
 {
    private:
-      static const char *alphabet;
+      #if IS_ENABLED( CONFIG_LEPTO_BASE64_STATIC_ALPHABET )
+      static const char *m_alphabet;
+      #endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET
    public:
-      static int encode(const uint8_t *src, size_t srcSize, char *dest, size_t destSize);
+      static char alphabet(char index);
+      static char alphabetIndex(int value, int pos);
+      static uint32_t triPortion( const uint8_t *src, lsize_t srcSize );
+      static int encode(const uint8_t *src, lsize_t srcSize, char *dest, lsize_t destSize);
       static int encode(const CByteArray &src, CString &dest);
-      static int decode(const char *src, size_t srcSize, uint8_t *dest, size_t destSize);
+      static int decode(const char *src, lsize_t srcSize, uint8_t *dest, lsize_t destSize);
       static int decode(const CString &src, CByteArray &dest);
 };
 

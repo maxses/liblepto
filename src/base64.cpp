@@ -4,7 +4,7 @@
  * @brief      Base64 encoder/decoder
  *
  * @date       20170814
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -21,25 +21,75 @@
 /*--- Declarations ---------------------------------------------------------*/
 
 
+#if IS_ENABLED( CONFIG_LEPTO_BASE64_STATIC_ALPHABET )
 /* static */
-const char *CBase64::alphabet =
+const char *CBase64::m_alphabet =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       "abcdefghijklmnopqrstuvwxyz"
       "0123456789+/=";
+#endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET
 
 
-int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destSize) /**/
+#if IS_ENABLED( CONFIG_LEPTO_BASE64_STATIC_ALPHABET )
+
+char CBase64::alphabet(char index)
 {
-   int destPos=0, srcPos=0;
+   return( m_alphabet[ index ] );
+}
+
+#else
+
+char CBase64::alphabet(char index)
+{
+   switch( index )
+   {
+      case 0 ... 25:
+         return 'A' + ( index );
+         break;
+      case 26 ... 51:
+         return 'a' + ( index - 26 );
+         break;
+      case 52 ... 61:
+         return '0' + ( index - 52 );
+         break;
+      default:
+         return "+/="[ index - 62 ];
+         break;
+   }
+}
+
+#endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET ELSE
+
+uint32_t CBase64::triPortion( const uint8_t *src, lsize_t srcSize )
+{
+   uint32_t value=0;
+   
+   for(lsize_t i1=0; i1<3; i1++)
+   {
+      value=(value<<8) |
+              ( i1 < srcSize
+                   ?(uint8_t)src[ i1 ] : 0 );
+   }
+   
+   return( value );
+}
+
+
+char CBase64::alphabetIndex(int value, int pos)
+{
+   return( (value >> ((3-pos)*6)) & 0x3f );
+}
+
+
+int CBase64::encode(const uint8_t *src, lsize_t srcSize, char *dest, lsize_t destSize) /**/
+{
+   lsize_t destPos=0;
+   lsize_t srcPos=0;
    uint32_t value;
 
    while(srcPos<(int)srcSize)
    {
-      value = 0;
-      for(uint32_t i1=0; i1<3; i1++)
-      {
-         value=(value<<8) | (uint8_t)src[srcPos+i1];
-      }
+      value = triPortion( &src[ srcPos ], srcSize - srcPos );
 
       for(uint32_t i1=0; i1<4; i1++)
       {
@@ -48,7 +98,7 @@ int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destS
          // second output char.
          if(srcPos<(int)srcSize)
          {
-            dest[destPos++]=alphabet[ (value >> ((3-i1)*6)) & 0x3f ];
+            dest[destPos++]=alphabet( alphabetIndex(value, i1) );
          }
          else
             dest[destPos++]='=';
@@ -62,8 +112,10 @@ int CBase64::encode(const uint8_t *src, size_t srcSize, char *dest, size_t destS
          }
       }
    }
+
    if(destPos>=0)
       dest[destPos]=0;
+
    return(destPos);
 }
 
@@ -76,13 +128,7 @@ int CBase64::encode(const CByteArray &src, CString &dest) /**/
 
    while(srcPos<(int)srcSize)
    {
-      value = 0;
-      for(int i1=0; i1<3; i1++)
-      {
-         value=(value<<8) |
-               ( ( srcPos+i1 ) < srcSize
-                  ?(uint8_t)src.at(srcPos+i1):0);
-      }
+      value = triPortion( (uint8_t*)&src.data()[ srcPos ], srcSize - srcPos );
 
       for(uint32_t i1=0; i1<4; i1++)
       {
@@ -91,7 +137,7 @@ int CBase64::encode(const CByteArray &src, CString &dest) /**/
          // second output char.
          if(srcPos<(int)srcSize)
          {
-            dest+=alphabet[ (value >> ((3-i1)*6)) & 0x3f ];
+            dest+=alphabet( alphabetIndex(value, i1) );
          }
          else
             dest+='=';
@@ -103,7 +149,7 @@ int CBase64::encode(const CByteArray &src, CString &dest) /**/
 }
 
 
-int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destSize)
+int CBase64::decode(const char *src, lsize_t srcSize, uint8_t *dest, lsize_t destSize)
 {
    int destPos=0, srcPos=0, i1, reduced;
    uint32_t value;
@@ -126,14 +172,17 @@ int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destS
             case '0'...'9':
                rawValue=(src[srcPos]-'0')+(26*2);
                break;
+            // Hasndle "+/="
             case '+':
+               // [fall-through]
+            case '/':
                rawValue=(src[srcPos]-'+')+(26*2)+10;
                break;
-            case '/':
-               rawValue=(src[srcPos]-'/')+(26*2)+10+1;
+            case '=':
+               rawValue=0;
                break;
             default:
-               rawValue=0;
+               return(-1);
                break;
          }
          value= (value<<6) | ( rawValue & 0x3f );
@@ -142,28 +191,29 @@ int CBase64::decode(const char *src, size_t srcSize, uint8_t *dest, size_t destS
          srcPos++;
       }
 
-      for(int i2=0; (i2<3) && (destPos+i2<(int)destSize); i2++)
+      for(int i2=0; ( i2 < 3 ) && (destPos+i2<(int)destSize); i2++)
       {
          dest[destPos+i2]= ( value >> ( (2-i2) * 8 ) )&0xff;
       }
       destPos+=3-reduced;
 
-      if(destPos>(int)destSize)
+      if( (destPos>(int)destSize) && ( srcPos<(int)srcSize ) )
       {
          destPos=-1;
          break;
       }
    }
+
    return(destPos);
 }
 
 
-int CBase64::decode(const CString &src, CByteArray &dest)
+lsize_t CBase64::decode(const CString &src, CByteArray &dest)
 {
    int srcPos=0, i1, reduced;
    uint32_t value;
    uint32_t rawValue;
-   int srcSize=src.length();
+   lsize_t srcSize=src.length();
 
    while(srcPos<(int)srcSize)
    {
@@ -208,7 +258,7 @@ int CBase64::decode(const CString &src, CByteArray &dest)
       */
 
       for(int i2=0; i2 < (3-reduced) ; i2++)
-         dest+= ( value >> ( (2-i2) * 8 ) )&0xff;
+         dest+= ( char )( ( value >> ( (2-i2) * 8 ) ) & 0xff );
    }
    return(dest.length());
 }

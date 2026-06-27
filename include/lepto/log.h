@@ -5,7 +5,8 @@
  * @file    log.h
  * @brief   Logging with lepto
  *
- * Corresponding to loging functions in Qt there are following functions:
+ * Logging functions analog to Qt.
+ * There are following basic functions:
  *
  *    lInfo(msg, ...)
  *    lCaution(msg, ... )
@@ -13,11 +14,8 @@
  *    lCritical(msg, ... )
  *    lFatal(msg, ... )
  *
- * These underlying functions can be optionaly overloaded. Libbiwak does this
- * for example to make logging available in ISRs.
- *
  * @date      20140107
- * @author    Maximilian Seesslen <mes@seesslen.net>
+ * @author    Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -28,15 +26,20 @@
 
 #include <stdarg.h>
 #include <lepto/lepto.h>               // IS_ENABLED( )
+#include <stdlib.h>                    // abort()
 
 
 /*--- Implementation -------------------------------------------------------*/
 
 
+#if ! defined ( CONFIG_LEPTO_LOG_CALLBACK )
+   #define CONFIG_LEPTO_LOG_CALLBACK               1
+#endif
+
 // #if ! defined LEPTO_LOG_NO_USE_ANSI
-#if IS_ENABLED( CONFIG_LEPTO_LOG_USE_PRETTY_PRINT )
-   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_USE_ANSI )
-      #define CONFIG_LEPTO_LOG_USE_ANSI
+#if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_ANSI_COLORS )
+      #define CONFIG_LEPTO_LOG_ANSI_COLORS
    #endif
 #endif
 
@@ -46,14 +49,19 @@
    #define lDebug(a,...)
 #endif
 
-#if defined LEPTO_LOG_DEBUG || defined LEPTO_LOG_DEBUG_ASSERT
+#if defined LEPTO_LOG_DEBUG || defined LEPTO_LOG_DEBUG_ASSERT || USE_FULL_ASSERT
    #define lDebugAssert(a, ...) if(! (a)){ lFatal("Assertion false: '" #a "'. " __VA_ARGS__ ); }
 #else
    #define lDebugAssert(a, ...)
 #endif
 
-#define lAssert( assertion, ... ) if ( ! (assertion) ) \
-         { lFatal( "ASRT" /*SW " __VA_ARGS__*/ ); };
+#if defined ( STM32 )
+   #define lAssert( assertion, ... ) if ( ! (assertion) ) \
+         { abort(); };
+#else
+   #define lAssert( assertion, ... ) if ( ! (assertion) ) \
+      { throw("Assertion wrong: " #assertion); };
+#endif
 
 #if USE_FULL_ASSERT
    #define lFullAssert( assertion, ... ) if ( ! (assertion) ) \
@@ -80,7 +88,7 @@ enum class ELogCategory
    //Loop        = 10,
 };
 
-// THe ELogCode allways contains the cathegory
+// The ELogCode allways contains the cathegory
 enum class ELogCode: int;
 
 inline constexpr ELogCode operator| (ELogCategory cat, int i)
@@ -109,13 +117,15 @@ inline constexpr ELogCategory toCategory(ELogCode code)
    #define lWarning(msg, ... ) lLog(ELogCategory::Warning|0, msg, ##__VA_ARGS__ )
    #define lCritical(msg, ... ) lLog(ELogCategory::Critical|0, msg, ##__VA_ARGS__ )
    #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, msg, ##__VA_ARGS__ )
+   #define lCalm() lLog(ELogCategory::Calm|0, "" )
 #else
-   #define lDebugReal(msg, ...) lLog(ELogCategory::Debug, "" )
-   #define lInfo(msg, ...) lLog(ELogCategory::Info, "" )
-   #define lCaution(msg, ... ) lLog(ELogCategory::Caution, "" )
-   #define lWarning(msg, ... ) lLog(ELogCategory::Warning, "" )
-   #define lCritical(msg, ... ) lLog(ELogCategory::Critical, "" )
-   #define lFatal(msg, ... ) lLog(ELogCategory::Fatal, "" )
+   #define lDebugReal(msg, ...) lLog(ELogCategory::Debug|0, "" )
+   #define lInfo(msg, ...) lLog(ELogCategory::Info|0, "" )
+   #define lCaution(msg, ... ) lLog(ELogCategory::Caution|0, "" )
+   #define lWarning(msg, ... ) lLog(ELogCategory::Warning|0, "" )
+   #define lCritical(msg, ... ) lLog(ELogCategory::Critical|0, "" )
+   #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, "" )
+   #define lCalm() lLog(ELogCategory::Calm|0, "" )
 #endif
 
 // You can use the LDS macro to give two different messages depending on the
@@ -148,27 +158,44 @@ const char* shrinkFileName( const char* const filename )
    #endif
 #endif
 
-#if IS_ENABLED( CONFIG_LEPTO_LOG_USE_PRETTY_PRINT )
-   #define lLog( ... ) lLogPrettyPrint( __FILE_NAME__, __LINE__, __VA_ARGS__ )
+#if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
+   #if IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+      #define lLog( ... ) lLogPretty( __FILE_NAME__, __LINE__, __VA_ARGS__ ); \
+               logEventLoop();
+   #else
+      #define lLog( ... ) lLogPretty( __FILE_NAME__, __LINE__, __VA_ARGS__ )
+   #endif
 #else
-   #define lLog( ... ) lLogSimplePrint( __VA_ARGS__ )
+   #define lLog( ... ) lLogSimple( __VA_ARGS__ )
 #endif
+
+struct SLogEntry;
+//__attribute__((weak))
+void logCallBack( const SLogEntry *le );
 
 extern "C"
 {
    #if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
+
       extern const char *categoryMessages[];
-      void lVLogSimplePrint(ELogCode code, const char *format, va_list &list );
-      void lVLogPrettyPrint(const char*file, int line, ELogCode code, const char *format, va_list &list );
-      void lLogSimplePrint(ELogCode code, const char *format, ... );
-      void lLogPrettyPrint(const char*file, int line, ELogCode code, const char *format, ... );
-      /** \brief Check which implementation is used
-       */
-      int lLogInfo();
+      void lVLogSimple(ELogCode code, const char *format, va_list &list );
+      void lVLogPretty(const char*file, int line, ELogCode code, const char *format, va_list &list );
+      void lLogSimple(ELogCode code, const char *format, ... );
+      void lLogPretty(const char*file, int line, ELogCode code, const char *format, ... );
+      
    #else
-      void lVLog( ELogCategory category, const char *format, ... );
-      void lLog( ELogCategory category, const char *format, ... );
+
+      void lVLog( ELogCode code, const char *format, ... );
+      void lLog( ELogCode code, const char *format, ... );
+      
    #endif
+      
+   void logEventLoop();
+   
+   // Only for unit tests
+   int logPendingCount();
+   const char *logPending();
+   void leptoInitLog();
 }
 
 

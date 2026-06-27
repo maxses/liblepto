@@ -4,7 +4,7 @@
  * @brief      Test CList
  *
  * @date       20220619
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -208,28 +208,28 @@ TEST_CASE( "List", "[default]" )
       ring.setVolatile(true);
 
       for(int i1=0; i1<4; i1++)
-         ring.push_back(i1+1);
+         ring.push_back( (float)(i1+1) );
 
       // lHint << "IV: " << ring.average();
       printf("Count: %d\n", ring.count() );
       
       #if LEPTO_RING_SPARE_ENTRIES == 1
-            REQUIRE ( ring.average() == ( ( 2.0 + 3.0 + 4.0) / 3.0) );
+            REQUIRE ( ring.average() == ( ( 2.0f + 3.0f + 4.0f ) / 3.0f ) );
       #else
-            REQUIRE ( ring.average() == ( (1.0+2.0+3.0+4.0)/4.0) );
+            REQUIRE ( ring.average() == ( ( 1.0f + 2.0f + 3.0f + 4.0f ) / 4.0f ) );
       #endif
             
       for(int i1=0; i1<5; i1++)
-         ring.push_back(i1+1);
+         ring.push_back( (float)(i1+1) );
 
       // lHint << "IV: " << ring.average();
       // lHint << "SV: " << ( (    2.0+3.0+4.0+5.0 ) / 4.0 );
       #if LEPTO_RING_SPARE_ENTRIES == 1
          REQUIRE ( ring.count() == 3 );
-         REQUIRE ( ring.average() == ( ( 3.0 + 4.0 + 5.0 ) / 3.0 ) );
+         REQUIRE ( ring.average() == ( ( 3.0f + 4.0f + 5.0f ) / 3.0f ) );
       #else
          REQUIRE ( ring.count() == 4 );
-         REQUIRE ( ring.average() == ( ( 2.0 + 3.0 + 4.0 + 5.0 ) / 4.0 ) );
+         REQUIRE ( ring.average() == ( ( 2.0f + 3.0f + 4.0f + 5.0f ) / 4.0f ) );
       #endif
    }
    
@@ -240,7 +240,36 @@ TEST_CASE( "List", "[default]" )
       REQUIRE( iterator.realIndex() == 0 );
       iterator++;
       REQUIRE( iterator.realIndex() == 1 );
+   }
+   
+   SECTION( "C++ iterate" )
+   {
+      CList<int> list(0);
+      int cnt=0;
+      for(const int &element: list )
+      {
+         (void)element;
+         cnt++;
+      }
+      REQUIRE( cnt == 0 );
       
+      list.push_back(0x22);
+      cnt=0;
+      
+      for(const int &element: list )
+      {
+         (void)element;
+         cnt++;
+      }
+      
+      // when CONFIG_LEPTO_RING_DEFAULT_SIZE is 0, the list will get vitalized
+      // when pushing values. It is still not resizable as long as
+      // CONFIG_LEPTO_LIST_RESIZABLE is not set.
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE ) || ( CONFIG_LEPTO_RING_DEFAULT_SIZE == 0 )
+         REQUIRE( cnt == 1 );
+      #else
+         REQUIRE( cnt == 0 );
+      #endif
    }
 }
 

@@ -8,7 +8,7 @@
  * Some defines.
  *
  * @date       20240024
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -39,6 +39,7 @@
 // Because Qt has QT_STRINGIFY
 #define L_STRINGIFY2(exp) "" #exp ""
 #define L_STRINGIFY(exp) L_STRINGIFY2(exp)
+#define LEPTO_KEEP(sym) __asm__ __volatile__("" :: "m" (sym));
 
 #define arraySize(array) (int)(sizeof(array)/sizeof(array[0]) )
 
@@ -55,15 +56,21 @@
 
 // This was for checking if some overloading worked correctly. May be removed soon.
 #define LEPTO_CODE            0x1
+#define lUNUSED(a) (void)a
 
-// When CONFIG_LEPTO_LOG_USE_PRETTY_PRINT is not defined, enable it only when
+typedef int lsize_t;
+
+// When CONFIG_LEPTO_LOG_PRETTY_PRINT is not defined, enable it only when
 // CONFIG_LEPTO_LOG_DOWNSIZE is not set.
 // Make it a nice default configuration.
-#if ! defined CONFIG_LEPTO_LOG_USE_PRETTY_PRINT
+#if ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT
    #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DOWNSIZE )
-      #define CONFIG_LEPTO_LOG_USE_PRETTY_PRINT          1
+      #define CONFIG_LEPTO_LOG_PRETTY_PRINT          1
    #endif
-#endif // ? ! defined CONFIG_LEPTO_LOG_USE_PRETTY_PRINT
+#endif // ? ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT
+
+void leptoInit();
+void leptoEventLoop();
 
 
 /*--- Fin ------------------------------------------------------------------*/

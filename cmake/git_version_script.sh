@@ -21,9 +21,12 @@
 #				The script also iterates through all submodules and generates
 #				defines like 'GIT_LONG_<submodule>'.
 #
-# \author	Maximilian Seesslen <mes@seesslen.net>
+# \author	Maximilian Seesslen <src@seesslen.net>
 #
 #-----------------------------------------------------------------------------
+
+
+# set -e -u
 
 
 if [ ! -e ".git" ]; then
@@ -43,10 +46,11 @@ subDirectory()
    project=$2
    
    pushd $submodule &> /dev/null
-   
+      git describe --tags &> /dev/null || ( echo "Error: No version for $PWD" >&2 )
       DIRTY="$(git diff --quiet --exit-code || echo +)"
       TAG="$(git describe --tags  --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*')"
       SHA="$(git log --pretty=format:'%h' -n 1)"
+      SHORT_SHA="${SHA:0:4}"
       DISTANCE="$(git rev-list HEAD ^${TAG} --count)"
       
       if [ "$format" == "text" ]; then
@@ -57,6 +61,7 @@ subDirectory()
          echo "#define GIT_SHA_$project \"$(git log --pretty=format:'%h' -n 1)\""
          echo "#define GIT_SHA_INT_$project  0x$(git log --pretty=format:'%h' -n 1)"
          echo "#define GIT_SHORT_$project \"${TAG}-${DISTANCE}${DIRTY}\""
+         echo "#define GIT_SEMI_$project \"${TAG}-${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
          echo "#define GIT_REV_$project \"$(git describe --tags --dirty --match 'v[0-9]*.[0-9]*.[0-9]*')\""
          echo "#define GIT_BRANCH_$project \"$(git symbolic-ref --short HEAD)\""
          echo "#define VERSION_CODE_$project ${VERSION_CODE}"
@@ -160,7 +165,7 @@ if [ "$format" == "text" ]; then
    echo -n
 else
    echo "#define VERSION_CODE $VERSION_CODE"
-   echo "#define VERSION_CODE_${PROJECT} $VERSION_CODE"
+   # echo "#define VERSION_CODE_${PROJECT} $VERSION_CODE"
    echo "#define PROJECT_CODE_${PROJECT} $PROJECT_CODE	// SHA over project name."
    echo "// MAJOR: $MAJOR; MINOR: $MINOR; PATCH: $PATCH; DIST: $DISTANCE; DISTCODE: $DISTCODE"
    

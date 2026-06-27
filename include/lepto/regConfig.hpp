@@ -13,7 +13,7 @@
  * registers.
  *
  * @date      20231109
- * @author    Maximilian Seesslen <mes@seesslen.net>
+ * @author    Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -29,11 +29,18 @@
 /*--- Declarations ---------------------------------------------------------*/
 
 
+//template<typename T>
 struct SRegEntry
 {
-   int addr;
-   int bitStart;
-   int bitSize;
+
+   uint32_t addr;
+   uint8_t bitStart;
+   uint8_t bitSize;
+   /*
+   T addr;
+   T bitStart;
+   T bitSize;
+   */
 };
 
 enum ESettings: unsigned int;
@@ -45,9 +52,12 @@ enum ERegType
 };
 
 typedef const char* SSettingDesctriptorTexts[6];
+
+//template<typename T>
 struct SSettingDesctriptor
 {
    const SRegEntry &regEntry;
+   // const &regEntry;
    const char *regName;
    const char *descText;
    ERegType regType;
@@ -58,11 +68,11 @@ struct SSettingDesctriptor
 typedef SSettingDesctriptor SSettingDesctriptors[ ];
 typedef const char** SSettingDesctriptorsI[ MAX_VALUE_TEXTS ];
 
-extern SSettingDesctriptor* descriptors;
-extern int descriptorCount;
+//extern SSettingDesctriptor* descriptors;
+//extern int descriptorCount;
 
 template<typename T>
-class CRegConfig
+class CRegConfig //template <typename T>
 {
 private:
       T* m_conf;
@@ -120,7 +130,7 @@ public:
       }
       static T getBitFields( T org, T bitPos, T bitSize)
       {
-         T mask=(((T)-1)>>( (sizeof(T)*8) - bitSize)) << bitPos;
+         T mask=(T)( (((T)-1)>>( (sizeof(T)*8) - bitSize)) << bitPos );
          return( ( org & mask) >> bitPos );
       }
 

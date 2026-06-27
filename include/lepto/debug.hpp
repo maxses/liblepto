@@ -1,13 +1,13 @@
-#ifndef LEPTO_CRC8_H
-#define LEPTO_CRC8_H
+#ifndef LEPTO_DEBUG_HPP
+#define LEPTO_DEBUG_HPP
 /**---------------------------------------------------------------------------
  *
- * @file       crc8.h
- * @brief      Functions for CRC8 calculation in software
+ * @file       debug.hpp
+ * @brief      Helper class for debuging
  *
- * The CRC8 setting is "CRC-8/NRSC-5"
+ * Can check access of deleted objects.
  *
- * @date       20211127
+ * @date       20260406
  * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
@@ -17,16 +17,28 @@
 /*--- Includes -------------------------------------------------------------*/
 
 
-#include <stdint.h>                    // uint8_t
-#include <stddef.h>
+#include <lepto/log.h>
 
 
 /*--- Declaration ----------------------------------------------------------*/
 
 
-uint8_t crc8Init();
-uint8_t crc8Calc(uint8_t crc, void const *mem, size_t len);
+class CDebug
+{
+   private:
+      int m_instanceState=0;
+
+   public:
+      CDebug()
+      {
+         m_instanceState=1;
+      }
+      ~CDebug()
+      {
+         m_instanceState=2;
+      }
+};
 
 
 /*--- Fin ------------------------------------------------------------------*/
-#endif // ? ! LEPTO_CRC8_H
+#endif // ? ! LEPTO_DEBUG_HPP

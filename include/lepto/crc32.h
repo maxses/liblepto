@@ -21,7 +21,7 @@
  *       Some STM32 only support MPEG in hardware.
  *
  * @date       20211127
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -31,6 +31,7 @@
 
 
 #include <cstdint>
+#include <stdint.h>
 #include <lepto/lepto.h>
 
 // For regular linux builds 'LEPTO_CONFIGURABLE_CRC32' should be enabled by
@@ -58,6 +59,7 @@ extern "C"
    extern crc32_t (*calcCrc32)( const void *buf, uint32_t len );
 
    enum ECrc32Mode {
+      Unknown,
       Default,
       Mpeg,
    };

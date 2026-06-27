@@ -6,7 +6,7 @@
  * The CRC8 setting is "CRC-8/NRSC-5"
  *
  * @date       20211127
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

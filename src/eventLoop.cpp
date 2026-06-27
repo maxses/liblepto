@@ -1,0 +1,59 @@
+/**---------------------------------------------------------------------------
+ *
+ * @file       eventLoop.cpp
+ * @brief      Handle chain of events
+ *
+ * @date       20260319
+ * @author     Maximilian Seesslen <src@seesslen.net>
+ * @copyright  SPDX-License-Identifier: Apache-2.0
+ *
+ *--------------------------------------------------------------------------*/
+
+
+/*--- Includes -------------------------------------------------------------*/
+
+
+#include <stdio.h>
+#include <lepto/lepto.h>
+#include <lepto/log.h>
+#define EVENT_LOOP_COMPILE_UNIT
+#include <lepto/eventLoop.hpp>
+#undef EVENT_LOOP_COMPILE_UNIT
+
+
+/*--- Declarations ---------------------------------------------------------*/
+
+
+#if IS_ENABLED( CONFIG_LEPTO_GLOBAL_EVENT_LOOP )
+
+// Is there a use to make it "__attribute__( (weak) )"
+void CEventLoop::globalEventLoop()
+{
+   CEventLoop* p=m_first;
+   while(p)
+   {
+      #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
+      if(p->m_active)
+      #endif
+      {
+         p->eventLoop();
+      }
+      p=p->m_next;
+   }
+   
+   return;
+}
+
+CEventLoop* CEventLoop::m_first = nullptr;
+
+#else
+
+void CEventLoop::globalEventLoop()
+{
+   lFatal("NGEL");
+}
+
+#endif // ? ! CONFIG_GLOBAL_EVENT_LOOP
+
+
+/*--- Fin ------------------------------------------------------------------*/

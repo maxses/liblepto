@@ -6,7 +6,7 @@
  * @brief      Macros for ansi sequences
  *
  * @date      20140107
- * @author    Maximilian Seesslen <mes@seesslen.net>
+ * @author    Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -33,14 +33,18 @@
          };
          printf("\n");
  }
+
+ a=0; while [ $a -lt 10 ]; do echo -e "\e[3${a}mHello"; let a+=1; done
 */
+
 #define ANSI_RED ESC "[31m"
 #define ANSI_GREEN ESC "[32m"
 #define ANSI_MAGENTA ESC "[35m"
 #define ANSI_BLACK ESC "[30m"
 #define ANSI_BLUE ESC "[34m"
 #define ANSI_BROWN ESC "[33m"
-#define ANSI_xx1 ESC "[36m"             // Tuerkis
+#define ANSI_YELLOW ESC "[93m"
+#define ANSI_CYAN ESC "[36m"             // Tuerkis
 #define ANSI_GREY ESC "[37m"
 #define ANSI_ORANGE ANSI_BROWN
 #define ANSI_BLACK ESC "[30m"

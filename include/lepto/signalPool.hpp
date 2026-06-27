@@ -14,7 +14,7 @@
  * "CPendingSignalPoolStatic"
  *
  * @date   20170127
- * @author Maximilian Seesslen <mes@seesslen.net>
+ * @author Maximilian Seesslen <src@seesslen.net>
  * @copyright SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/
@@ -81,6 +81,26 @@ class CPendingSignal2: public CPendingSignalBase
 };
 
 
+template <typename sigReturn, typename sigType1>
+class CPendingSignal1: public CPendingSignalBase
+{
+   //CSignalMethod<sigReturn, sigType1> &m_signal;
+   CSignal<sigReturn, sigType1> &m_signal;
+   sigType1 m_storedArg1;
+   
+   public:
+   CPendingSignal1( CSignal<sigReturn, sigType1> &signal, sigType1 arg1 )
+       :m_signal(signal)
+       ,m_storedArg1( arg1 )
+   {
+   };
+   virtual void shot() // overload;
+   {
+      m_signal.emitSignal( m_storedArg1 );
+   };
+};
+
+
 template <typename sigReturn>
 class CPendingSignal0:public  CPendingSignalBase
 {
@@ -126,14 +146,14 @@ class CPendingSignalPool
       template <typename sigReturn, typename sigType1>
       void enqueueSignal( CSignal<sigReturn, sigType1> &signal, sigType1 arg)
       {
-         pendingSignalList.push_back( new CPendingSignal( signal, arg ) );
+         pendingSignalList.push_back( new CPendingSignal<sigReturn, sigType1>( signal, arg ) );
          return;
       };
 
       template <typename sigReturn, typename sigType1, typename sigType2>
       void enqueueSignal( CSignal<sigReturn, sigType1, sigType2> &signal, sigType1 arg1, sigType2 arg2)
       {
-         pendingSignalList.push_back( new CPendingSignal2( signal, arg1, arg2 ) );
+         pendingSignalList.push_back( new CPendingSignal2<sigReturn, sigType1, sigType2>( signal, arg1, arg2 ) );
          return;
       };
 
@@ -148,7 +168,7 @@ class CPendingSignalPool
       template <typename sigReturn>
       void enqueueSignal( CSignal<sigReturn> &signal)
       {
-         pendingSignalList.push_back( new CPendingSignal0( signal ) );
+         pendingSignalList.push_back( new CPendingSignal0<sigReturn>( signal ) );
          return;
       };
 };

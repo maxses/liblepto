@@ -19,7 +19,7 @@
  *       Some STM32 only support MPEG in hardware.
  *
  * @date       20160228
- * @author     Maximilian Seesslen <mes@seesslen.net>
+ * @author     Maximilian Seesslen <src@seesslen.net>
  * @copyright  SPDX-License-Identifier: Apache-2.0
  *
  *--------------------------------------------------------------------------*/

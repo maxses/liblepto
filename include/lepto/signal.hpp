@@ -442,7 +442,7 @@ class CSignal
                return( m_pFunctor.emitSignal( args ... ) );
             }
          #endif
-         return(0);
+         return( (sigReturn)0 );
       }
 
       #if 0

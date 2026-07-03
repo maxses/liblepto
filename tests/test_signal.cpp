@@ -26,9 +26,9 @@
 #if 0
    #undef CONFIG_LEPTO_SIGNAL_CHAIN
    #define CONFIG_LEPTO_SIGNAL_NO_METHOD_AS_FUNCTION        0
-#else
    #define CONFIG_LEPTO_SIGNAL_CHAIN                        1
    #define CONFIG_LEPTO_SIGNAL_NO_METHOD_AS_FUNCTION        1
+#else
 #endif
 
 #include <lepto/signal.hpp>
@@ -90,35 +90,90 @@ int getCounter()
 };
 
 
+class CBase
+{
+   public:
+      CSignal<int, int> m_signal;
+      CBase()
+      {
+         m_signal.connect(this, &CBase::slot );
+      }
+      virtual int slot(int)=0;
+      virtual int getSum()=0;
+};
+
+class CDerived: public CBase
+{
+      int m_sum=0;
+   public:
+      //virtual
+      int slot(int add) override final;
+      int nvSlot(int add);
+      virtual int getSum() override
+      {
+         return( m_sum );
+      }
+      int fix()
+      {
+         return(0);
+      }
+
+};
+
+int CDerived::slot(int add)
+{
+   m_sum+=add;
+   return(0);
+};
+
+int CDerived::nvSlot(int add)
+{
+   m_sum+=add;
+   return(0);
+};
+
+int CBase::slot( int value )
+{
+   return(0);
+};
+
+
 TEST_CASE( "Signal", "[default]" )
 {
    SECTION( "Signal C++ method" )
    {
       C1 obj;
-      
-      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
-         C1 obj2;
-      #endif
-         
       CSignal<void, int, int>sig;
 
       sig.connect(&obj, &C1::_slot1);
       
-      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
-         sig.connect(&obj2, &C1::_slot1);
-      #endif
-
-      //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
          sig.emitSignal(0, i1);
 
       // 15 + 14 ... + 3 + 2 + 1
       REQUIRE( obj.getCounter() == 0x78 + START_VALUE );
-      
-      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
-         REQUIRE( obj2.getCounter() == 0x78 + START_VALUE );
-      #endif
    }
+
+   #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+
+   SECTION( "Signal C++ method chained" )
+   {
+      C1 obj,obj2;
+
+      CSignal<void, int, int>sig;
+
+      sig.connect(&obj, &C1::_slot1);
+      sig.connect(&obj2, &C1::_slot1);
+
+      for(int i1=0; i1<0x10; i1++)
+         sig.emitSignal(0, i1);
+
+      // 15 + 14 ... + 3 + 2 + 1
+      REQUIRE( obj.getCounter() == 0x78 + START_VALUE );
+      REQUIRE( obj2.getCounter() == 0x78 + START_VALUE );
+   }
+
+   #endif // ? CONFIG_LEPTO_SIGNAL_CHAIN
 
    #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
    
@@ -208,6 +263,8 @@ TEST_CASE( "Signal", "[default]" )
       REQUIRE( obj.getCounter() == START_VALUE + sigCount );
    }
 
+#if 1
+
    SECTION( "Sizes" )
    {
       CSignal<int, int> sig;
@@ -231,8 +288,38 @@ TEST_CASE( "Signal", "[default]" )
       #else
          printf( "Connection is NOT allocated\n" );
       #endif
-
    }
+
+#endif
+
+   // When CONFIG_LEPTO_SIGNAL_METHOD_AS_FUNCTION is set, virtual methods can
+   // not be used as slots. Thats a known issue.
+   #if ! IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD_AS_FUNCTION )
+
+   SECTION( "Abstract" )
+   {
+      /*
+       * Connect a signal to an abstract base method in the base class. What will
+       * get called when the signal is emited?
+       */
+      CDerived c;
+
+      //printf( "Address 1: %p\n", &CBase::slot );
+      //printf( "Address 2: %p\n", &CDerived::slot );
+      //printf( "Address 3: %p\n", &CDerived::fix );
+
+      //c.m_signal.connect(&c, &CDerived::nvSlot );
+      //c.m_signal.connect(&c, &CDerived::slot );
+
+      for(int i1=0; i1<10; i1++)
+      {
+         c.m_signal.emitSignal( i1 );
+      }
+
+      REQUIRE( c.getSum() == 45 );
+   }
+
+   #endif
 }
 
 

@@ -183,7 +183,10 @@ class CFunctorMethodAsFunction final
    LEPTO_SIGNAL_VIRTUAL
        sigReturn emitSignal( sigTypes ... args ) const //final
    {
-      return( (*(this->m_methodPtr))( m_slotObject, args... ) );
+      if( m_methodPtr )
+      {
+         return( (*(this->m_methodPtr))( m_slotObject, args... ) );
+      }
    }
    bool isConnected() const
    {
@@ -280,7 +283,7 @@ class CSignal
 
       constexpr CSignal()
          #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
-            :m_pFunctor{ nullptr }
+           :m_pFunctor( nullptr )
          #else
          #endif
       {

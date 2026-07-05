@@ -852,21 +852,15 @@ T CList<T>::crosssum() const
 template <typename T>
 T CList<T>::average() const
 {
-   T value=0;
-   int pos=0;
-   int entryCount;
-   if(! ( entryCount = count() ) )
+   T value=crosssum();
+   
+   // in case there are no values at all, avoid division by zero.
+   if( !value )
    {
       return(value);
    }
-
-   for(int cnt=0; cnt< entryCount; cnt++)
-   {
-      value += *getEntry(pos);
-      pos++;
-   }
-
-   return( value / entryCount );
+   
+   return( value / count() );
 }
 
 

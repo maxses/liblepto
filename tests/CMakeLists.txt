@@ -7,6 +7,7 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 project(lepto_tests)
+
 find_package(Catch2 3 QUIET)
 if (Catch2_FOUND)
     add_definitions( "-DCATCH_V3" )
@@ -16,7 +17,6 @@ else()
     add_definitions( "-DCATCH_V2" )
     set(CATCH2_TARGET Catch2::Catch2)
 endif()
-
 
 set(
    headers

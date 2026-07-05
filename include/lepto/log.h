@@ -116,7 +116,11 @@ inline constexpr ELogCategory toCategory(ELogCode code)
    #define lCaution(msg, ... ) lLog(ELogCategory::Caution|0, msg, ##__VA_ARGS__ )
    #define lWarning(msg, ... ) lLog(ELogCategory::Warning|0, msg, ##__VA_ARGS__ )
    #define lCritical(msg, ... ) lLog(ELogCategory::Critical|0, msg, ##__VA_ARGS__ )
-   #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, msg, ##__VA_ARGS__ )
+   #if defined STM32
+      #define lFatal(msg, ... ) abort();
+   #else
+      #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, msg, ##__VA_ARGS__ )
+   #endif
    #define lCalm() lLog(ELogCategory::Calm|0, "" )
 #else
    #define lDebugReal(msg, ...) lLog(ELogCategory::Debug|0, "" )

@@ -78,6 +78,8 @@ const char *categoryMessages[]=
      [(int)ELogCategory::Fatal ]="F:", };
 #endif
 
+//#if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+
 #if IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
 void logPrintSimple( const SLogEntry* le )
 {
@@ -121,5 +123,8 @@ void logPrintSimple( const SLogEntry* le )
 
 
 #endif // ? CONFIG_LEPTO_LOG_PRETTY_PRINT ELSE
+
+//#endif // ? ! CONFIG_LEPTO_LOG_DIRECT_PRINT
+
 
 /*--- Fin ------------------------------------------------------------------*/

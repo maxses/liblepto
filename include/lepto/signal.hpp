@@ -191,6 +191,7 @@ class CFunctorMethodAsFunction final
       {
          return( (*(this->m_methodPtr))( m_slotObject, args... ) );
       }
+      return( (sigReturn)-1 );
    }
    bool isConnected() const
    {

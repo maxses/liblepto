@@ -134,6 +134,7 @@ int CDerived::nvSlot(int add)
 
 int CBase::slot( int value )
 {
+   (void)value;
    return(0);
 };
 

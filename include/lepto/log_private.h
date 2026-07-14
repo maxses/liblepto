@@ -57,7 +57,7 @@
 //---Declaration--------------------------------------------------------------
 
 
-#if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+// #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
 
 struct SLogEntry
 {
@@ -81,7 +81,7 @@ struct SLogEntry
    #endif
 };
 
-#endif // ! CONFIG_LEPTO_LOG_DIRECT_PRINT
+// #endif // ! CONFIG_LEPTO_LOG_DIRECT_PRINT
 
 
 //---fin----------------------------------------------------------------------

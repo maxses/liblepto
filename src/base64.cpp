@@ -41,7 +41,7 @@ char CBase64::alphabet(char index)
 
 char CBase64::alphabet(char index)
 {
-   if( index >= 0 )
+   if( (int8_t)index >= 0 )
    {
       // 0 ... 25
       if( index <=25 )

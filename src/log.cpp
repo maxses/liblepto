@@ -53,86 +53,28 @@ the same time does not make sense.
 #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
    
    #if 1
-   static CRing<SLogEntry> logs( CONFIG_LEPTO_LOG_MAX_ENTRIES );
+      static CRing<SLogEntry> logs( CONFIG_LEPTO_LOG_MAX_ENTRIES );
+      void leptoInitLog()
+      {
+      }
+   #else
+      // This is 40 bytes bigger on 'rufa'
+      #define logs (*logsPtr)
+      CRing<SLogEntry>* logsPtr=nullptr;
+      void biwakInitLog()
+      {
+         logsPtr=new CRing<SLogEntry>( CONFIG_LEPTO_LOG_MAX_ENTRIES );
+      }
+   #endif
+#else
    void leptoInitLog()
    {
    }
-   #else
-   // This is 40 bytes bigger on 'rufa'
-   #define logs (*logsPtr)
-   CRing<SLogEntry>* logsPtr=nullptr;
-   void biwakInitLog()
-   {
-      logsPtr=new CRing<SLogEntry>( CONFIG_LEPTO_LOG_MAX_ENTRIES );
-   }
-   #endif
-
 #endif // ? ! CONFIG_LEPTO_LOG_DIRECT_PRINT
 
-static bool logOverflow=false;
-
-
-#if IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
-
-void lVLogSimple(ELogCode code, const char *format, va_list &list )
-{
-   fputs( categoryMessages[ (int)( toCategory(code) ) ], stdout );
-
-   #if IS_ENABLED( CONFIG_LEPTO_LOG_USE_ANSI )
-      fputs( ANSI_NORMAL, stdout );
-   #endif
-
-   vprintf( format, list );
-   fputs( "\n", stdout );
-
-   switch( toCategory(code) )
-   {
-      case ELogCategory::Fatal:
-         #if defined ( STM32 )
-            abort();
-         #else
-            throw("Assertion wrong");
-         #endif
-         break;
-      default:
-         break;
-   }
-
-   return;
-}
-
-#if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
-
-void lVLogPretty(const char*file, int line, ELogCode code, const char *format, va_list &list )
-{
-   printf("%s(%d): ", file, line);
-   fputs( categoryMessages[ (int)toCategory( code ) ], stdout );
-   #if IS_ENABLED( CONFIG_LEPTO_LOG_USE_ANSI )
-      fputs( ANSI_NORMAL, stdout );
-   #endif
-
-   vprintf( format, list );
-   fputs( "\n", stdout );
-
-   switch( toCategory( code ) )
-   {
-      case ELogCategory::Fatal:
-         #if defined ( STM32 )
-            abort();
-         #else
-         throw( (int)code );
-         #endif
-         break;
-      default:
-         break;
-   }
-
-   return;
-}
-
-#endif // ? CONFIG_LEPTO_LOG_PRETTY_PRINT
-
-#else  // ? CONFIG_LEPTO_LOG_DIRECT_PRINT ELSE
+#if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+   static bool logOverflow=false;
+#endif
 
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
 void lVLogPretty(const char*file, int line, ELogCode code, const char *format, va_list &list )
@@ -140,20 +82,25 @@ void lVLogPretty(const char*file, int line, ELogCode code, const char *format, v
 void lVLogSimple(ELogCode code, const char *format, va_list &list )
 #endif
 {
-   // Can not produce any more messages? Remeber to add log on next event loop
-   if(!logs.pushable())
-   {
-      logOverflow=true;
-      return;
-   }
-   int leIndex=logs.tryReserve();
-   SLogEntry *le=(SLogEntry *)logs.reservedEntry( leIndex );
-   
-   if(!le)
-   {
-      // Avoid exception. When can this happen?
-      return;
-   }
+   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+      // Can not produce any more messages? Remeber to add log on next event loop
+      if(!logs.pushable())
+      {
+         logOverflow=true;
+         return;
+      }
+      int leIndex=logs.tryReserve();
+      SLogEntry *le=(SLogEntry *)logs.reservedEntry( leIndex );
+
+      if(!le)
+      {
+         // Avoid exception. When can this happen?
+         return;
+      }
+   #else
+      SLogEntry sle;
+      SLogEntry *le=&sle;
+   #endif
    
    #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
       le->file=file;
@@ -187,12 +134,19 @@ void lVLogSimple(ELogCode code, const char *format, va_list &list )
       #endif
    }
    
-   logs.pushReserved( leIndex );
+   // Push or print?
+   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+      logs.pushReserved( leIndex );
+   #else
+      #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
+         logPrintPretty(le);
+      #else
+         logPrintSimple(le);
+      #endif
+   #endif
    
    return;
 }
-
-#endif // ? CONFIG_LEPTO_LOG_DIRECT_PRINT ELSE
 
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
 
@@ -222,6 +176,8 @@ void lLogSimple( ELogCode code, const char *format, ... )
 
 void logEventLoop()
 {
+   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
+
    const SLogEntry* le;
    while( ( le = (const SLogEntry*)logs.frontEntry() ) )
    {
@@ -249,6 +205,9 @@ void logEventLoop()
       logOverflow=false;
       lCritical( "LOF" );
    }
+
+   #endif // ? ! CONFIG_LEPTO_LOG_DIRECT_PRINT
+
 }
 
 

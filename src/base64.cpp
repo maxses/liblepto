@@ -41,6 +41,25 @@ char CBase64::alphabet(char index)
 
 char CBase64::alphabet(char index)
 {
+   if( index >= 0 )
+   {
+      // 0 ... 25
+      if( index <=25 )
+         return 'A' + ( index );
+
+      // 26 ... 51
+      if( index <= 51 )
+         return 'a' + ( index - 26 );
+
+      // 52 ... 61
+      if( index <= 61 )
+         return '0' + ( index - 52 );
+   }
+
+   // default
+   return "+/="[ index - 62 ];
+
+   /*
    switch( index )
    {
       case 0 ... 25:
@@ -56,6 +75,7 @@ char CBase64::alphabet(char index)
          return "+/="[ index - 62 ];
          break;
    }
+   */
 }
 
 #endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET ELSE

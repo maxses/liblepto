@@ -108,7 +108,7 @@ void logPrintPretty( const SLogEntry* le )
    fputs( le->logString, stdout );
    fputs( "\n", stdout );
 }
-   
+
 #else
 
 void logPrintSimple( const SLogEntry* le )

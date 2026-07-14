@@ -356,7 +356,7 @@ class CSignal
                m_pFunctor.connect(slotObject, methodPtr);
             #endif
          #endif
-      };
+      }
       #endif
 
       void disconnect()

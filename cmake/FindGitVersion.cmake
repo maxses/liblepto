@@ -1,19 +1,20 @@
 #-----------------------------------------------------------------------------
 #
-# \brief		CMake module to create an git version information header file
+# \brief    CMake module to create an git version information header file
 #
-#				Example of usage:
+#           Example of usage:
 #
-#					[...]
+#           [...]
 #
-#					find_package(GitVersion REQUIRED)
+#           find_package(GitVersion REQUIRED)
 #
-#					add_executable( ${PROJECT_NAME}
-#								src/main.cpp
-#								${GIT_VERSION_HEADER}
-#					)
+#           add_executable( ${PROJECT_NAME}
+#                    src/main.cpp
+#                    ${GIT_VERSION_HEADER}
+#           )
 #
-#					[...]
+#           [...]
+#
 #           If the cmake-cariable "BUILD_ID" is set, it is set as C/C++ 
 #           definition/macro. 
 #           This can be used by build/servers/release-scripts.
@@ -65,6 +66,7 @@ add_custom_command(
 set_source_files_properties(
    ${GIT_VERSION_HEADER}
    PROPERTIES GENERATED TRUE
+   SKIP_AUTOGEN ON
 )
 
 install(

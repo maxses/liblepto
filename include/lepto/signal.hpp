@@ -83,8 +83,12 @@ class CFunctor
        #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
        CFunctor *m_next=nullptr;
        #endif
-       
+
    public:
+      #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
+         virtual ~CFunctor()
+         {};
+      #endif
       virtual sigReturn emitSignal( sigTypes ... args ) const = 0;
 };
 

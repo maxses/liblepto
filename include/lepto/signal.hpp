@@ -486,5 +486,40 @@ class CSignal
 #endif // ? CONFIG_LEPTO_NO_SIGNAL else
 
 
+template <typename sigReturn, typename ... sigTypes>
+class CSimpleSignal
+{
+   public:
+      void* m_slotObject;
+      sigReturn (*m_methodPtr)( void *, sigTypes ... args );
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpmf-conversions"
+   
+   constexpr CSimpleSignal( )
+       :m_methodPtr( nullptr )
+   {
+   }
+   
+   template <class slotClass>
+   void connect( slotClass* _slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
+   {
+      m_slotObject=_slotObject;
+      m_methodPtr=(sigReturn (*)( void *, sigTypes ... args ))_methodPtr;
+   }
+
+#pragma GCC diagnostic pop
+   
+   sigReturn emitSignal( sigTypes ... args ) const
+   {
+      if( m_methodPtr )
+      {
+         return( (*(this->m_methodPtr))( m_slotObject, args... ) );
+      }
+      return( (sigReturn)-1 );
+   }
+};
+
+
 /*--- Fin ------------------------------------------------------------------*/
 #endif // ! ? LEPTO_SIGNAL_HPP

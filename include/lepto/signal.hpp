@@ -510,6 +510,11 @@ class CSimpleSignal
 
 #pragma GCC diagnostic pop
    
+   void disconnect()
+   {
+      m_methodPtr = nullptr;
+   }
+   
    sigReturn emitSignal( sigTypes ... args ) const
    {
       if( m_methodPtr )

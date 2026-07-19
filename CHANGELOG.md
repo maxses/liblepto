@@ -1,3 +1,9 @@
+# Changes for v1.3.0
+
+* logging: Fixed CONFIG_LEPTO_LOG_DIRECT_PRINT
+* Signal: Several fixes; Added CSimpleSignal for smaller footprint
+* mockQt: Use CSoftTimer for QTimer
+
 # Changes for v1.2.0
 
 * Support disconnecting signal

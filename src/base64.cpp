@@ -192,11 +192,11 @@ int CBase64::decode(const char *src, lsize_t srcSize, uint8_t *dest, lsize_t des
             case '0'...'9':
                rawValue=(src[srcPos]-'0')+(26*2);
                break;
-            // Hasndle "+/="
             case '+':
-               // [fall-through]
+               rawValue=0x3E;
+               break;
             case '/':
-               rawValue=(src[srcPos]-'+')+(26*2)+10;
+               rawValue=0x3F;
                break;
             case '=':
                rawValue=0;
@@ -205,7 +205,7 @@ int CBase64::decode(const char *src, lsize_t srcSize, uint8_t *dest, lsize_t des
                return(-1);
                break;
          }
-         value= (value<<6) | ( rawValue & 0x3f );
+         value= ( value << 6 ) | ( rawValue & 0x3f );
          if( src[srcPos] == '=' )
             reduced++;
          srcPos++;

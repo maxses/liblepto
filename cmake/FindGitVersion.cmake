@@ -42,26 +42,32 @@ set ( GV_PROJECT_NAME ${PROJECT_NAME} )
 
 file( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/git_version" )
 
-# to verify this: 
-#    make git_creater_canbuz_canbuz
-#    stat -c "%Y" canbuz/git_version/git_version.h
-#    sleep 2
-#    make git_creater_canbuz_canbuz
-#    stat -c "%Y" canbuz/git_version/git_version.h
-add_custom_target( git_creater_${GV_PROJECT_NAME_UNIQUE}
-    COMMAND
-      SOURCE_DIR=${CMAKE_SOURCE_DIR} 
-      OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/git_version 
-      PROJECT=${GV_PROJECT_NAME} 
-         cmake -P ${CMAKE_CURRENT_LIST_DIR}/git_version_script.cmake
-)
+if ( NOT checker_${GV_PROJECT_NAME_UNIQUE} )
 
-add_custom_command(
-    OUTPUT
-         ${GIT_VERSION_HEADER}
-    DEPENDS
-         DEPENDS git_creater_${GV_PROJECT_NAME_UNIQUE}
-)
+   # to verify this: 
+   #    make git_creater_canbuz_canbuz
+   #    stat -c "%Y" canbuz/git_version/git_version.h
+   #    sleep 2
+   #    make git_creater_canbuz_canbuz
+   #    stat -c "%Y" canbuz/git_version/git_version.h
+   add_custom_target( git_creater_${GV_PROJECT_NAME_UNIQUE}
+       COMMAND
+         SOURCE_DIR=${CMAKE_SOURCE_DIR} 
+         OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/git_version 
+         PROJECT=${GV_PROJECT_NAME} 
+            cmake -P ${CMAKE_CURRENT_LIST_DIR}/git_version_script.cmake
+   )
+   
+   add_custom_command(
+       OUTPUT
+            ${GIT_VERSION_HEADER}
+       DEPENDS
+            DEPENDS git_creater_${GV_PROJECT_NAME_UNIQUE}
+   )
+
+   set( checker_${GV_PROJECT_NAME_UNIQUE} On )
+
+endif( NOT checker_${GV_PROJECT_NAME_UNIQUE} )
 
 set_source_files_properties(
    ${GIT_VERSION_HEADER}

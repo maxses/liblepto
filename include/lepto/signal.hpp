@@ -523,6 +523,10 @@ class CSimpleSignal
       }
       return( (sigReturn)-1 );
    }
+   sigReturn emitSingle( sigTypes ... args ) const
+   {
+       return( emitSignal( args ... )  );
+   }
 };
 
 

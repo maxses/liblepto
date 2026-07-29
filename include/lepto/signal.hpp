@@ -34,6 +34,13 @@
 #include <lepto/ring.hpp>
 
 
+/*--- Defines --------------------------------------------------------------*/
+
+
+#define CONNECT( signal, object, slot) \
+    signal.connect< &slot>( object, &slot );
+
+
 /*--- Declarations ---------------------------------------------------------*/
 
 

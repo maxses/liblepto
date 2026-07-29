@@ -96,7 +96,8 @@ class CBase
       CSignal<int, int> m_signal;
       CBase()
       {
-         m_signal.connect(this, &CBase::slot );
+         // m_signal.connect(this, &CBase::slot );
+         CONNECT( m_signal, this, CBase::slot );
       }
       virtual int slot(int)=0;
       virtual int getSum()=0;
@@ -146,7 +147,8 @@ TEST_CASE( "Signal", "[default]" )
       C1 obj;
       CSignal<void, int, int>sig;
 
-      sig.connect(&obj, &C1::_slot1);
+      //sig.connect(&obj, &C1::_slot1);
+      CONNECT( sig, &obj, C1::_slot1);
       
       for(int i1=0; i1<0x10; i1++)
          sig.emitSignal(0, i1);
@@ -200,7 +202,8 @@ TEST_CASE( "Signal", "[default]" )
       CPendingSignalPool pool(0x11);
       CSignal<void, int> sig;
 
-      sig.connect(&obj, &C1::_slot2);
+      //sig.connect(&obj, &C1::_slot2);
+      CONNECT( sig, &obj, C1::_slot2);
 
       //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
@@ -224,7 +227,8 @@ TEST_CASE( "Signal", "[default]" )
       CPendingSignalPoolStatic pool(0x11);
       CSignal<void> sig;
 
-      sig.connect(&obj, &C1::_slot3);
+      //sig.connect(&obj, &C1::_slot3);
+      CONNECT( sig, &obj, C1::_slot3);
 
       //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
@@ -248,7 +252,8 @@ TEST_CASE( "Signal", "[default]" )
       // "+1" Depending on configuration, 1 element is not usable
       CSignalDeferred<void> sig( sigCount + 1 );
       
-      sig.connect(&obj, &C1::_slot3);
+      // sig.connect(&obj, &C1::_slot3);
+      CONNECT( sig, &obj, C1::_slot3 );
       
       //lHint << "Checking adding to list";
       for(int i1=0; i1<sigCount; i1++)
@@ -321,6 +326,66 @@ TEST_CASE( "Signal", "[default]" )
    }
 
    #endif
+
+}
+
+
+TEST_CASE( "SimpleSignal", "[default]" )
+{
+   SECTION( "Signal C++ method" )
+   {
+       class C1
+       {
+           int counter=0;
+
+           public:
+                void slot( int i1 )
+                {
+                    counter+=i1;
+                }
+                int getCounter()
+                {
+                    return(counter);
+                }
+                int slot2( int i1 )
+                {
+                    return(i1*i1);
+                }
+       };
+
+       class C2
+       {
+           public:
+                int slot( int i1 )
+                {
+                    return(i1*i1);
+                }
+       };
+
+       CSimpleSignal<void, int>sig1;
+       CSimpleSignal<int, int>sig2;
+       CSimpleSignal<int, int>sig3;
+       C1 c1;
+       C2 c2;
+
+       CONNECT( sig1, &c1, C1::slot );
+       CONNECT( sig2, &c2, C2::slot );
+
+       for(int i1=0; i1<10; i1++)
+       {
+           sig1.emitSignal(i1);
+       }
+
+       REQUIRE( c1.getCounter() == 45 );
+
+       for(int i1=0; i1<10; i1++)
+       {
+           REQUIRE( sig2.emitSignal(i1) == i1*i1 );
+       }
+
+       // Unconnected signal, what should it report
+       REQUIRE( sig3.emitSignal( 10 ) == 0 );
+   }
 }
 
 

@@ -297,7 +297,7 @@ TEST_CASE( "Signal", "[default]" )
    // not be used as slots. Thats a known issue.
    #if ! IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD_AS_FUNCTION )
 
-   SECTION( "Abstract" )
+   SECTION( "Abstract virtual" )
    {
       /*
        * Connect a signal to an abstract base method in the base class. What will

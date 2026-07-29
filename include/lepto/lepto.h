@@ -72,6 +72,43 @@ typedef int lsize_t;
 void leptoInit();
 void leptoEventLoop();
 
+#if __cplusplus__
+    #define configHashCheckImplement_S2( a, b ) \
+        extern "C" { void configHashCheck_ ## a ## _ ## b(); }; \
+        void configHashCheck_ ## a ## _ ## b(){};
+
+    #define configHashCheckDeclare_S2( a, b ) \
+        extern "C" { void configHashCheck_ ## a ## _ ## b(); }
+#else
+    #define configHashCheckImplement_S2( a, b ) \
+        void configHashCheck_ ## a ## _ ## b(); \
+        void configHashCheck_ ## a ## _ ## b(){};
+
+    #define configHashCheckDeclare_S2( a, b ) \
+        void configHashCheck_ ## a ## _ ## b();
+#endif
+
+#define configHashCheck_S2( a, b ) \
+    configHashCheck_ ## a ## _ ## b();
+
+#define configHashCheckImplement_S1( a, b ) \
+        configHashCheckImplement_S2( a, b )
+
+#define configHashCheckDeclare_S1( a, b ) \
+        configHashCheckDeclare_S2( a, b )
+
+#define configHashCheck_S1( a, b ) \
+        configHashCheck_S2( a, b )
+
+#define configHashCheckImplement( a ) \
+        configHashCheckImplement_S1( a, CONFIG_HASH )
+
+#define configHashCheckDeclare( a ) \
+        configHashCheckDeclare_S1( a, CONFIG_HASH )
+
+#define configHashCheck( a ) \
+        configHashCheck_S1( a, CONFIG_HASH )
+
 
 /*--- Fin ------------------------------------------------------------------*/
 #endif // ? ! LEPTO_LEPTO_HPP

@@ -65,7 +65,6 @@ set(
       include/lepto/signalPool.hpp
       include/lepto/signalPoolStatic.hpp
       ${COMMON_CONFIG_HEADER}
-      ${CMAKE_BINARY_DIR}/config.pp
 )
 
 set(

@@ -334,7 +334,7 @@ TEST_CASE( "SimpleSignal", "[default]" )
 {
    SECTION( "Signal C++ method" )
    {
-       class C1
+       class CSimple1
        {
            int counter=0;
 
@@ -353,7 +353,7 @@ TEST_CASE( "SimpleSignal", "[default]" )
                 }
        };
 
-       class C2
+       class CSimple2
        {
            public:
                 int slot( int i1 )
@@ -365,11 +365,11 @@ TEST_CASE( "SimpleSignal", "[default]" )
        CSimpleSignal<void, int>sig1;
        CSimpleSignal<int, int>sig2;
        CSimpleSignal<int, int>sig3;
-       C1 c1;
-       C2 c2;
+       CSimple1 c1;
+       CSimple2 c2;
 
-       CONNECT( sig1, &c1, C1::slot );
-       CONNECT( sig2, &c2, C2::slot );
+       CONNECT( sig1, &c1, CSimple1::slot );
+       CONNECT( sig2, &c2, CSimple2::slot );
 
        for(int i1=0; i1<10; i1++)
        {

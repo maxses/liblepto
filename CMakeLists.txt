@@ -42,6 +42,8 @@ if ( NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
    set( USE_LEPTO 1 PARENT_SCOPE )
 endif()
 
+find_package( ConfigHash REQUIRED )
+
 set(
    headers
       include/lepto/ansi.h
@@ -63,6 +65,7 @@ set(
       include/lepto/signalPool.hpp
       include/lepto/signalPoolStatic.hpp
       ${COMMON_CONFIG_HEADER}
+      ${CMAKE_BINARY_DIR}/config.pp
 )
 
 set(
@@ -159,6 +162,8 @@ target_include_directories(
    PUBLIC
       include
 )
+
+# generate_config_hash( lepto )
 
 generate_export_header( ${PROJECT_NAME} )
 

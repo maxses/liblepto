@@ -34,4 +34,7 @@ void leptoEventLoop()
 }
 
 
+configHashCheckImplement( lepto );
+
+
 /*--- Fin ------------------------------------------------------------------*/

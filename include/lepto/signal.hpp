@@ -34,6 +34,13 @@
 #include <lepto/ring.hpp>
 
 
+/*--- Defines --------------------------------------------------------------*/
+
+
+#define CONNECT( signal, object, slot) \
+    signal.connect< &slot>( object, &slot );
+
+
 /*--- Declarations ---------------------------------------------------------*/
 
 
@@ -316,7 +323,7 @@ class CSignal
       #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
       // An connection 'costs' 24 Bytes of RAM
       #if LEPTO_SIGNAL_DO_VIRTUAL || 1
-      template <class slotClass >
+      template <auto Method, class slotClass >
       #endif
       void connect( slotClass *slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ))
       {
@@ -486,43 +493,45 @@ class CSignal
 #endif // ? CONFIG_LEPTO_NO_SIGNAL else
 
 
-template <typename sigReturn, typename ... sigTypes>
+template<typename Ret, typename... Args>
 class CSimpleSignal
 {
-   public:
-      void* m_slotObject;
-      sigReturn (*m_methodPtr)( void *, sigTypes ... args );
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpmf-conversions"
-   
-   constexpr CSimpleSignal( )
-       :m_methodPtr( nullptr )
-   {
-   }
-   
-   template <class slotClass>
-   void connect( slotClass* _slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
-   {
-      m_slotObject=_slotObject;
-      m_methodPtr=(sigReturn (*)( void *, sigTypes ... args ))_methodPtr;
-   }
-
-#pragma GCC diagnostic pop
-   
-   void disconnect()
-   {
-      m_methodPtr = nullptr;
-   }
-   
-   sigReturn emitSignal( sigTypes ... args ) const
-   {
-      if( m_methodPtr )
+   private:
+      void* m_object = nullptr;
+      Ret (*m_stub)(void*, Args...) = nullptr;
+      
+      template<class T, Ret (T::*Method)(Args...)>
+      static Ret trampoline(void* object, Args... args)
       {
-         return( (*(this->m_methodPtr))( m_slotObject, args... ) );
+         return (static_cast<T*>(object)->*Method)(args...);
       }
-      return( (sigReturn)-1 );
-   }
+
+   public:
+      template<auto Method, class T> //, Ret (T::*Method)(Args...)>
+      void connect(T* object, Ret (T::*)( Args ... args ))
+      {
+         m_object = object;
+         m_stub = &trampoline<T, Method>;
+      }
+      
+      void disconnect()
+      {
+         m_object = nullptr;
+         m_stub = nullptr;
+      }
+      
+      Ret emitSignal(Args... args) const
+      {
+         if (m_stub)
+            return m_stub(m_object, args...);
+      
+         return Ret();
+      }
+      
+      Ret emitSingle(Args... args) const
+      {
+         return( emitSignal( args... ) );
+      }
 };
 
 

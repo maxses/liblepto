@@ -36,7 +36,7 @@
 
 /*--- Defines --------------------------------------------------------------*/
 
-int mainFake(int argc, const char **argv);
+int mainDummy(int argc, const char **argv);
 
 #define CONNECT( signal, object, slot) \
     signal.connect< &slot>( object, &slot );

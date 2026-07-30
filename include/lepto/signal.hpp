@@ -36,13 +36,13 @@
 
 /*--- Defines --------------------------------------------------------------*/
 
-int main(int argc, const char **argv);
+int mainDummy(int argc, const char **argv);
 
 #define CONNECT( signal, object, slot) \
     signal.connect< &slot>( object, &slot );
 
 #define CONNECT_MPTR( signal, object, slot) \
-   signal.connect< &main >( object, slot );
+   signal.connect< &mainDummy >( object, slot );
 
 
 /*--- Declarations ---------------------------------------------------------*/

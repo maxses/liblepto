@@ -186,8 +186,8 @@ TEST_CASE( "Signal", "[default]" )
 
       CSignal<void, int, int>sig;
 
-      sig.connect(&obj, &C1::_slot1);
-      sig.connect(&obj2, &C1::_slot1);
+      CONNECT( sig, &obj, C1::_slot1);
+      CONNECT( sig, &obj2, C1::_slot1);
 
       for(int i1=0; i1<0x10; i1++)
          sig.emitSignal(0, i1);

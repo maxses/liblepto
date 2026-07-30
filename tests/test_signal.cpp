@@ -77,7 +77,7 @@ class C1
 
       int slotConst(int value) const
       {
-          return(123);
+         return(value-123);
       }
 
       int getCounter()
@@ -173,6 +173,8 @@ TEST_CASE( "Signal", "[default]" )
       CONNECT( sigVoid, &obj, C1::slotVoid);
       // Connecting a const-method
       CONNECT( sigConst, &obj, C1::slotConst);
+      
+      REQUIRE( sigConst.emitSingle(0x500) == 0x500 - 123 );
 
    }
 

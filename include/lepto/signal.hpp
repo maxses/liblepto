@@ -142,14 +142,23 @@ class CFunctorMethod final
 {
    public:
       slotClass *m_slotObject;
-      sigReturn (slotClass::*m_methodPtr)( sigTypes ... args );
+      union {
+         sigReturn (slotClass::*m_methodPtr)( sigTypes ... args );
+         sigReturn (slotClass::*m_methodPtrConst)( sigTypes ... args ) const;
+      };
 
       constexpr CFunctorMethod( slotClass *slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ))
          :m_slotObject( slotObject )
          ,m_methodPtr( methodPtr )
       {
       }
-
+      
+      constexpr CFunctorMethod( slotClass *slotObject, sigReturn (slotClass::*methodPtrConst)( sigTypes ... args ) const)
+          :m_slotObject( slotObject )
+          ,m_methodPtrConst( methodPtrConst )
+      {
+      }
+                
       LEPTO_SIGNAL_VIRTUAL
       sigReturn emitSignal( sigTypes ... args ) const //final
       {

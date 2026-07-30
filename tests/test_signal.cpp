@@ -71,6 +71,15 @@ class C1
          m_counter++;
       }
 
+      void slotVoid()
+      {
+      }
+
+      int slotConst(int value) const
+      {
+          return(123);
+      }
+
       int getCounter()
       {
          return( m_counter );
@@ -145,7 +154,11 @@ TEST_CASE( "Signal", "[default]" )
    SECTION( "Signal C++ method" )
    {
       C1 obj;
+
       CSignal<void, int, int>sig;
+
+      CSignal<void>sigVoid;
+      CSignal<int, int>sigConst;
 
       //sig.connect(&obj, &C1::_slot1);
       CONNECT( sig, &obj, C1::_slot1);
@@ -155,6 +168,12 @@ TEST_CASE( "Signal", "[default]" )
 
       // 15 + 14 ... + 3 + 2 + 1
       REQUIRE( obj.getCounter() == 0x78 + START_VALUE );
+
+      // Connecting a void-method
+      CONNECT( sigVoid, &obj, C1::slotVoid);
+      // Connecting a const-method
+      CONNECT( sigConst, &obj, C1::slotConst);
+
    }
 
    #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
@@ -351,6 +370,12 @@ TEST_CASE( "SimpleSignal", "[default]" )
                 {
                     return(i1*i1);
                 }
+                void slotVoid()
+                {
+                }
+                void slotConst() const
+                {
+                }
        };
 
        class CSimple2
@@ -365,6 +390,7 @@ TEST_CASE( "SimpleSignal", "[default]" )
        CSimpleSignal<void, int>sig1;
        CSimpleSignal<int, int>sig2;
        CSimpleSignal<int, int>sig3;
+       CSimpleSignal<void>sig4;
        CSimple1 c1;
        CSimple2 c2;
 
@@ -385,6 +411,15 @@ TEST_CASE( "SimpleSignal", "[default]" )
 
        // Unconnected signal, what should it report
        REQUIRE( sig3.emitSignal( 10 ) == 0 );
+
+       // Test void-type
+       CONNECT( sig4, &c1, CSimple1::slotVoid );
+       sig4.emitSignal();
+
+       // Test void-type
+       CONNECT( sig4, &c1, CSimple1::slotConst );
+       sig4.emitSignal();
+
    }
 }
 

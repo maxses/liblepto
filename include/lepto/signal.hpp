@@ -36,13 +36,13 @@
 
 /*--- Defines --------------------------------------------------------------*/
 
-int main(int argc, const char **argv);
+int mainFake(int argc, const char **argv);
 
 #define CONNECT( signal, object, slot) \
     signal.connect< &slot>( object, &slot );
 
 #define CONNECT_MPTR( signal, object, slot) \
-   signal.connect< &main >( object, slot );
+   signal.connect< &mainFake >( object, slot );
 
 
 /*--- Declarations ---------------------------------------------------------*/
@@ -189,13 +189,21 @@ class CFunctorMethodAsFunction final
        :m_methodPtr( nullptr )
    {
    }
+
    template <class slotClass>
    void connect( slotClass* _slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ))
    {
       m_slotObject=_slotObject;
       m_methodPtr=(sigReturn (*)( void *, sigTypes ... args ))_methodPtr;
    }
-   #endif
+
+   template <class slotClass>
+   void connect( slotClass* _slotObject, sigReturn (slotClass::*_methodPtr)( sigTypes ... args ) const)
+   {
+      m_slotObject=_slotObject;
+      m_methodPtr=(sigReturn (*)( void *, sigTypes ... args ))_methodPtr;
+   }
+    #endif
    
    #pragma GCC diagnostic pop
    
@@ -331,17 +339,6 @@ class CSignal
       #endif
       void connect( slotClass *slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ))
       {
-         // if( methodPtr < ( sigReturn (slotClass::*)( sigTypes ... args ) )0x100ul )
-         // if( (unsigned long long)(methodPtr) < 0x100 )
-         // if( reinterpret_cast<std::intptr_t>(methodPtr) < 0x100 )
-         // if( 0 )
-         /*
-         uintptr_t p=methodPtr;
-         if( (uintptr_t)methodPtr < 0x100 )
-         {
-            lFatal("Inheriting virtual function?");
-         }
-         */
          #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
          
             #if LEPTO_SIGNAL_DO_VIRTUAL
@@ -366,6 +363,46 @@ class CSignal
                lAssert( ! m_pFunctor.isConnected() );
             #endif
                
+            #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
+               m_pFunctor=new CFunctorMethodConcrete( slotObject, methodPtr );
+            #else
+               m_pFunctor.connect(slotObject, methodPtr);
+            #endif
+         #endif
+      }
+      #endif
+
+      #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
+      // An connection 'costs' 24 Bytes of RAM
+      #if LEPTO_SIGNAL_DO_VIRTUAL || 1
+      template <auto Method, class slotClass >
+      #endif
+      void connect( slotClass *slotObject, sigReturn (slotClass::*methodPtr)( sigTypes ... args ) const)
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
+
+            #if LEPTO_SIGNAL_DO_VIRTUAL
+               CFunctor<sigReturn, sigTypes...> **pFunctor=&m_pFunctor;
+            #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_FUNCTION )
+               CFunctorFunction<sigReturn, sigTypes...>**pFunctor=&m_pFunctor;
+            #elif IS_ENABLED( CONFIG_LEPTO_SIGNAL_METHOD )
+               CFunctorMethodConcrete<sigReturn, sigTypes...>**pFunctor=&m_pFunctor;
+            #else
+               #error "Could not check signal configuration"
+            #endif
+
+            while(*pFunctor)
+            {
+               pFunctor=&((*pFunctor)->m_next);
+            }
+            *pFunctor=new CFunctorMethodConcrete(slotObject, methodPtr);
+         #else
+            #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
+               lAssert( m_pFunctor == nullptr );
+            #else
+               lAssert( ! m_pFunctor.isConnected() );
+            #endif
+
             #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
                m_pFunctor=new CFunctorMethodConcrete( slotObject, methodPtr );
             #else
@@ -510,6 +547,12 @@ class CSimpleSignal
          return (static_cast<T*>(object)->*Method)(args...);
       }
 
+      template<class T, Ret (T::*Method)(Args...) const>
+      static Ret trampolineConst(void* object, Args... args)
+      {
+         return (static_cast<const T*>(object)->*Method)(args...);
+      }
+
    public:
       template<auto Method, class T> //, Ret (T::*Method)(Args...)>
       void connect(T* object, Ret (T::*)( Args ... args ))
@@ -517,7 +560,14 @@ class CSimpleSignal
          m_object = object;
          m_stub = &trampoline<T, Method>;
       }
-      
+
+      template< auto Method, class T > //, Ret (T::*Method)(Args...)>
+      void connect( T* object, Ret (T::*)( Args ... args ) const )
+      {
+         m_object = object;
+         m_stub = &trampolineConst<T, Method>;
+      }
+
       void disconnect()
       {
          m_object = nullptr;
@@ -528,8 +578,9 @@ class CSimpleSignal
       {
          if (m_stub)
             return m_stub(m_object, args...);
-      
-         return Ret( -1 );
+
+         // Ret(-1) works but can have sideeffects on some types like bool/unsigned
+         return Ret();
       }
       
       Ret emitSingle(Args... args) const

@@ -42,7 +42,7 @@ int mainDummy(int argc, const char **argv);
     signal.connect< &slot>( object, &slot );
 
 #define CONNECT_MPTR( signal, object, slot) \
-   signal.connect< &mainFake >( object, slot );
+   signal.connect< &mainDummy >( object, slot );
 
 
 /*--- Declarations ---------------------------------------------------------*/

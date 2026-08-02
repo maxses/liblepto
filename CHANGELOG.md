@@ -1,3 +1,14 @@
+# Changes for v1.3.1
+
+* Signals: Implemented usage of connections to const methods
+* CSimpleSignal: Added emitSingle()
+* CMake: Added config-hash-module
+* Added class for CRTP
+* Signal: Added CONNECT macro
+* CSimpleSignal: Change implementation to make compiler happy
+* CMake: Git-Version-Module: Fixed inclusion of Module files multiple times
+* Base64: Fixed handling decoding alphabet '/'
+
 # Changes for v1.3.0
 
 * logging: Fixed CONFIG_LEPTO_LOG_DIRECT_PRINT

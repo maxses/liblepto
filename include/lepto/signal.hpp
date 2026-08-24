@@ -424,7 +424,7 @@ class CSignal
       void disconnect()
       {
          #if IS_ENABLED( CONFIG_LEPTO_SIGNAL_CHAIN )
-            lFatal("Not implemented");
+            lFatal( LDS("NI", "Not implemented") );
          #else
             #if LEPTO_SIGNAL_FUNCTOR_ALLOCATED
                if( m_pFunctor )

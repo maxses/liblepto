@@ -80,9 +80,9 @@ class CString: private CList<char>
       CString( const char* str ): CList( 0 )
       {
          int len=strlen( str );
-         allocate( len+1 );
-         memcpy( getBuffers(), str, len+1);
-         m_backPos=len;
+         allocate( len + TRAILING_ZERO + LEPTO_RING_SPARE_ENTRIES );
+         memcpy( getBuffers(), str, len + TRAILING_ZERO );
+         m_backPos = len + TRAILING_ZERO;
       };
       #endif
       //CString(const CString&) = delete;

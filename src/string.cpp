@@ -3,11 +3,13 @@
  * @file    string.hpp
  * @brief   Class for text strings
  *
- * The implementation is a little bit outdated. A big cleanup would be
- * appropriate.
+ * The class inherits CList.
+ * When data is allocated, there is always included and trailing zero. When
+ * string is empty, data might be a null pointer.
+ *
  * Some functions are just (intended) dummy to provide compability with Qt.
  *
- * This class is used in 'libfosh'.
+ * This class is used in 'libfosh' for example.
  *
  * @date   20150622
  * @author Maximilian Seesslen <src@seesslen.net>

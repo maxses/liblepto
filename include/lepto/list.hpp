@@ -682,9 +682,9 @@ template <typename T>
 CList<T>::CList(int maxEntries)
    :m_frontPos(0)
    ,m_backPos(0)
-   ,m_maxEntries(maxEntries)
-   ,m_maxEntriesDuplicated( maxEntries * DUPLICATE_FACTOR )
+   ,m_maxEntries(maxEntries + LEPTO_RING_SPARE_ENTRIES)
    #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+   ,m_maxEntriesDuplicated( ( maxEntries + LEPTO_RING_SPARE_ENTRIES ) * DUPLICATE_FACTOR )
    #endif
    #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
    ,m_volatile(false)
@@ -730,7 +730,7 @@ bool CList<T>::checkSpace(ringIndex_t newSize, bool doPreserve /*=true*/ )
    #endif
 
    // We need size+1 to keep a zero
-   if( newSize > m_maxEntries )
+   if( newSize + LEPTO_RING_SPARE_ENTRIES > m_maxEntries )
    {
       #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
          return( false );
@@ -740,7 +740,7 @@ bool CList<T>::checkSpace(ringIndex_t newSize, bool doPreserve /*=true*/ )
             return(false);
          }
 
-         newSize = MAX( newSize, oldSize + CONFIG_LEPTO_STRING_MEMORY_HIKE );
+         newSize = MAX( newSize + LEPTO_RING_SPARE_ENTRIES, oldSize + CONFIG_LEPTO_STRING_MEMORY_HIKE );
          allocate( newSize );
 
          m_backPos=0;

@@ -5,11 +5,13 @@
  * @file    string.hpp
  * @brief   Class for text strings
  *
- * The implementation is a little bit outdated. A big cleanup would be
- * appropriate.
+ * The class inherits CList.
+ * When data is allocated, there is always included and trailing zero. When
+ * string is empty, data might be a null pointer.
+ *
  * Some functions are just (intended) dummy to provide compability with Qt.
  *
- * This class is used in 'libfosh'.
+ * This class is used in 'libfosh' for example.
  *
  * @date   20150622
  * @author Maximilian Seesslen <src@seesslen.net>
@@ -50,11 +52,34 @@
 
 class CString: private CList<char>
 {
+   private:
+      // Avoid magic numbers
+      static constexpr ringIndex_t TRAILING_ZERO=1;
+
+   public:
+      /**
+       * @brief Get the real end index of string
+       *
+       * Pint either to the trailing zero or to 0 if list is empty.
+       * @return index
+       */
+      ringIndex_t realEnd()
+      {
+          return( m_backPos - ( m_backPos ? TRAILING_ZERO : 0) );
+      }
 
    public:
       constexpr int length() const
       {
-         return( count() );
+         int c=count();
+
+         // Ignore the trailing zero
+         if( c )
+         {
+             c--;
+         }
+
+         return( c );
       }
       char* data() const // Not a "const char*"; e.g. libfosh manipulates the string
       {
@@ -67,6 +92,8 @@ class CString: private CList<char>
          return( m_buffers );
       }
       CString( )
+      {};
+      CString( int length ): CList( length + ( length ? ( TRAILING_ZERO + LEPTO_RING_SPARE_ENTRIES ): 0 ) )
       {};
       #if 0
       CString( const char* str ): CList( strlen(str) + 1 )
@@ -89,46 +116,44 @@ class CString: private CList<char>
 
       CString( const CString& str ): CList( str.getMaxEntries() )
       {
-         memcpy( getBuffers(), str.getBuffers(), str.length() + 1 );
+         memcpy( getBuffers(), str.getBuffers(), str.count() );
          m_backPos=str.m_backPos;
       };
 
       CString& operator +=(char c)
       {
-         push_back( c );
+         replaceBack( c );
          push_back( 0 );
          return( *this );
       };
 
       CString& operator +=(const char* str)
       {
-         int len=strlen(str);
-         if ( ! checkSpace( length() + len + 1 ) )
-         {
-            return( *this );
-         }
-         memcpy(&m_buffers[m_backPos], str, len);
-         m_backPos+=len;
-         m_buffers[m_backPos]=0;
+         tryAppend( str );
+
          return( *this );
       }
       CString& operator +=( const CString& str)
       {
-         int len=str.length();
-         if( !checkSpace( length() + len + 1 ) )
+          tryAppend( str.data() );
+         #if 0
+         int size=str.length() + TRAILING_ZERO;
+         if( !checkSpace( length() + size ) )
          {
             return( *this );
          }
-         memcpy(&m_buffers[m_backPos], str.data(), len);
-         m_backPos+=len;
-         m_buffers[m_backPos]=0;
-
+         memcpy(&m_buffers[ realEnd() ], str.data(), size );
+         m_backPos += size - 1;
+         m_buffers[ realEnd() ]=0;
+         #endif
          return( *this );
       }
       #if ! defined STM32
       CString operator +( const CString& strB ) const
       {
-         CString str( *this );
+         // Let it work with non-resizable configuration
+         CString str( length() + strB.length() + TRAILING_ZERO );
+         str=*this;
          str+=strB;
          return( str );
       }
@@ -179,10 +204,10 @@ class CString: private CList<char>
             */
          }
 
-         if( pos + size > length() )
+         if( pos + size >= length() )
          {
             getBuffers()[pos]=0;
-            m_backPos=pos;
+            m_backPos=pos+1;
          }
          else
          {
@@ -196,31 +221,53 @@ class CString: private CList<char>
             }
             else
             {
-               m_backPos=0;
+               m_backPos = TRAILING_ZERO;
             }
             //memset( &(getBuffers()[m_backPos]), 0, getMaxEntries() - m_backPos);
          }
-         m_buffers[m_backPos]=0;
+         m_buffers[ m_backPos - TRAILING_ZERO ]=0;
       }
       void operator =(const char* str)
       {
-         int len=strlen(str);
-
-         if( ! checkSpace(len+1) )
-         {
-            return;
-         }
-         memcpy( m_buffers, str, len + 1);
-         m_frontPos = 0;
-         m_backPos = len;
-
+         m_frontPos = m_backPos = 0;
+         tryAppend(str);
          return;
       }
-      CString& operator=(CString const&) = delete;
+      bool tryAppend( const char* str )
+      {
+          int size=strlen(str) + TRAILING_ZERO;
+
+          if( ! checkSpace( length() + size ) )
+          {
+             return( false );
+          }
+          memcpy(&m_buffers[ realEnd() ], str, size);
+          m_frontPos = 0;
+          if( m_backPos )
+          {
+              m_backPos += size - 1;
+          }
+          else
+          {
+            m_backPos = size;
+          }
+          return( true );
+      }
+      #if defined(STM32)
+         CString& operator=(CString const&) = delete;
+      #else
+         CString& operator=(CString const &str )
+         {
+             tryAppend( str.data() );
+             return( *this );
+         }
+      #endif
+      /*
       void allocate(int size)
       {
          return( CList::allocate( size ) );
       }
+      */
       void clear()
       {
          CList::clear();
@@ -228,6 +275,14 @@ class CString: private CList<char>
          {
             m_buffers[0]=0;
          }
+      }
+      /**
+       * @brief Get the back position for debugging
+       * @return backPos
+       */
+      int backPos()
+      {
+          return( m_backPos );
       }
 };
 
@@ -239,6 +294,10 @@ class CByteArray: public CString
       }
 
       CByteArray( )
+      {
+      }
+
+      CByteArray( int length ): CString(length)
       {
       }
 

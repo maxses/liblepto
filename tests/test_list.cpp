@@ -58,13 +58,23 @@ TEST_CASE( "List", "[default]" )
          list << i1;
 
       #if LEPTO_RING_SPARE_ENTRIES == 1
-         int checkCount=0xF;
-         int offset=1;
+         int checkCount=0x10; // Addjusted automatically meanwhile; 0xF;
+         int offset=0; // Addjusted automatically meanwhile; 1;
       #else
          int checkCount=0x10;
          int offset=0;
       #endif
-         
+
+      for(int i1=0; i1<list.count(); i1++)
+      {
+         printf( "X %d: %d / %d\n", i1, *list.at(i1), *(list.getEntry(i1)) );
+      }
+      printf("Front: %d\n", list.frontIndex() );
+      printf("Back:  %d\n", list.backIndex() );
+      printf("Full:  %s\n", list.isFull() ? "yes" : "no" );
+      printf("Max:   %d\n", list.getMaxEntries() );
+      printf("Count: %d\n", list.count() );
+
       REQUIRE( list.count() == checkCount );
       for(int i1=0; i1<checkCount; i1++)
       {
@@ -82,6 +92,10 @@ TEST_CASE( "List", "[default]" )
       CRing<int> list(0x3);
       // std::list<int> list(0x3);
       // QList<int> list(0x3);
+
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         list.setResizable(false);
+      #endif
       
       list.push_back(10);
       list.push_back(20);
@@ -90,6 +104,7 @@ TEST_CASE( "List", "[default]" )
       int total=0;
 
       REQUIRE( list.begin() != list.end() );
+      list.pushable();
       REQUIRE( list.pushable() == false );
 
       int last=0;
@@ -100,7 +115,8 @@ TEST_CASE( "List", "[default]" )
          last = e;
       }
 
-      #if LEPTO_RING_SPARE_ENTRIES == 1
+      // Spare entry is added automatically now
+      #if 0 //LEPTO_RING_SPARE_ENTRIES == 1
          REQUIRE( total == 30 );
       #else
          REQUIRE( total == 60 );
@@ -110,7 +126,7 @@ TEST_CASE( "List", "[default]" )
 
    SECTION( "Ring" )
    {
-      CRing< int > ring( 2 + LEPTO_RING_SPARE_ENTRIES );
+      CRing< int > ring( 2 /*+ LEPTO_RING_SPARE_ENTRIES */ );
       //ring.setFatal(false);
 
       /* - push values to buffer should succeed till buffer is full
@@ -161,7 +177,7 @@ TEST_CASE( "List", "[default]" )
 
    SECTION( "Next" )
    {
-      CRing< int > ring( 3 + LEPTO_RING_SPARE_ENTRIES );
+      CRing< int > ring( 3 /*+ LEPTO_RING_SPARE_ENTRIES */ );
 
       /* - Use pushBack() to push some values
        * - Use '<<' to push an entry
@@ -216,7 +232,7 @@ TEST_CASE( "List", "[default]" )
       // lHint << "IV: " << ring.average();
       printf("Count: %d\n", ring.count() );
       
-      #if LEPTO_RING_SPARE_ENTRIES == 1
+      #if 0 // LEPTO_RING_SPARE_ENTRIES == 1
             REQUIRE ( ring.average() == ( ( 2.0f + 3.0f + 4.0f ) / 3.0f ) );
       #else
             REQUIRE ( ring.average() == ( ( 1.0f + 2.0f + 3.0f + 4.0f ) / 4.0f ) );
@@ -227,7 +243,7 @@ TEST_CASE( "List", "[default]" )
 
       // lHint << "IV: " << ring.average();
       // lHint << "SV: " << ( (    2.0+3.0+4.0+5.0 ) / 4.0 );
-      #if LEPTO_RING_SPARE_ENTRIES == 1
+      #if 0 // LEPTO_RING_SPARE_ENTRIES == 1
          REQUIRE ( ring.count() == 3 );
          REQUIRE ( ring.average() == ( ( 3.0f + 4.0f + 5.0f ) / 3.0f ) );
       #else
@@ -287,12 +303,45 @@ TEST_CASE( "List", "[default]" )
       #endif
    }
 
+   SECTION( "Count" )
+   {
+      CList<int> list1(10);
+
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         list1.setResizable( true );
+      #endif
+
+      for(int i1=0; i1<9; i1++)
+      {
+         list1.push_back(i1);
+      }
+      REQUIRE( list1.count() == 9 );
+
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE ) && IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+          list1.push_back( 0xff );
+
+          list1.count();
+          REQUIRE( list1.count() == 10 );
+      #endif
+   }
+
+   // Do not demand CONFIG_LEPTO_LIST_RESIZABLE to be set; non-resizable lists
+   // Should also be tested.
+   #if 0
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         #error "Please set CONFIG_LEPTO_LIST_RESIZABLE, I want to test it"
+      #endif
+   #endif
+
    SECTION( "Resize" )
    {
       CList<int> list1(10);
       CList<int> list2(10);
 
-      list2.setResizable( false );
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         list1.setResizable( true );
+         list2.setResizable( false );
+      #endif
 
       for(int i1=0; i1<200; i1++)
       {
@@ -303,11 +352,11 @@ TEST_CASE( "List", "[default]" )
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
          REQUIRE( list1.count() == 200 );
       #else
-         REQUIRE( list1.count() == 10 );
+         REQUIRE( list1.count() == 10 /*- LEPTO_RING_SPARE_ENTRIES */ );
       #endif
 
       // Must not grow because it was disabled. E.g. for buffer feeded in ISR.
-      REQUIRE( list2.count() == 10 );
+      REQUIRE( list2.count() == 10 /*- LEPTO_RING_SPARE_ENTRIES */ );
    }
 
    #if 1 // IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
@@ -315,28 +364,60 @@ TEST_CASE( "List", "[default]" )
    SECTION( "Expand shifted" )
    {
       // Prepare an List that the front is quite in the middle and the content
-      // overlaps the memory end
+      // overlaps the memory end. Force an reallocation (when enabled) and check
+      // that the content is properly moved.
 
+      // Fill '00000'
       CList<char> str(10);
       for(int i1=0; i1<5; i1++)
       {
          str.push_back('0');
       }
+
+      // Append '01234'
       for(int i1=0; i1<5; i1++)
       {
          str.push_back('0'+i1);
       }
+
+      // Remove the first '00000' to
       for(int i1=0; i1<5; i1++)
       {
          str.dropFront();
       }
+
+      // Append '56789'
       for(int i1=0; i1<5; i1++)
       {
          str.push_back('5'+i1);
       }
-      REQUIRE( str.getMaxEntries() == 10 );
-      REQUIRE( str.checkSpace(11) == true );
-      REQUIRE( memcmp( str.getBuffers(), "0123456789", 10 ) == false );
+      #if 1 // LEPTO_RING_SPARE_ENTRIES == 0
+         REQUIRE( str.getMaxEntries() == 10 + LEPTO_RING_SPARE_ENTRIES );
+      #else
+         REQUIRE( str.getMaxEntries() == ( 10 - LEPTO_RING_SPARE_ENTRIES ) + CONFIG_LEPTO_LIST_INCREMENT );
+      #endif
+
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         REQUIRE( str.checkSpace(11) == true );
+         printf( "### '%s'\n", str.getBuffers() );
+         REQUIRE( memcmp( &str.getBuffers()[0], "01234567890", 10 ) == false );
+      #else
+         REQUIRE( str.checkSpace(11) == false );
+         printf( "### '%s'\n", str.getBuffers() );
+         /*
+         for(int i1=0; i1<10; i1++)
+         {
+             printf( "### 0x%02X '%c'\n", str.getBuffers()[i1], str.getBuffers()[i1] );
+         }
+         */
+         #if LEPTO_RING_SPARE_ENTRIES == 0
+            REQUIRE( memcmp( &str.getBuffers()[0], "5678901234", 10 ) == false );
+         #else
+            // When there is a spare entry, the list is automatically bigger
+            REQUIRE( memcmp( &str.getBuffers()[0], "67890012345", 10 ) == false );
+         #endif
+      #endif
+
    }
 
    #endif

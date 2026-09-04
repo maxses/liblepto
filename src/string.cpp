@@ -33,20 +33,17 @@
 
 #else
 
-
-CString::~CString()
-{
-}
-
-CByteArray::CByteArray()
-{
-}
+#if 0
 
 CByteArray::~CByteArray()
 {
    free(m_buf);
    m_buf=nullptr;
 }
+
+#endif
+
+#if 0
 
 template <typename T>
 CBaseString<T> &CBaseString<T>::insert(int insertPos, T _char)
@@ -70,6 +67,8 @@ CBaseString<T> &CBaseString<T>::insert(int insertPos, T _char)
 
 
 template CBaseString<char> &CBaseString<char>::insert(int pos, char _char);
+
+#endif
 
 #endif
 

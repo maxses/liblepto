@@ -17,6 +17,9 @@
    #undef CONFIG_LEPTO_LOG_PRETTY_PRINT
    #define CONFIG_LEPTO_LOG_PRETTY_PRINT           1
    #define CONFIG_LEPTO_RING_SUPPORT_VOLATILE      1
+
+   // #undef CONFIG_LEPTO_LIST_RESIZABLE
+   // #define CONFIG_LEPTO_LIST_RESIZABLE             1
 #endif
 
 

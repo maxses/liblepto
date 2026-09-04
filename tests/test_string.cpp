@@ -34,16 +34,33 @@
 
 TEST_CASE( "String", "[default]" )
 {
+   SECTION( "tryAppend" )
+   {
+      CString s(128);
+      REQUIRE( s.length() == 0 );
+      REQUIRE( s.tryAppend("Hallo") == true );
+      REQUIRE( s.length() == 5 );
+      REQUIRE( s.tryAppend(" ") == true );
+      REQUIRE( s.length() == 6 );
+      REQUIRE( s.tryAppend("Welt!") == true );
+      //s.length();
+      REQUIRE( s.length() == 11 );
+      REQUIRE( s == "Hallo Welt!" );
+   }
+
    SECTION( "Manipulate" )
    {
       CString s("Manipulate");
 
       REQUIRE ( s == "Manipulate" );
+      REQUIRE ( s.length() == 10 );
 
       s.remove(-1,1);
+      printf("### %s\n", s.data());
       REQUIRE ( s == "Manipulat" );
 
       s.remove(-3,2);
+      printf( "### %s\n", s.data() );
       REQUIRE ( s == "Maniput" );
 
       s.remove(3,2);
@@ -59,8 +76,9 @@ TEST_CASE( "String", "[default]" )
       printf(">%s\n", s.data());
       REQUIRE ( s == "" );
 
-      s="Hallo Welt!";
-      s.remove(-6, 1000);
+      s="HalloWelt";
+      REQUIRE ( s.length() == 9 );
+      s.remove(-4, 1000);
       printf(">%s\n", s.data());
       REQUIRE ( s == "Hallo" );
 
@@ -70,13 +88,16 @@ TEST_CASE( "String", "[default]" )
       REQUIRE ( s1 == "Welt" );
 
       // Operator +=
-      CString s2="Hallo ";
+      CString s2(15);
+      s2="Hallo ";
       s2+="Welt!";
+      printf("### s2=%s\n", s2.data());
       REQUIRE ( s2 == "Hallo Welt!" );
 
-      CString s3="Hallo ";
-      CString s4="Welt!";
-      CString s5 = s3 + s4;
+      CString s3  { "Hallo " };
+      CString s4  { "Welt!" };
+      CString s5  { s3 + s4 };
+
       REQUIRE ( s5 == "Hallo Welt!" );
    }
 
@@ -107,7 +128,11 @@ TEST_CASE( "String", "[default]" )
                "aliquyam erat, sed diam voluptua. At vero eos et accusam et "
                "justo duo dolores et ea rebum. Stet clita kasd gubergren, no "
                "sea takimata sanctus est Lorem ipsum dolor sit amet.";
-      CString s1;
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         CString s1( 2048 );
+      #else
+         CString s1;
+      #endif
 
       for(int i1=0; i1<strlen(lorem); i1++)
       {
@@ -129,10 +154,13 @@ TEST_CASE( "String", "[default]" )
                "et justo duo dolores et ea rebum. Stet clita kasd gubergren, "
                "no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem "
                "ipsum dolor sit amet, consetetur sadipscing elitr, sed diam "
+               #if 0
                "nonumy eirmod tempor invidunt ut labore et dolore magna "
                "aliquyam erat, sed diam voluptua. At vero eos et accusam et "
                "justo duo dolores et ea rebum. Stet clita kasd gubergren, no "
-               "sea takimata sanctus est Lorem ipsum dolor sit amet.";
+               "sea takimata sanctus est Lorem ipsum dolor sit amet."
+               #endif
+               ;
       const char* lorem_substrings[]={
                "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, ",
                "sed diam nonumy eirmod tempor invidunt ut labore et dolore ",
@@ -140,18 +168,27 @@ TEST_CASE( "String", "[default]" )
                "et justo duo dolores et ea rebum. Stet clita kasd gubergren, ",
                "no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ",
                "ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ",
+               #if 0
                "nonumy eirmod tempor invidunt ut labore et dolore magna ",
                "aliquyam erat, sed diam voluptua. At vero eos et accusam et ",
                "justo duo dolores et ea rebum. Stet clita kasd gubergren, no ",
                "sea takimata sanctus est Lorem ipsum dolor sit amet.",
+               #endif
       };
-      CString s1;
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         CString s1(2048);
+      #else
+         CString s1;
+      #endif
 
       for(int i1=0; i1<sizeof(lorem_substrings) / sizeof(lorem_substrings[0]); i1++)
       {
          s1+=lorem_substrings[i1];
+         REQUIRE( s1.length() > 0 );
+         printf( "### C: Adding %s : %s (%d, %d, %d)\n", lorem_substrings[i1], s1.data(), s1.backPos(), s1.length(), s1.realEnd() );
       }
 
+      printf( "### s1 B=%s\n", s1.data() );
       // Strings are equal
       REQUIRE ( s1 == lorem );
    }

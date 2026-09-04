@@ -81,6 +81,7 @@
 #endif
 
 #define CONFIG_LEPTO_LIST_INCREMENT       8
+#define CONFIG_LEPTO_STRING_MEMORY_HIKE   8
 
 #if ! defined(LEPTO_CONFIGURED)
    #error LEPTO_CONFIGURED not defined. The configuration header was probably not involved.
@@ -155,6 +156,7 @@ class CList
 
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
       bool m_resizable = true;
+      #else
       #endif
 
    public:
@@ -310,6 +312,11 @@ class CList
        */
       bool push_back_ts(const T value);
       
+      /**
+       * @brief Replace the last entry or push an entry to the back if list is empty
+       */
+      bool replaceBack(const T value);
+
       /**
        * @brief Push an entry to the back. Not thread-safe.
        */
@@ -509,12 +516,8 @@ class CList
          }
          //#endif
          
-            if( ! m_maxEntries )
-            {
-               return( true );
-            }
-            return(  ( back + 1ul ) % m_maxEntries==  front );
          #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+            return(  ( back + LEPTO_RING_SPARE_ENTRIES ) % m_maxEntries==  front );
          #else
 
             #if 0
@@ -726,7 +729,8 @@ bool CList<T>::checkSpace(ringIndex_t newSize, bool doPreserve /*=true*/ )
 {
    #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
       T *oldBuf=m_buffers;
-      int oldSize=count();
+      ringIndex_t oldSize=count();
+      ringIndex_t oldMaxSize=m_maxEntries;
    #endif
 
    // We need size+1 to keep a zero
@@ -751,9 +755,9 @@ bool CList<T>::checkSpace(ringIndex_t newSize, bool doPreserve /*=true*/ )
             #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
             if( oldBuf )
             {
-               for(int i1=0; i1<oldSize; i1++)
+               for(ringIndex_t i1=0; i1<oldSize; i1++)
                {
-                  m_buffers[i1]=oldBuf[( i1 + m_frontPos ) % oldSize];
+                  m_buffers[i1]=oldBuf[( i1 + m_frontPos ) % oldMaxSize];
                }
                m_backPos=oldSize;
             }
@@ -899,20 +903,34 @@ bool CList<T>::push_back(const T value)
    
    checkSpace( count() + 1 );
 
-   T* top=backEntry();
+   T* back=backEntry();
    
-   if( !top )
+   if( !back )
    {
       #if IS_ENABLED( CONFIG_LEPTO_LIST_ABORT_FAILING_PUSH )
          abort();
       #endif
       return(false);
    }
-   *top=value;
+   *back=value;
    pushBack( );
    
    return(true);
 };
+
+template <typename T>
+bool CList<T>::replaceBack(const T value)
+{
+    if( ! count() )
+    {
+        return( push_back(value) );
+    }
+    else
+    {
+        m_buffers[ ( m_backPos + ( m_maxEntries - 1 ) ) MOD_ENTRY ] = value;
+    }
+    return(true);
+}
 
 
 template <typename T>

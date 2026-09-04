@@ -37,7 +37,7 @@
  *             Automatically pop entries from front when buffer is full and new
  *             value is going to be pushed. To activate this behaviour, the
  *             method "setVolatile( true )" has to be called.
- *          CONFIG_LEPTO_RING_DOWNSIZE
+ *          CONFIG_LEPTO_LIST_DOWNSIZE
  *             Can safe around 380 bytes on an stm32f042 application.
  *          CONFIG_LEPTO_LIST_RESIZABLE
  *             Support automatic expanding os lists when pushing data to a
@@ -86,7 +86,7 @@
    #error LEPTO_CONFIGURED not defined. The configuration header was probably not involved.
 #endif
 
-#if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+#if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    #define MOD_ENTRY                   % m_maxEntries
    #define MOD_ENTRY_ITERATOR          % m_parent->m_maxEntries
    #define MOD_DUPLICATED              % m_maxEntries
@@ -114,7 +114,7 @@
 //---Definitions---------------------------------------------------------------
 
 
-#if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+#if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    // Smaller types increase
    typedef unsigned int ringIndex_t;
 #else
@@ -135,7 +135,7 @@ class CList
       int m_busyProducing=0;
       #endif
 
-      #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
          static constexpr int DUPLICATE_FACTOR = 0x10000; // 0x1000 was not enough for 4-thread-test
          static constexpr int DUPLICATE_SHIFT = 16; // 0x1000 was not enough for 4-thread-test
       #endif
@@ -145,7 +145,7 @@ class CList
       ringIndex_t m_backPos;
       ringIndex_t m_maxEntries;
       
-      #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
          unsigned int m_maxEntriesDuplicated;
       #endif
 
@@ -289,7 +289,7 @@ class CList
          
          m_buffers = (T*)data;
          
-         #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+         #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
          // Can not use huge loops in counter when super big lists are used
          // e.g. for blocks of SD card
          m_maxEntriesDuplicated = ( maxEntries *
@@ -364,8 +364,8 @@ class CList
             return(0);
          }
 
-         #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-         // Will not happe when CONFIG_LEPTO_RING_DOWNSIZE is enabled
+         #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+         // Will not happe when CONFIG_LEPTO_LIST_DOWNSIZE is enabled
          if( back == (ringIndex_t) ( ( front + m_maxEntries ) MOD_DUPLICATED ) )
          {
             return( m_maxEntries );
@@ -391,6 +391,9 @@ class CList
       
       /**
        * @brief  Get the maximum number of entries that can be stored in the ringbuffer
+       *
+       *         The real size which can be pushed might be smaller when
+       *         CONFIG_LEPTO_LIST_DOWNSIZE is enabled.
        */
       int getMaxEntries() const
       {
@@ -506,12 +509,12 @@ class CList
          }
          //#endif
          
-         #if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
             if( ! m_maxEntries )
             {
                return( true );
             }
             return(  ( back + 1ul ) % m_maxEntries==  front );
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
          #else
 
             #if 0
@@ -571,7 +574,7 @@ class CList
             }
             m_maxEntries = maxEntries;
             
-            #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+            #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
                m_maxEntriesDuplicated = maxEntries * DUPLICATE_FACTOR;
             #endif
          }
@@ -584,7 +587,7 @@ class CList
        */
       int getMaxEntriesDuplicated()
       {
-         #if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
             return( m_maxEntries );
          #else
             return( m_maxEntriesDuplicated );
@@ -680,8 +683,8 @@ CList<T>::CList(int maxEntries)
    :m_frontPos(0)
    ,m_backPos(0)
    ,m_maxEntries(maxEntries)
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
    ,m_maxEntriesDuplicated( maxEntries * DUPLICATE_FACTOR )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    #endif
    #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
    ,m_volatile(false)
@@ -697,7 +700,7 @@ CList<T>::CList(int maxEntries)
       m_buffers = nullptr;
    }
 
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    // Don't mess with the duplicated range
    lFullAssert( m_maxEntries < (0x7FFFFFFF / DUPLICATE_FACTOR ) );
    #endif
@@ -1058,7 +1061,7 @@ void CList<T>::allocate( int size )
    m_maxEntries = size;
    ALLOCATE_LIST;
 
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    m_maxEntriesDuplicated= m_maxEntries * DUPLICATE_FACTOR;
    #endif
 }
@@ -1115,7 +1118,7 @@ void CList<T>::dump() const
    printf("m_frontPos: %d / %d\n", m_frontPos, m_frontPos % m_maxEntries);
    printf("m_backPos: %d / %d\n", m_backPos, m_backPos % m_maxEntries);
    printf("m_maxEntries: %d\n", m_maxEntries);
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
       printf("m_maxEntriesDuplicated: %d\n", m_maxEntriesDuplicated);
    #endif
    

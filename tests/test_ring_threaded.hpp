@@ -28,7 +28,7 @@
 
 // The overflows are gone since m_busyProducing was introduced. Consumer can
 // not consume more than once while producer did not finish.
-#if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+#if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    #define RING_SIZE          ( 64 )
 #else
    #define RING_SIZE          ( 64 )

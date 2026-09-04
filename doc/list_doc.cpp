@@ -2,7 +2,7 @@
   \page configuration Configuration
   \section lists Lists
 
-  \subsection sub_ring_downsize CONFIG_LEPTO_RING_DOWNSIZE
+  \subsection sub_ring_downsize CONFIG_LEPTO_LIST_DOWNSIZE
   Use different algorithm for data handling. This creates an spare entry in the 
   list which can not be filled. The usable size of list is "m_maxEntries-1".
 

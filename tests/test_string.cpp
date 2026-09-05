@@ -53,6 +53,7 @@ TEST_CASE( "String", "[default]" )
       CString s("Manipulate");
 
       REQUIRE ( s == "Manipulate" );
+      s.length();
       REQUIRE ( s.length() == 10 );
 
       s.remove(-1,1);

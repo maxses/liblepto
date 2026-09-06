@@ -88,10 +88,10 @@
 #endif
 
 #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
-   #define MOD_ENTRY                   % m_maxEntries
-   #define MOD_ENTRY_ITERATOR          % m_parent->m_maxEntries
-   #define MOD_DUPLICATED              % m_maxEntries
-   #define MOD_DUPLICATED_ITERATOR     % m_parent->m_maxEntries
+   // #define MOD_ENTRY                   % m_maxEntries
+   // #define MOD_ENTRY_ITERATOR          % m_parent->m_maxEntries
+   // #define MOD_DUPLICATED              % m_maxEntries
+   // #define MOD_DUPLICATED_ITERATOR     % m_parent->m_maxEntries
    #define LEPTO_RING_SPARE_ENTRIES    1
 #else
    #define MOD_ENTRY                   % m_maxEntries
@@ -189,7 +189,7 @@ class CList
             #endif
             const T& operator *() const
             {
-               return( m_parent->m_buffers[ m_pos MOD_ENTRY_ITERATOR ] );
+               return( m_parent->m_buffers[ m_parent->moduloEntry( m_pos ) ] );
             }
             CIterator& operator ++(int)
             {
@@ -275,7 +275,34 @@ class CList
       
       ringIndex_t realIndex( ringIndex_t pos ) const
       {
-         return( pos MOD_ENTRY );
+         return( moduloEntry( pos ) );
+      }
+      
+      constexpr ringIndex_t moduloEntry( ringIndex_t entry ) const
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+            // Avoid modulo operation which would cause an diivision on Cortec-M0
+            #if 1
+               if( entry >= m_maxEntries )
+               {
+                  entry-=m_maxEntries;
+               }
+               return(entry);
+            #else
+               return( entry % m_maxEntries );
+            #endif
+         #else
+            return( entry MOD_ENTRY );
+         #endif
+      }
+      
+      constexpr ringIndex_t moduloDuplicated( ringIndex_t entry ) const
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+            return( moduloEntry( entry ) );
+         #else
+            return( entry MOD_DUPLICATED );
+         #endif
       }
       
       void setIndices(ringIndex_t front, ringIndex_t back, int maxEntries, void* data)
@@ -380,8 +407,8 @@ class CList
          #endif
 
          // Normalize
-         front = front MOD_ENTRY;
-         back = back MOD_ENTRY;
+         front = moduloEntry( front );
+         back = moduloEntry( back );
 
          if( front == back )
          {
@@ -431,7 +458,7 @@ class CList
       {
          lAssert( pushable() );
 
-         ringIndex_t nextBack=( m_backPos + 1 ) MOD_DUPLICATED;
+         ringIndex_t nextBack=moduloDuplicated( m_backPos + 1 );
 
          m_backPos = nextBack;
       }
@@ -484,7 +511,7 @@ class CList
 
                return(-1);
             }
-            nextBack=( reserved + 1 ) MOD_DUPLICATED;
+            nextBack=moduloDuplicated( reserved + 1 );
             valid=__atomic_compare_exchange_n( &m_backPos, &reserved, nextBack,
                            true, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST );
          }while(!valid);
@@ -517,7 +544,7 @@ class CList
          //#endif
          
          #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
-            return(  ( back + LEPTO_RING_SPARE_ENTRIES ) % m_maxEntries==  front );
+            return(  moduloEntry( back + LEPTO_RING_SPARE_ENTRIES ) ==  front );
          #else
 
             #if 0
@@ -558,7 +585,7 @@ class CList
             return( nullptr );
          }
 
-         return( &m_buffers[ index MOD_ENTRY ] );
+         return( &m_buffers[ moduloEntry( index ) ] );
       }
       
       /**
@@ -581,8 +608,8 @@ class CList
                m_maxEntriesDuplicated = maxEntries * DUPLICATE_FACTOR;
             #endif
          }
-         m_frontPos=( front MOD_DUPLICATED );
-         m_backPos=( back MOD_DUPLICATED );
+         m_frontPos=moduloDuplicated( front );
+         m_backPos=moduloDuplicated( back );
       }
       
       /**
@@ -669,7 +696,7 @@ class CList
       T &rawEntry(ringIndex_t pos) const
       {
          lAssert( pos <= m_maxEntries );
-         return( m_buffers[ pos MOD_ENTRY ] );
+         return( m_buffers[ moduloEntry( pos ) ] );
       }
 
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
@@ -819,7 +846,7 @@ T *CList<T>::frontEntry() const
    // Has to be checked manually.
    if( isDataAvailableBasically() )
    {
-      value=&m_buffers[ m_frontPos MOD_ENTRY ];
+      value=&m_buffers[ moduloEntry( m_frontPos ) ];
    }
 
    return(value);
@@ -834,7 +861,7 @@ T *CList<T>::backEntry() const
    // Don't edit the top of a full buffer: Its also the bottom
    if( ! isFull() )
    {
-      value=&m_buffers[ m_backPos MOD_ENTRY ];
+      value=&m_buffers[ moduloEntry( m_backPos ) ];
    }
 
    return(value);
@@ -846,7 +873,7 @@ void CList<T>::dropFront()
 {
    if(isDataAvailableBasically())
    {
-      m_frontPos = ( m_frontPos + 1 ) MOD_DUPLICATED;
+      m_frontPos = moduloDuplicated( m_frontPos + 1 );
    }
    else
    {
@@ -927,7 +954,7 @@ bool CList<T>::replaceBack(const T value)
     }
     else
     {
-        m_buffers[ ( m_backPos + ( m_maxEntries - 1 ) ) MOD_ENTRY ] = value;
+        m_buffers[ moduloEntry( m_backPos + ( m_maxEntries - 1 ) ) ] = value;
     }
     return(true);
 }
@@ -1004,7 +1031,7 @@ T *CList<T>::getEntry(int pos) const
    if( pos < count() )
    {
       // Pos is relative to start
-      pos= ( pos + m_frontPos ) MOD_ENTRY;
+      pos= moduloEntry( pos + m_frontPos );
       value=&(m_buffers[ pos ]);
    }
 
@@ -1016,7 +1043,7 @@ T *CList<T>::getEntry(int pos) const
 template <typename T>
 const typename CList<T>::CIterator CList<T>::at(int pos)
 {
-   return( CList<T>::CIterator(this, ( pos + m_frontPos ) MOD_DUPLICATED ) );
+   return( CList<T>::CIterator(this, moduloDuplicated( pos + m_frontPos ) ) );
 }
 
 #endif
@@ -1035,7 +1062,7 @@ template <typename T>
 typename CList<T>::CIterator& CList<T>::CIterator::operator +=(int number)
 {
    lDebugAssert( number );
-   m_pos = ( m_pos + number ) MOD_DUPLICATED_ITERATOR;
+   m_pos = m_parent->moduloDuplicated( m_pos + number );
    return( *this );
 };
 
@@ -1097,7 +1124,7 @@ typename CList<T>::CIterator CList<T>::find(const C& candidate)
 
    while( distance(front, back) > 1 )
    {
-      mid=(front.getIndex() +(distance( front.getIndex(), back.getIndex() ) /2 ) ) % m_maxEntries;
+      mid=moduloEntry( front.getIndex() +(distance( front.getIndex(), back.getIndex() ) /2 ) );
       //printf("   Check: Front: 0x%X; Back: 0x%X; distance: %d; value: 0x%X\n", front.getIndex(), back.getIndex(), distance(front, back), candidate );
       if( mid < candidate )
       {

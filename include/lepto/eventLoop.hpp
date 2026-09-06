@@ -109,12 +109,10 @@ class CEventLoop
          #endif
       }
       
-      void deactivateEventLoop( bool active=true )
+      void deactivateEventLoop( )
       {
          #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DEACTIVATABLE )
             activateEventLoop( false );
-         #else
-            (void)active;
          #endif
       }
 #endif

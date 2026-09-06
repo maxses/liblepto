@@ -58,8 +58,11 @@
 #if defined ( STM32 )
    #define lAssert( assertion, ... ) if ( ! (assertion) ) \
          { abort(); };
+   #define lHostAssert( assertion, ... )
 #else
    #define lAssert( assertion, ... ) if ( ! (assertion) ) \
+      { throw("Assertion wrong: " #assertion); };
+   #define lHostAssert( assertion, ... ) if ( ! (assertion) ) \
       { throw("Assertion wrong: " #assertion); };
 #endif
 

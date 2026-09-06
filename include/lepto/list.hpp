@@ -752,7 +752,7 @@ void CList<T>::dropFront()
    }
    else
    {
-      lFatal("NE");
+      lFatal( LDS("NE", "No Entry") );
    }
 
    return;

@@ -1,0 +1,43 @@
+menu "Lepto"
+
+
+menu "Logging"
+
+config LEPTO_LOG_NO_TEXT
+   bool "Eliminate any log string."
+   default n
+   help
+      This can make sense when UART is not accessible.
+
+config LEPTO_LOG_PRETTY_PRINT
+   bool "Show logs in pretty style with colors."
+   default y
+
+config LEPTO_LOG_NO_USE_ANSI
+   bool "When LEPTO_LOG_PRETTY_PRINT is set, do not print category string in colors."
+   default n
+
+endmenu
+
+
+menu "Lists/Ring"
+
+config LEPTO_LIST_DOWNSIZE
+   bool "Use code for handling lists with smaller footprint."
+   default n
+   help
+      One element of the list will be not usable.
+
+config LEPTO_RING_SUPPORT_VOLATILE
+   bool "Provide support for volatile lists."
+   default n
+
+endmenu
+
+
+config LEPTO_GLOBAL_EVENT_LOOP
+   bool "Provide support for global event loop. Each object that inherits from CEventLoop will be regarded automatically."
+   default y
+
+
+endmenu

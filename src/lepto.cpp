@@ -34,7 +34,16 @@ void leptoEventLoop()
 }
 
 
-configHashCheckImplement( lepto );
+uint32_t leptoConfigChecksum()
+{
+   return( LEPTO_CONFIG_CHECKSUM );
+}
+
+uint32_t leptoCodeVersion()
+{
+   return( LEPTO_CODE_SHA );
+}
+
 
 
 /*--- Fin ------------------------------------------------------------------*/

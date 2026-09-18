@@ -42,8 +42,6 @@ if ( NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
    set( USE_LEPTO 1 PARENT_SCOPE )
 endif()
 
-find_package( ConfigHash REQUIRED )
-
 set(
    headers
       include/lepto/ansi.h

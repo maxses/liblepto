@@ -14,6 +14,8 @@ project( lepto LANGUAGES CXX VERSION 1.0.0 )
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set( lepto_VERSION 1.0.0 )
 
+enable_testing()
+
 include(GenerateExportHeader)
 
 if( ( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" ) OR HOST )

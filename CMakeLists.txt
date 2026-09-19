@@ -204,6 +204,18 @@ install(
     Devel
 )
 
+install(
+  FILES
+    cmake/git_version_script.sh
+  PERMISSIONS
+    OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE
+    OWNER_READ GROUP_READ WORLD_READ
+    OWNER_WRITE
+  DESTINATION
+    lib/cmake/leptoGitVersion
+  COMPONENT
+    Devel
+)
 
 if( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR HOST )
     add_subdirectory( tests )

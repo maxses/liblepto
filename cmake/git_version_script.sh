@@ -57,14 +57,14 @@ subDirectory()
          echo "$submodule: \"$(git describe --tags --dirty --long --match 'v[0-9]*.[0-9]*.[0-9]*')$CHANGE\""
       else
          calculateVersionCode
-         echo "#define GIT_LONG_$project \"$(git describe --tags --dirty --long --match 'v[0-9]*.[0-9]*.[0-9]*')$CHANGE\""
-         echo "#define GIT_SHA_$project \"$(git log --pretty=format:'%h' -n 1)\""
-         echo "#define GIT_SHA_INT_$project  0x$(git log --pretty=format:'%h' -n 1)"
-         echo "#define GIT_SHORT_$project \"${TAG}-${DISTANCE}${DIRTY}\""
-         echo "#define GIT_SEMI_$project \"${TAG}-${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
-         echo "#define GIT_REV_$project \"$(git describe --tags --dirty --match 'v[0-9]*.[0-9]*.[0-9]*')\""
-         echo "#define GIT_BRANCH_$project \"$(git symbolic-ref --short HEAD)\""
-         echo "#define VERSION_CODE_$project ${VERSION_CODE}"
+         printDefines
+         # starts with "lib"? Also generate define for plain name, e.g. "lepto"
+         # to keep the version check macro happy
+         if [ "${project#lib}" != "${project}" ]; then
+            project=${project#lib}
+            # printDefines
+            echo "#define VERSION_CODE_$project ${VERSION_CODE}"
+         fi
          echo
       fi
       
@@ -107,6 +107,22 @@ calculateVersionCode()
 }
 
 
+printDefines()
+{
+   postfix=""
+   if [ ! -z "$project" ]; then
+      postfix="_${project}"
+   fi
+   echo "#define GIT_LONG$postfix \"$(git describe --tags --dirty --long --match 'v[0-9]*.[0-9]*.[0-9]*')$CHANGE\""
+   echo "#define GIT_SHA$postfix \"$(git log --pretty=format:'%h' -n 1)\""
+   echo "#define GIT_SHA_INT$postfix  0x$(git log --pretty=format:'%h' -n 1)"
+   echo "#define GIT_SHORT$postfix \"${TAG}-${DISTANCE}${DIRTY}\""
+   echo "#define GIT_SEMI$postfix \"${TAG}-${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
+   echo "#define GIT_REV$postfix \"$(git describe --tags --dirty --match 'v[0-9]*.[0-9]*.[0-9]*')\""
+   echo "#define GIT_BRANCH$postfix \"$(git symbolic-ref --short HEAD)\""
+   echo "#define VERSION_CODE$postfix ${VERSION_CODE}"
+}
+
 format=""
 
 while [ "$#" -ge "1" ]; do
@@ -143,16 +159,18 @@ PROJECT_CODE="0x$(echo -n ${PROJECT} | shasum | head -c 8)"
 if [ "$format" == "text" ]; then
    echo "${PROJECT}: \"$(git describe --tags --dirty --long --match 'v[0-9]*.[0-9]*.[0-9]*')\""
 else
-   echo "#define GIT_LONG \"$(git describe --tags --dirty --long --match 'v[0-9]*.[0-9]*.[0-9]*')\""
-   echo "#define GIT_TAG \"${TAG}\""
-   echo "#define GIT_SHA  \"$(git log --pretty=format:'%h' -n 1)\""
-   echo "#define GIT_SHA_INT  0x$(git log --pretty=format:'%h' -n 1)"
-   echo "#define GIT_SHORT  \"${TAG}-${DISTANCE}${DIRTY}\""
-   echo "#define GIT_SEMI   \"${TAG}-${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
-   echo "#define GIT_SEMI_TAIL   \"${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
-   echo "#define GIT_REV  \"$(git describe --tags --dirty --match 'v[0-9]*.[0-9]*.[0-9]*')\""
-   echo "#define GIT_BRANCH  \"$(git symbolic-ref --short HEAD)\""
-   echo "#define GIT_PROJECT  \"${PROJECT}\""
+   # echo "#define GIT_LONG \"$(git describe --tags --dirty --long --match 'v[0-9]*.[0-9]*.[0-9]*')\""
+   # echo "#define GIT_TAG \"${TAG}\""
+   # echo "#define GIT_SHA  \"$(git log --pretty=format:'%h' -n 1)\""
+   # echo "#define GIT_SHA_INT  0x$(git log --pretty=format:'%h' -n 1)"
+   # echo "#define GIT_SHORT  \"${TAG}-${DISTANCE}${DIRTY}\""
+   # echo "#define GIT_SEMI   \"${TAG}-${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
+   # echo "#define GIT_SEMI_TAIL   \"${DISTANCE}-g${SHORT_SHA}${DIRTY}\""
+   # echo "#define GIT_REV  \"$(git describe --tags --dirty --match 'v[0-9]*.[0-9]*.[0-9]*')\""
+   # echo "#define GIT_BRANCH  \"$(git symbolic-ref --short HEAD)\""
+   project=""
+   calculateVersionCode
+   printDefines
    if [ ! -z "${DIRTY}" ]; then
       echo "#define GIT_DIRTY 1"
    fi
@@ -164,7 +182,7 @@ calculateVersionCode
 if [ "$format" == "text" ]; then
    echo -n
 else
-   echo "#define VERSION_CODE $VERSION_CODE"
+   # echo "#define VERSION_CODE $VERSION_CODE"
    # echo "#define VERSION_CODE_${PROJECT} $VERSION_CODE"
    echo "#define PROJECT_CODE_${PROJECT} $PROJECT_CODE	// SHA over project name."
    echo "// MAJOR: $MAJOR; MINOR: $MINOR; PATCH: $PATCH; DIST: $DISTANCE; DISTCODE: $DISTCODE"

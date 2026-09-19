@@ -16,6 +16,8 @@ set( lepto_VERSION 1.0.0 )
 
 enable_testing()
 
+set(CMAKE_MODULE_PATH   "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
+
 include(GenerateExportHeader)
 
 if( ( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" ) OR HOST )

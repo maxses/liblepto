@@ -59,8 +59,8 @@ function( add_generated_config project )
          message( FATAL_ERROR " Set COMMON_CONFIG_HEADER${VARIANT_POSTFIX_UPPER_CASE}." ) 
       endif()
    elseif( NOT ${PROJECT}_CONFIG_HEADER )
-      set ( ${PROJECT}_CONFIG_HEADER "include/${project}/presets/config_full.h" PARENT_SCOPE)
-      set ( ${PROJECT}_CONFIG_HEADER "include/${project}/presets/config_full.h")
+      set ( ${PROJECT}_CONFIG_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/${project}/presets/config_full.h" PARENT_SCOPE)
+      set ( ${PROJECT}_CONFIG_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/${project}/presets/config_full.h")
    endif()
    
    set( header ${${PROJECT}_CONFIG_HEADER} )
@@ -95,7 +95,7 @@ function( add_generated_config project )
       COMMAND
          echo  "\\#define ${project}_CODE_SHA ${PROJECT}_CODE_SHA" >> config_generated_${project}.h
       COMMAND
-         echo  "\\#define ${PROJECT}_CONFIGURED" >> config_generated_${project}.h
+         echo  "\\#define ${PROJECT}_CONFIGURED 1" >> config_generated_${project}.h
       COMMAND
          echo >> config_generated_${project}.h
       COMMAND

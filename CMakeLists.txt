@@ -211,6 +211,9 @@ configure_file(cmake/${PROJECT_NAME}Config.cmake
 install(
   FILES
     cmake/${PROJECT_NAME}Config.cmake
+    cmake/FindGitVersion.cmake
+    cmake/git_version_script.cmake
+    cmake/git_version_script.sh
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
   DESTINATION
     lib/cmake/${PROJECT_NAME}

@@ -39,6 +39,8 @@
 #define DAYS_SINCE_EPOCH_ON_MILLENNIUM          ( 10957l )
 #define DIV_HZ_TO_MHZ   ( 1000ul * 1000ul )
 
+#define MILLI           ( 1000ul )
+
 
 /*--- Fin ------------------------------------------------------------------*/
 #endif // ? ! LEPTO_UNITS_H

@@ -41,12 +41,16 @@ TEST_CASE( "Base64", "[default]" )
 
    SECTION( "CByteArray" )
    {
-
       {
          CBase64 b64;
-         CString encodedStr;
-         CByteArray ba;
-         encodedStr.allocate(1);
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+            CString encodedStr(1);
+            CByteArray ba;
+         #else
+            CString encodedStr(1024);
+            CByteArray ba(1024);
+         #endif
+         //encodedStr.allocate(1);
 
          b64.encode( CByteArray( data ), encodedStr );
          printf("Encoded: %s\n", encodedStr.data());

@@ -3,11 +3,13 @@
  * @file    string.hpp
  * @brief   Class for text strings
  *
- * The implementation is a little bit outdated. A big cleanup would be
- * appropriate.
+ * The class inherits CList.
+ * When data is allocated, there is always included and trailing zero. When
+ * string is empty, data might be a null pointer.
+ *
  * Some functions are just (intended) dummy to provide compability with Qt.
  *
- * This class is used in 'libfosh'.
+ * This class is used in 'libfosh' for example.
  *
  * @date   20150622
  * @author Maximilian Seesslen <src@seesslen.net>
@@ -26,20 +28,22 @@
 
 /*--- Implementation -------------------------------------------------------*/
 
+#if 0
 
-CString::~CString()
-{
-}
 
-CByteArray::CByteArray()
-{
-}
+#else
+
+#if 0
 
 CByteArray::~CByteArray()
 {
    free(m_buf);
    m_buf=nullptr;
 }
+
+#endif
+
+#if 0
 
 template <typename T>
 CBaseString<T> &CBaseString<T>::insert(int insertPos, T _char)
@@ -63,6 +67,10 @@ CBaseString<T> &CBaseString<T>::insert(int insertPos, T _char)
 
 
 template CBaseString<char> &CBaseString<char>::insert(int pos, char _char);
+
+#endif
+
+#endif
 
 
 /*--- Fin ------------------------------------------------------------------*/

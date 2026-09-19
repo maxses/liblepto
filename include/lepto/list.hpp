@@ -37,7 +37,7 @@
  *             Automatically pop entries from front when buffer is full and new
  *             value is going to be pushed. To activate this behaviour, the
  *             method "setVolatile( true )" has to be called.
- *          CONFIG_LEPTO_RING_DOWNSIZE
+ *          CONFIG_LEPTO_LIST_DOWNSIZE
  *             Can safe around 380 bytes on an stm32f042 application.
  *          CONFIG_LEPTO_LIST_RESIZABLE
  *             Support automatic expanding os lists when pushing data to a
@@ -70,50 +70,75 @@
 #  define CONFIG_LEPTO_RING_DEFAULT_SIZE 0x0
 #endif
 
+#if ! defined ( CONFIG_LEPTO_RING_VITALIZE )
+   #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+      #define CONFIG_LEPTO_RING_VITALIZE           1
+   #endif
+#endif
+
+#if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE ) && ! IS_ENABLED( CONFIG_LEPTO_RING_VITALIZE )
+   #error Setting CONFIG_LEPTO_LIST_RESIZABLE but not CONFIG_LEPTO_RING_VITALIZE is not plausible.
+#endif
+
 #define CONFIG_LEPTO_LIST_INCREMENT       8
+#define CONFIG_LEPTO_STRING_MEMORY_HIKE   8
 
 #if ! defined(LEPTO_CONFIGURED)
    #error LEPTO_CONFIGURED not defined. The configuration header was probably not involved.
 #endif
 
-#if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-   #define MOD_ENTRY                   % m_maxEntries
-   #define MOD_ENTRY_ITERATOR          % m_parent->m_maxEntries
-   #define MOD_DUPLICATED              % m_maxEntries
-   #define MOD_DUPLICATED_ITERATOR     % m_parent->m_maxEntries
+#if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+   // #define MOD_ENTRY                   % m_maxEntries
+   // #define MOD_ENTRY_ITERATOR          % m_parent->m_maxEntries
+   // #define MOD_DUPLICATED              % m_maxEntries
+   // #define MOD_DUPLICATED_ITERATOR     % m_parent->m_maxEntries
    #define LEPTO_RING_SPARE_ENTRIES    1
 #else
    #define MOD_ENTRY                   % m_maxEntries
    #define MOD_ENTRY_ITERATOR          % m_parent->m_maxEntries
-   #define MOD_DUPLICATED              % m_maxEntriesDuplicated
-   #define MOD_DUPLICATED_ITERATOR     % m_parent->m_maxEntriesDuplicated
+   //#define MOD_DUPLICATED              % m_maxEntriesDuplicated
+   //#define MOD_DUPLICATED_ITERATOR     % m_parent->m_maxEntriesDuplicated
+   #define MOD_DUPLICATED              % ( m_maxEntries << 16 )
+   #define MOD_DUPLICATED_ITERATOR     % ( m_parent->m_maxEntries << 16 )
    #define LEPTO_RING_SPARE_ENTRIES    0
+#endif
+
+#if 0
+   #define DELETE_LIST delete[] m_buffers; m_buffers=nullptr;
+   #define ALLOCATE_LIST m_buffers=new T[ m_maxEntries ];
+#else
+   #define  DELETE_LIST free( m_buffers ); m_buffers=nullptr;
+   #define ALLOCATE_LIST m_buffers=(T*)malloc( sizeof(T) * m_maxEntries );
 #endif
 
 
 //---Definitions---------------------------------------------------------------
 
 
-#if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+#if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    // Smaller types increase
    typedef unsigned int ringIndex_t;
 #else
    // Force unsigned division for cortex-m0 with no division support
-   // There is no support for negative values
+   // There is no support for negative values.
+   // Having it signed can cost more than 100 Bytes on miniminutnik.
    typedef unsigned int ringIndex_t;
 #endif
 
 template <typename T>
 class CList
 {
+   friend class CString;
+
    private:
       T* m_buffers;
       #if ! IS_ENABLED( CONFIG_LEPTO_RING_NO_THREADS )
       int m_busyProducing=0;
       #endif
 
-      #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
          static constexpr int DUPLICATE_FACTOR = 0x10000; // 0x1000 was not enough for 4-thread-test
+         static constexpr int DUPLICATE_SHIFT = 16; // 0x1000 was not enough for 4-thread-test
       #endif
 
    private:
@@ -121,20 +146,21 @@ class CList
       ringIndex_t m_backPos;
       ringIndex_t m_maxEntries;
       
-      #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
          unsigned int m_maxEntriesDuplicated;
       #endif
-         
+
       #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
       bool m_volatile;
       #endif // ? BIWAK_SUPPORT_VOLATILE_RING
 
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
       bool m_resizable = true;
+      #else
       #endif
 
    public:
-
+#if 1
       class CIterator
       {
          private:
@@ -154,14 +180,16 @@ class CList
             {
                return( other.m_pos == m_pos );
             }
+            #if 0
             void operator =(ringIndex_t pos)
             {
                m_pos = pos;
                return;
             }
+            #endif
             const T& operator *() const
             {
-               return( m_parent->m_buffers[ m_pos MOD_ENTRY_ITERATOR ] );
+               return( m_parent->m_buffers[ m_parent->moduloEntry( m_pos ) ] );
             }
             CIterator& operator ++(int)
             {
@@ -192,17 +220,21 @@ class CList
                return(*this);
             }
       };
-      
+#endif
       CList(int maxEntries = CONFIG_LEPTO_RING_DEFAULT_SIZE);
       ~CList();
 
+      bool checkSpace(ringIndex_t newLength, bool doPreserve = true );
+
       #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
       
+#if 0
       /**
        * @brief Initially allocate memory when 
        */
       void vitalize();
-      
+#endif
+
       #endif
       
       void clear();
@@ -218,7 +250,10 @@ class CList
       T *frontEntry() const;
    
       T *getEntry(int pos) const;
+
+      #if 1
       const CIterator at(int pos);
+      #endif
       
       /**
        * @brief Get pointer to the entry at top position.
@@ -240,7 +275,34 @@ class CList
       
       ringIndex_t realIndex( ringIndex_t pos ) const
       {
-         return( pos MOD_ENTRY );
+         return( moduloEntry( pos ) );
+      }
+      
+      constexpr ringIndex_t moduloEntry( ringIndex_t entry ) const
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+            // Avoid modulo operation which would cause an diivision on Cortec-M0
+            #if 1
+               if( entry >= m_maxEntries )
+               {
+                  entry-=m_maxEntries;
+               }
+               return(entry);
+            #else
+               return( entry % m_maxEntries );
+            #endif
+         #else
+            return( entry MOD_ENTRY );
+         #endif
+      }
+      
+      constexpr ringIndex_t moduloDuplicated( ringIndex_t entry ) const
+      {
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+            return( moduloEntry( entry ) );
+         #else
+            return( entry MOD_DUPLICATED );
+         #endif
       }
       
       void setIndices(ringIndex_t front, ringIndex_t back, int maxEntries, void* data)
@@ -256,7 +318,7 @@ class CList
          
          m_buffers = (T*)data;
          
-         #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+         #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
          // Can not use huge loops in counter when super big lists are used
          // e.g. for blocks of SD card
          m_maxEntriesDuplicated = ( maxEntries *
@@ -273,14 +335,19 @@ class CList
       };
 
       /**
-       * @brief Push an entry to the back.
+       * @brief Push an entry to the back. Thread-safe.
        */
-      bool push_back(const T value);
+      bool push_back_ts(const T value);
       
       /**
-       * @brief Push an entry to the back. Not thread safe. 
+       * @brief Replace the last entry or push an entry to the back if list is empty
        */
-      bool push_nts(const T value);
+      bool replaceBack(const T value);
+
+      /**
+       * @brief Push an entry to the back. Not thread-safe.
+       */
+      bool push_back(const T value);
       
       /**
        * @brief Pop an entry of the bottom.
@@ -313,7 +380,7 @@ class CList
        * @brief  Get the ammount of pushed/poppabel entries
        * @return Number of entries
        */
-      int count() const
+      constexpr int count() const
       {
          return( distance( m_frontPos, m_backPos ) );
       }
@@ -325,17 +392,23 @@ class CList
 
       int distance( ringIndex_t front, ringIndex_t back ) const
       {
-         #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-         // Will not happe when CONFIG_LEPTO_RING_DOWNSIZE is enabled
-         if( back == ( front + m_maxEntries ) MOD_DUPLICATED )
+         // Avoid division by zero
+         if( ! m_maxEntries )
+         {
+            return(0);
+         }
+
+         #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+         // Will not happe when CONFIG_LEPTO_LIST_DOWNSIZE is enabled
+         if( back == (ringIndex_t) ( ( front + m_maxEntries ) MOD_DUPLICATED ) )
          {
             return( m_maxEntries );
          }
          #endif
 
          // Normalize
-         front = front MOD_ENTRY;
-         back = back MOD_ENTRY;
+         front = moduloEntry( front );
+         back = moduloEntry( back );
 
          if( front == back )
          {
@@ -352,6 +425,9 @@ class CList
       
       /**
        * @brief  Get the maximum number of entries that can be stored in the ringbuffer
+       *
+       *         The real size which can be pushed might be smaller when
+       *         CONFIG_LEPTO_LIST_DOWNSIZE is enabled.
        */
       int getMaxEntries() const
       {
@@ -382,13 +458,13 @@ class CList
       {
          lAssert( pushable() );
 
-         ringIndex_t nextBack=( m_backPos + 1 ) MOD_DUPLICATED;
+         ringIndex_t nextBack=moduloDuplicated( m_backPos + 1 );
 
          m_backPos = nextBack;
       }
 
       /**
-       * @brief check if value can be pushed to buffer
+       * @brief check if value can be pushed to buffer without resizing
        */
       bool pushable() const
       {
@@ -409,11 +485,13 @@ class CList
          ringIndex_t nextBack;
          ringIndex_t reserved;
          
-         #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
+         #if ( CONFIG_LEPTO_RING_DEFAULT_SIZE == 0 ) && IS_ENABLED( CONFIG_LEPTO_RING_VITALIZE )
+            /*
             if( m_maxEntries == 0 )
             {
                vitalize();
             }
+            */
          #endif
          
 
@@ -433,7 +511,7 @@ class CList
 
                return(-1);
             }
-            nextBack=( reserved + 1 ) MOD_DUPLICATED;
+            nextBack=moduloDuplicated( reserved + 1 );
             valid=__atomic_compare_exchange_n( &m_backPos, &reserved, nextBack,
                            true, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST );
          }while(!valid);
@@ -458,20 +536,18 @@ class CList
        */
       bool isFull(ringIndex_t front, ringIndex_t back) const
       {
-         #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
-            if( m_maxEntries == 0)
-            {
-               return( false );
-            }
-         #endif
+         //#if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
+         if( m_maxEntries == 0)
+         {
+            return( true );
+         }
+         //#endif
          
-         #if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-            if( ! m_maxEntries )
-            {
-               return( true );
-            }
-            return(  ( back + 1ul ) % m_maxEntries==  front );
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+            return(  moduloEntry( back + LEPTO_RING_SPARE_ENTRIES ) ==  front );
          #else
+
+            #if 0
             // Cornercase: When back-position is at the very end and the front is
             // at the beginning, adding an additional entry must not be allowed.
             // Stack would become "empty" but all entries are marked 'valid'.
@@ -480,8 +556,9 @@ class CList
             {
                return( true );
             }
+            #endif
 
-            return(  back == ( front + m_maxEntries ) MOD_DUPLICATED );
+            return(  back == (ringIndex_t) ( ( front + m_maxEntries ) MOD_DUPLICATED ) );
          #endif
       }
       
@@ -508,7 +585,7 @@ class CList
             return( nullptr );
          }
 
-         return( &m_buffers[ index MOD_ENTRY ] );
+         return( &m_buffers[ moduloEntry( index ) ] );
       }
       
       /**
@@ -527,12 +604,12 @@ class CList
             }
             m_maxEntries = maxEntries;
             
-            #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+            #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
                m_maxEntriesDuplicated = maxEntries * DUPLICATE_FACTOR;
             #endif
          }
-         m_frontPos=( front MOD_DUPLICATED );
-         m_backPos=( back MOD_DUPLICATED );
+         m_frontPos=moduloDuplicated( front );
+         m_backPos=moduloDuplicated( back );
       }
       
       /**
@@ -540,7 +617,7 @@ class CList
        */
       int getMaxEntriesDuplicated()
       {
-         #if IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+         #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
             return( m_maxEntries );
          #else
             return( m_maxEntriesDuplicated );
@@ -619,7 +696,7 @@ class CList
       T &rawEntry(ringIndex_t pos) const
       {
          lAssert( pos <= m_maxEntries );
-         return( m_buffers[ pos MOD_ENTRY ] );
+         return( m_buffers[ moduloEntry( pos ) ] );
       }
 
       #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
@@ -635,9 +712,9 @@ template <typename T>
 CList<T>::CList(int maxEntries)
    :m_frontPos(0)
    ,m_backPos(0)
-   ,m_maxEntries(maxEntries)
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-   ,m_maxEntriesDuplicated( maxEntries * DUPLICATE_FACTOR )
+   ,m_maxEntries(maxEntries + LEPTO_RING_SPARE_ENTRIES)
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
+   ,m_maxEntriesDuplicated( ( maxEntries + LEPTO_RING_SPARE_ENTRIES ) * DUPLICATE_FACTOR )
    #endif
    #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
    ,m_volatile(false)
@@ -645,7 +722,7 @@ CList<T>::CList(int maxEntries)
 {
    if( m_maxEntries )
    {
-      m_buffers=new T[ m_maxEntries ];
+      allocate( m_maxEntries );
       lFullAssert( m_buffers != nullptr );
    }
    else
@@ -653,7 +730,7 @@ CList<T>::CList(int maxEntries)
       m_buffers = nullptr;
    }
 
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    // Don't mess with the duplicated range
    lFullAssert( m_maxEntries < (0x7FFFFFFF / DUPLICATE_FACTOR ) );
    #endif
@@ -667,29 +744,77 @@ CList<T>::~CList()
 {
    if( m_buffers )
    {
-      delete[] m_buffers;
+      DELETE_LIST
    }
-
-   m_buffers=nullptr;
 
    return;
 };
 
 
-#if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
-
 template <typename T>
-void CList<T>::vitalize()
+bool CList<T>::checkSpace(ringIndex_t newSize, bool doPreserve /*=true*/ )
 {
-   lAssert( m_maxEntries == 0 );
-   m_maxEntries = CONFIG_LEPTO_LIST_INCREMENT;
-   m_buffers=new T[ m_maxEntries ];
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
-      m_maxEntriesDuplicated= m_maxEntries * DUPLICATE_FACTOR ;
+   #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+      T *oldBuf=m_buffers;
+      ringIndex_t oldSize=count();
+      ringIndex_t oldMaxSize=m_maxEntries;
    #endif
+
+   // We need size+1 to keep a zero
+   if( newSize + LEPTO_RING_SPARE_ENTRIES > m_maxEntries )
+   {
+      #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         return( false );
+      #else
+         if( !m_resizable )
+         {
+            return(false);
+         }
+
+         newSize = MAX( newSize + LEPTO_RING_SPARE_ENTRIES, oldSize + CONFIG_LEPTO_STRING_MEMORY_HIKE );
+         allocate( newSize );
+
+         m_backPos=0;
+         if( doPreserve )
+         {
+            #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+               m_length=oldLength;
+            #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+            if( oldBuf )
+            {
+               for(ringIndex_t i1=0; i1<oldSize; i1++)
+               {
+                  m_buffers[i1]=oldBuf[( i1 + m_frontPos ) % oldMaxSize];
+               }
+               m_backPos=oldSize;
+            }
+            /*
+            else
+            {
+               m_buffers[0]=0;
+            }
+            */
+         } // ? preserve
+         else
+         {
+            #if IS_ENABLED( CONFIG_LEPTO_STRING_CACHED_LENGTH )
+            m_length=0;
+            #endif // CONFIG_LEPTO_STRING_CACHED_LENGTH
+
+            // m_buffers[0]=0;
+         }
+         m_frontPos=0;
+
+         if( oldBuf )
+         {
+            free(oldBuf);
+         }
+      #endif
+   }
+
+   return true;
 }
 
-#endif
 
 template <typename T>
 void CList<T>::clear()
@@ -721,7 +846,7 @@ T *CList<T>::frontEntry() const
    // Has to be checked manually.
    if( isDataAvailableBasically() )
    {
-      value=&m_buffers[ m_frontPos MOD_ENTRY ];
+      value=&m_buffers[ moduloEntry( m_frontPos ) ];
    }
 
    return(value);
@@ -736,7 +861,7 @@ T *CList<T>::backEntry() const
    // Don't edit the top of a full buffer: Its also the bottom
    if( ! isFull() )
    {
-      value=&m_buffers[ m_backPos MOD_ENTRY ];
+      value=&m_buffers[ moduloEntry( m_backPos ) ];
    }
 
    return(value);
@@ -748,11 +873,11 @@ void CList<T>::dropFront()
 {
    if(isDataAvailableBasically())
    {
-      m_frontPos = ( m_frontPos + 1 ) MOD_DUPLICATED;
+      m_frontPos = moduloDuplicated( m_frontPos + 1 );
    }
    else
    {
-      lFatal("NE");
+      lFatal( LDS("NE", "No Entry") );
    }
 
    return;
@@ -760,15 +885,14 @@ void CList<T>::dropFront()
 
 
 template <typename T>
-bool CList<T>::push_back(const T value)
+bool CList<T>::push_back_ts(const T value)
 {
-   #if CONFIG_LEPTO_RING_DEFAULT_SIZE == 0
-      if( m_maxEntries == 0 )
-      {
-         vitalize();
-      }
+   // To use threadsafe pushing, list must not be expandable by definition
+
+   #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+      lAssert( m_resizable == false );
    #endif
-   
+
    #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
    if( isFull() && m_volatile )
    {
@@ -780,24 +904,12 @@ bool CList<T>::push_back(const T value)
    
    if( index == (ringIndex_t)-1 )
    {
-      #if IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
-         if( m_resizable )
-         {
-            expand();
-            if( (index=tryReserve()) == (ringIndex_t)-1 )
-            {
-               return(false);
-            }
-         }
-         else
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_ABORT_FAILING_PUSH )
+         abort();
       #endif
-         {
-         #if IS_ENABLED( CONFIG_LEPTO_LIST_ABORT_FAILING_PUSH )
-            abort();
-         #endif
-         return(false);
-         }
+      return(false);
    }
+
    *reservedEntry(index)=value;
    pushReserved( index );
 
@@ -806,8 +918,9 @@ bool CList<T>::push_back(const T value)
 
 
 template <typename T>
-bool CList<T>::push_nts(const T value)
+bool CList<T>::push_back(const T value)
 {
+
 #if IS_ENABLED( CONFIG_LEPTO_RING_SUPPORT_VOLATILE )
    if( isFull() && m_volatile )
    {
@@ -815,17 +928,36 @@ bool CList<T>::push_nts(const T value)
    }
 #endif // ? #if BIWAK_SUPPORT_VOLATILE_RING
    
-   T* top=backEntry();
+   checkSpace( count() + 1 );
+
+   T* back=backEntry();
    
-   if( !top )
+   if( !back )
    {
+      #if IS_ENABLED( CONFIG_LEPTO_LIST_ABORT_FAILING_PUSH )
+         abort();
+      #endif
       return(false);
    }
-   *top=value;
+   *back=value;
    pushBack( );
    
    return(true);
 };
+
+template <typename T>
+bool CList<T>::replaceBack(const T value)
+{
+    if( ! count() )
+    {
+        return( push_back(value) );
+    }
+    else
+    {
+        m_buffers[ moduloEntry( m_backPos + ( m_maxEntries - 1 ) ) ] = value;
+    }
+    return(true);
+}
 
 
 template <typename T>
@@ -870,7 +1002,7 @@ T CList<T>::average() const
  *          This has to be used when locks shall be ignored. E.g.
  *          frontElement() should not return a nullpointer. The applicaton
  *          already checked for valid data but m_busyProducing could change
- *          afterwardsd.
+ *          afterwards.
  * @return  true: Data available; false: No data available
  */
 template <typename T>
@@ -899,20 +1031,22 @@ T *CList<T>::getEntry(int pos) const
    if( pos < count() )
    {
       // Pos is relative to start
-      pos= ( pos + m_frontPos ) MOD_ENTRY;
+      pos= moduloEntry( pos + m_frontPos );
       value=&(m_buffers[ pos ]);
    }
 
    return(value);
 }
 
+#if 1
 
 template <typename T>
 const typename CList<T>::CIterator CList<T>::at(int pos)
 {
-   return( CList<T>::CIterator(this, ( pos + m_frontPos ) MOD_DUPLICATED ) );
+   return( CList<T>::CIterator(this, moduloDuplicated( pos + m_frontPos ) ) );
 }
 
+#endif
 
 template <typename T>
 const T *CList<T>::putString(const T *str)
@@ -928,7 +1062,7 @@ template <typename T>
 typename CList<T>::CIterator& CList<T>::CIterator::operator +=(int number)
 {
    lDebugAssert( number );
-   m_pos = ( m_pos + number ) MOD_DUPLICATED_ITERATOR;
+   m_pos = m_parent->moduloDuplicated( m_pos + number );
    return( *this );
 };
 
@@ -945,7 +1079,8 @@ bool CList<T>::expand( )
    T *oldBuffers=m_buffers;
    int size=count();
    m_maxEntries+= CONFIG_LEPTO_LIST_INCREMENT;
-   m_buffers=new T[ m_maxEntries ];
+   ALLOCATE_LIST;
+
    lFullAssert( m_buffers != nullptr );
 
    for(int i1=0; i1<size; i1++)
@@ -953,7 +1088,9 @@ bool CList<T>::expand( )
       m_buffers[i1]=oldBuffers[ (i1+m_frontPos) MOD_ENTRY ];
    }
 
-   delete[](oldBuffers);
+   free( oldBuffers );
+   //delete[](oldBuffers);
+
    m_frontPos=0;
    m_backPos=size;
 
@@ -967,8 +1104,9 @@ template <typename T>
 void CList<T>::allocate( int size )
 {
    m_maxEntries = size;
-   m_buffers=new T[ m_maxEntries ];
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+   ALLOCATE_LIST;
+
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
    m_maxEntriesDuplicated= m_maxEntries * DUPLICATE_FACTOR;
    #endif
 }
@@ -986,7 +1124,7 @@ typename CList<T>::CIterator CList<T>::find(const C& candidate)
 
    while( distance(front, back) > 1 )
    {
-      mid=(front.getIndex() +(distance( front.getIndex(), back.getIndex() ) /2 ) ) % m_maxEntries;
+      mid=moduloEntry( front.getIndex() +(distance( front.getIndex(), back.getIndex() ) /2 ) );
       //printf("   Check: Front: 0x%X; Back: 0x%X; distance: %d; value: 0x%X\n", front.getIndex(), back.getIndex(), distance(front, back), candidate );
       if( mid < candidate )
       {
@@ -1025,7 +1163,7 @@ void CList<T>::dump() const
    printf("m_frontPos: %d / %d\n", m_frontPos, m_frontPos % m_maxEntries);
    printf("m_backPos: %d / %d\n", m_backPos, m_backPos % m_maxEntries);
    printf("m_maxEntries: %d\n", m_maxEntries);
-   #if ! IS_ENABLED( CONFIG_LEPTO_RING_DOWNSIZE )
+   #if ! IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
       printf("m_maxEntriesDuplicated: %d\n", m_maxEntriesDuplicated);
    #endif
    

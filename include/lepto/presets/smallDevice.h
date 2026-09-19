@@ -18,7 +18,11 @@
 #define CONFIG_LEPTO_LOG_NO_USE_ANSI               1
 #define CONFIG_LEPTO_LOG_NO_TEXT                   0
 #define CONFIG_LEPTO_LOG_PRETTY_PRINT              0
-#define CONFIG_LEPTO_RING_DOWNSIZE                 1
+#define CONFIG_LEPTO_LIST_DOWNSIZE                 1
+
+#define LEPTO_CONFIGURED                  1
+
+#define LEPTO_CONFIGURED                  1
 
 
 //---fin-----------------------------------------------------------------------

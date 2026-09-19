@@ -52,8 +52,12 @@ function( add_generated_config project )
    list( TRANSFORM DEFS PREPEND "-D" )
    
    if ( COMMON_CONFIG_HEADER )
-      set ( ${PROJECT}_CONFIG_HEADER "${COMMON_CONFIG_HEADER}" PARENT_SCOPE)
-      set ( ${PROJECT}_CONFIG_HEADER "${COMMON_CONFIG_HEADER}")
+      set ( ${PROJECT}_CONFIG_HEADER "${COMMON_CONFIG_HEADER${VARIANT_POSTFIX_UPPER_CASE}}" PARENT_SCOPE)
+      set ( ${PROJECT}_CONFIG_HEADER "${COMMON_CONFIG_HEADER${VARIANT_POSTFIX_UPPER_CASE}}")
+      if( NOT COMMON_CONFIG_HEADER${VARIANT_POSTFIX_UPPER_CASE} )
+         message( WARNING "A variant '${VARIANT_POSTFIX}' is used but the common header is not defined for it.")
+         message( FATAL_ERROR " Set COMMON_CONFIG_HEADER${VARIANT_POSTFIX_UPPER_CASE}." ) 
+      endif()
    elseif( NOT ${PROJECT}_CONFIG_HEADER )
       set ( ${PROJECT}_CONFIG_HEADER "include/${project}/presets/config_full.h" PARENT_SCOPE)
       set ( ${PROJECT}_CONFIG_HEADER "include/${project}/presets/config_full.h")
@@ -91,9 +95,12 @@ function( add_generated_config project )
       COMMAND
          echo  "\\#define ${project}_CODE_SHA ${PROJECT}_CODE_SHA" >> config_generated_${project}.h
       COMMAND
+         echo  "\\#define ${PROJECT}_CONFIGURED" >> config_generated_${project}.h
+      COMMAND
          echo >> config_generated_${project}.h
       COMMAND
          echo "//--- Fin ---------------------------" >> config_generated_${project}.h
+      DEPENDS ${header}
    )
 
    #add_custom_target(

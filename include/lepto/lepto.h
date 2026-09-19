@@ -25,6 +25,8 @@
    #include <lepto/config.h>
 #endif
 
+#include <stdint.h>
+
 
 /*--- Defines --------------------------------------------------------------*/
 

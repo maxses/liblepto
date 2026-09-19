@@ -46,7 +46,7 @@ if ( NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
    set( USE_LEPTO 1 PARENT_SCOPE )
 endif()
 
-find_package( ConfigHeader REQUIRED )
+find_package( leptoConfigHeader REQUIRED )
 
 set(
    headers
@@ -213,6 +213,15 @@ install(
     OWNER_WRITE
   DESTINATION
     lib/cmake/leptoGitVersion
+  COMPONENT
+    Devel
+)
+
+install(
+  FILES
+    cmake/leptoConfigHeaderConfig.cmake
+  DESTINATION
+    lib/cmake/leptoConfigHeader
   COMPONENT
     Devel
 )

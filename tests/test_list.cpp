@@ -279,6 +279,8 @@ TEST_CASE( "List", "[default]" )
       #else
          false;
       #endif
+      
+      (void)pushable;
 
       //REQUIRE(
                list.push_back(0x22);

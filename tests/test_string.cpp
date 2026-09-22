@@ -135,7 +135,7 @@ TEST_CASE( "String", "[default]" )
          CString s1;
       #endif
 
-      for(int i1=0; i1<strlen(lorem); i1++)
+      for(size_t i1=0; i1<strlen(lorem); i1++)
       {
          s1+=lorem[i1];
       }
@@ -182,7 +182,7 @@ TEST_CASE( "String", "[default]" )
          CString s1;
       #endif
 
-      for(int i1=0; i1<sizeof(lorem_substrings) / sizeof(lorem_substrings[0]); i1++)
+      for(unsigned int i1=0; i1<sizeof(lorem_substrings) / sizeof(lorem_substrings[0]); i1++)
       {
          s1+=lorem_substrings[i1];
          REQUIRE( s1.length() > 0 );

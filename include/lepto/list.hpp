@@ -764,6 +764,7 @@ bool CList<T>::checkSpace(ringIndex_t newSize, bool doPreserve /*=true*/ )
    if( newSize + LEPTO_RING_SPARE_ENTRIES > m_maxEntries )
    {
       #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         (void)doPreserve;
          return( false );
       #else
          if( !m_resizable )

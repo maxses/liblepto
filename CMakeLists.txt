@@ -14,6 +14,10 @@ project( lepto LANGUAGES CXX VERSION 1.0.0 )
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set( lepto_VERSION 1.0.0 )
 
+enable_testing()
+
+set(CMAKE_MODULE_PATH   "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
+
 include(GenerateExportHeader)
 
 if( ( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" ) OR HOST )
@@ -42,7 +46,7 @@ if ( NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
    set( USE_LEPTO 1 PARENT_SCOPE )
 endif()
 
-find_package( ConfigHash REQUIRED )
+find_package( leptoConfigHeader REQUIRED )
 
 set(
    headers
@@ -65,6 +69,7 @@ set(
       include/lepto/signalPool.hpp
       include/lepto/signalPoolStatic.hpp
       ${COMMON_CONFIG_HEADER}
+      config_generated_lepto.h
 )
 
 set(
@@ -90,6 +95,7 @@ add_library(
       ${lepto_HEADERS_MOC}
 )
 
+add_generated_config( lepto )
 target_compile_definitions(
    ${PROJECT_NAME}
    PUBLIC
@@ -103,46 +109,6 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
 set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY
    COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION
 )
-
-
-if ( COMMON_CONFIG_HEADER )
-   set ( LEPTO_CONFIG_HEADER "${COMMON_CONFIG_HEADER}" )
-elseif( EXISTS "${CMAKE_SYSROOT}/usr/include/lepto/config.h" )
-   set ( LEPTO_CONFIG_HEADER "${CMAKE_SYSROOT}/usr/include/lepto/config.h" )
-endif()
-
-if( NOT ${COMMON_CONFIG_HEADER_INCLUDED} )
-   if( LEPTO_CONFIG_HEADER )
-      get_filename_component( LEPTO_CONFIG_PATH ${LEPTO_CONFIG_HEADER} DIRECTORY )
-      get_filename_component( LEPTO_CONFIG_FILE ${LEPTO_CONFIG_HEADER} NAME )
-   
-      target_compile_options(
-         ${PROJECT_NAME}
-         PRIVATE
-            "SHELL:-include ${LEPTO_CONFIG_HEADER}"
-         PUBLIC
-            "SHELL:-include ${LEPTO_CONFIG_HEADER}"
-      )
-
-      set_source_files_properties(
-         ${sources}
-         ${headers}
-         PROPERTIES
-         OBJECT_DEPENDS
-         ${LEPTO_CONFIG_HEADER}
-      )
-
-      set( LEPTO_CONFIGURED Yes )
-      # message( FATAL_ERROR "LEPTO_CONFIG_FILE: ${LEPTO_CONFIG_FILE}" )
-   else()
-      message( FATAL_ERROR "No config header for lepto defined. Either use "
-               "common_config_header(), set"
-               "'COMMON_CONFIG_HEADER' or 'LEPTO_CONFIG_HEADER' in your projects "
-               "root cmake file. If you are sure that you don't need it, set "
-               "'LEPTO_CONFIGURED' cmake variable")
-   endif()
-endif()
-
 
 if( "${MCU_PLATFORM}" MATCHES "linux" )
    # There is an threaded list test that uses QThread
@@ -190,6 +156,15 @@ install (
       share/doc/liblepto
 )
 
+install (
+   FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/config_generated_lepto.h
+   DESTINATION
+      include/lepto
+   RENAME
+      config.h
+)
+
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
@@ -218,6 +193,38 @@ install(
     Devel
 )
 
+install(
+  FILES
+    cmake/leptoGitVersionConfig.cmake
+    cmake/git_version_script.cmake
+    cmake/git_version_script.sh
+  DESTINATION
+    lib/cmake/leptoGitVersion
+  COMPONENT
+    Devel
+)
+
+install(
+  FILES
+    cmake/git_version_script.sh
+  PERMISSIONS
+    OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE
+    OWNER_READ GROUP_READ WORLD_READ
+    OWNER_WRITE
+  DESTINATION
+    lib/cmake/leptoGitVersion
+  COMPONENT
+    Devel
+)
+
+install(
+  FILES
+    cmake/leptoConfigHeaderConfig.cmake
+  DESTINATION
+    lib/cmake/leptoConfigHeader
+  COMPONENT
+    Devel
+)
 
 if( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR HOST )
     add_subdirectory( tests )

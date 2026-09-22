@@ -12,6 +12,10 @@
 //----------------------------------------------------------------------------
 
 
+#if defined LEPTO_LOG_USE_PRETTY_PRINT
+   #error "LEPTO_LOG_USE_PRETTY_PRINT" is obsolete.
+#endif
+
 #if ! defined ( STM32 )
    #undef CONFIG_LEPTO_LOG_DOWNSIZE
    #undef CONFIG_LEPTO_LOG_PRETTY_PRINT

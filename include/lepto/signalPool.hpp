@@ -148,14 +148,14 @@ class CPendingSignalPool
       {
          pendingSignalList.push_back( new CPendingSignal<sigReturn, sigType1>( signal, arg ) );
          return;
-      };
+      }
 
       template <typename sigReturn, typename sigType1, typename sigType2>
       void enqueueSignal( CSignal<sigReturn, sigType1, sigType2> &signal, sigType1 arg1, sigType2 arg2)
       {
          pendingSignalList.push_back( new CPendingSignal2<sigReturn, sigType1, sigType2>( signal, arg1, arg2 ) );
          return;
-      };
+      }
 
       /*
       template <typename sigReturn, typename ... sigTypes>
@@ -170,7 +170,7 @@ class CPendingSignalPool
       {
          pendingSignalList.push_back( new CPendingSignal0<sigReturn>( signal ) );
          return;
-      };
+      }
 };
 
 

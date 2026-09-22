@@ -72,10 +72,10 @@ const char *categoryMessages[]=
      [(int)ELogCategory::Fatal]=ANSI_RED "Fatal: " };
 #else
    { [ (int)ELogCategory::Debug ]="",
-     [(int)ELogCategory::Caution ]="C:",
-     [(int)ELogCategory::Warning ]="W:",
-     [(int)ELogCategory::Critical ]="E:",
-     [(int)ELogCategory::Fatal ]="F:", };
+     [ (int)ELogCategory::Caution ]="C:",
+     [ (int)ELogCategory::Warning ]="W:",
+     [ (int)ELogCategory::Critical ]="E:",
+     [ (int)ELogCategory::Fatal ]="F:", };
 #endif
 
 //#if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )

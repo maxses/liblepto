@@ -24,6 +24,11 @@
 
    // #undef CONFIG_LEPTO_LIST_RESIZABLE
    // #define CONFIG_LEPTO_LIST_RESIZABLE             1
+
+   // e.g. Fosh examples will use CApplication and can not be build without this
+   #undef CONFIG_LEPTO_GLOBAL_EVENT_LOOP
+   #define CONFIG_LEPTO_GLOBAL_EVENT_LOOP          1
+
 #endif
 
 

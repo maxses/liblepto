@@ -86,7 +86,7 @@ function( add_generated_config project )
       COMMAND
          echo -n "\\#define ${PROJECT}_CONFIG_CHECKSUM 0x" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
       COMMAND
-         bash -c 'sha256sum config_generated_${project}.h | cut -c1-8 >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h'
+         bash -c 'sha256sum ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h | cut -c1-8 >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h'
       COMMAND
          echo  "\\#define ${project}_CONFIG_CHECKSUM ${PROJECT}_CONFIG_CHECKSUM" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
       COMMAND

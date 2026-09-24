@@ -59,6 +59,7 @@
 #include <stdlib.h>        // malloc, free
 #include <stdio.h>         // printf
 #include <string.h>        // memset
+//#include <lepto/config.hpp>
 #include <lepto/log.h>     //
 #include <lepto/lepto.h>   // IS_ENABLED
 
@@ -219,6 +220,10 @@ class CList
                m_pos=pos;
                return(*this);
             }
+            // This has to be declared for some reason when the standalone
+            // operator is implemented in user code
+            template<typename T2>
+            bool operator<( T2 val ) const;
       };
 #endif
       CList(int maxEntries = CONFIG_LEPTO_RING_DEFAULT_SIZE);
@@ -387,7 +392,7 @@ class CList
 
       int distance( CIterator front, CIterator back ) const
       {
-         return( distance(front.getIndex(), back.getIndex() ) );
+         return( distance(front.index(), back.index() ) );
       }
 
       int distance( ringIndex_t front, ringIndex_t back ) const
@@ -1125,7 +1130,7 @@ typename CList<T>::CIterator CList<T>::find(const C& candidate)
 
    while( distance(front, back) > 1 )
    {
-      mid=moduloEntry( front.getIndex() +(distance( front.getIndex(), back.getIndex() ) /2 ) );
+      mid=moduloEntry( front.index() +(distance( front.index(), back.index() ) /2 ) );
       //printf("   Check: Front: 0x%X; Back: 0x%X; distance: %d; value: 0x%X\n", front.getIndex(), back.getIndex(), distance(front, back), candidate );
       if( mid < candidate )
       {

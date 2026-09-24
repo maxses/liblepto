@@ -33,6 +33,7 @@ if [ ! -e ".git" ]; then
    cd ..
 fi
 
+declare -A map
 
 helpExit()
 {
@@ -62,9 +63,14 @@ subDirectory()
          # to keep the version check macro happy
          if [ "${project#lib}" != "${project}" ]; then
             project=${project#lib}
-            # printDefines
-            echo "#define VERSION_CODE_$project ${VERSION_CODE}"
+            # Only print it when there is not already another repo;
+            # e.g. "minutnik" vs. "libminutnik"
+            if [ -z "${map[$project]}" ]; then
+               # printDefines
+               echo "#define VERSION_CODE_$project ${VERSION_CODE}"
+            fi
          fi
+         map[$project]="yes"
          echo
       fi
       
@@ -177,6 +183,8 @@ else
       echo "#define GIT_DIRTY 1"
    fi
    echo "#define GIT_PROJECT  \"${PROJECT}\""
+   map[$PROJECT]="yes"
+
 fi
 
 calculateVersionCode

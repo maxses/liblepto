@@ -23,6 +23,8 @@
 #define CONFIG_LEPTO_SIGNAL_CHAIN            1
 #define CONFIG_LEPTO_SIGNAL_FUNCTION         1
 #define CONFIG_LEPTO_SIGNAL_METHOD           1
+#define CONFIG_LEPTO_GLOBAL_EVENT_LOOP       1
+#define CONFIG_LEPTO_DATA_EVENT              1
 
 #if ! defined( STM32 )
 

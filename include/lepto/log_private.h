@@ -30,7 +30,9 @@
 // At least unit tests need bigger strings
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
    // Less than 40 cuts many logs
-   #define CONFIG_LEPTO_LOG_MAX_STRING_LENGTH 40
+   #if ! defined CONFIG_LEPTO_LOG_MAX_STRING_LENGTH
+      #define CONFIG_LEPTO_LOG_MAX_STRING_LENGTH 40
+   #endif
    #define CONFIG_LEPTO_LOG_MAX_ENTRIES 24
 #else
    #if CONFIG_LEPTO_LOG_LENGTH

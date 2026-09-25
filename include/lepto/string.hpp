@@ -98,6 +98,33 @@ class CString: private CList<char>
          tryAppend(str);
       };
       
+      #if 1
+      int printf(const char format[], ...)
+      {
+         va_list va;
+         int newSize;
+         int oldLength=0; // length();
+
+         va_start(va, format);
+         // the +32 is not the gap, its the assumed arguments overhead
+         if( ! checkSpace( /*length() +*/ strlen(format) + 32 ) )
+         {
+            return(-1);
+         }
+         newSize=vsnprintf( &data()[oldLength], getMaxEntries() - oldLength, format, va );
+         if( newSize > getMaxEntries() + oldLength )
+         {
+            while(1)
+            {}
+         }
+         setFrontBack( 0, newSize + 1 );
+
+         va_end(va);
+
+         return(0);
+      }
+      #endif
+
       #if defined STM32
       
       CString(const CString&) = delete;

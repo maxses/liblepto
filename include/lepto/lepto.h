@@ -19,6 +19,14 @@
 
 #include <lepto/configArgs.h>          // let IS_ENABLED work for compability
 
+#if defined(LEPTO_GENERATED_CONFIG)
+   #include "config_generated_lepto.h"
+#else
+   #include <lepto/config.h>
+#endif
+
+#include <stdint.h>
+
 
 /*--- Defines --------------------------------------------------------------*/
 
@@ -71,7 +79,10 @@ typedef int lsize_t;
 
 void leptoInit();
 void leptoEventLoop();
+uint32_t leptoConfigChecksum();
+uint32_t leptoCodeVersion();
 
+#if 0
 #if __cplusplus__
     #define configHashCheckImplement_S2( a, b ) \
         extern "C" { void configHashCheck_ ## a ## _ ## b(); }; \
@@ -108,6 +119,21 @@ void leptoEventLoop();
 
 #define configHashCheck( a ) \
         configHashCheck_S1( a, CONFIG_HASH )
+#endif
+
+
+#define configHashCheck( module )                                 \
+    do {                                                          \
+        assert( module##_CONFIG_CHECKSUM ==                       \
+               module##ConfigChecksum() );                        \
+    } while (0)
+
+// Check for the version that is generated in gitVersion cmake module
+#define codeVersionCheck( module )                                \
+    do {                                                          \
+        assert( module##_CODE_SHA ==                              \
+               module##CodeVersion() );                           \
+    } while (0)
 
 
 /*--- Fin ------------------------------------------------------------------*/

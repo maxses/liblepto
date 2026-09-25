@@ -127,7 +127,7 @@ class CConsumer: public QThread
          {
             lWarning("Not plausible");
          }
-         int noDAtaCounter=0;
+         int noDataCounter=0;
          
          #if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
             QElapsedTimer timer;
@@ -161,12 +161,12 @@ class CConsumer: public QThread
                m_counters[entry->id] = entry->counter;
                m_ring.dropFront();
                m_loops++;
-               noDAtaCounter=0;
+               noDataCounter=0;
                timer.restart();
             }
             else
             {
-               noDAtaCounter++;
+               noDataCounter++;
                if( timer.hasExpired( 10 * 1000 ) )
                {
                   lInfo("Pushable: %s", m_ring.pushable() ? "yes": "no");
@@ -183,6 +183,8 @@ class CConsumer: public QThread
                   
                }
             }
+            
+            (void)noDataCounter;
             MAY_SLEEP;
          }
          // Its '0 ms', useless information

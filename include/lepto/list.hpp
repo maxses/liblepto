@@ -56,9 +56,12 @@
 /*--- Includes -------------------------------------------------------------*/
 
 
+#undef LEPTO_LOG_DEBUG
+
 #include <stdlib.h>        // malloc, free
 #include <stdio.h>         // printf
 #include <string.h>        // memset
+//#include <lepto/config.hpp>
 #include <lepto/log.h>     //
 #include <lepto/lepto.h>   // IS_ENABLED
 
@@ -219,6 +222,10 @@ class CList
                m_pos=pos;
                return(*this);
             }
+            // This has to be declared for some reason when the standalone
+            // operator is implemented in user code
+            template<typename T2>
+            bool operator<( T2 val ) const;
       };
 #endif
       CList(int maxEntries = CONFIG_LEPTO_RING_DEFAULT_SIZE);
@@ -292,12 +299,20 @@ class CList
                return( entry % m_maxEntries );
             #endif
          #else
+            if(!m_maxEntries)
+            {
+               return(-1);
+            }
             return( entry MOD_ENTRY );
          #endif
       }
       
       constexpr ringIndex_t moduloDuplicated( ringIndex_t entry ) const
       {
+         if( !m_maxEntries )
+         {
+            return(-1);
+         }
          #if IS_ENABLED( CONFIG_LEPTO_LIST_DOWNSIZE )
             return( moduloEntry( entry ) );
          #else
@@ -387,7 +402,7 @@ class CList
 
       int distance( CIterator front, CIterator back ) const
       {
-         return( distance(front.getIndex(), back.getIndex() ) );
+         return( distance(front.index(), back.index() ) );
       }
 
       int distance( ringIndex_t front, ringIndex_t back ) const
@@ -682,8 +697,9 @@ class CList
        * @param element  Element to be find.
        * @return  Iterator to element.
        */
-      template< typename C >
-      CIterator find(const C& element);
+      template< typename C, class I >
+      CIterator find(const C& element, I *c);
+      //, bool (I::*isless)(CIterator a, CIterator b));
 
    protected:
 
@@ -764,6 +780,7 @@ bool CList<T>::checkSpace(ringIndex_t newSize, bool doPreserve /*=true*/ )
    if( newSize + LEPTO_RING_SPARE_ENTRIES > m_maxEntries )
    {
       #if ! IS_ENABLED( CONFIG_LEPTO_LIST_RESIZABLE )
+         (void)doPreserve;
          return( false );
       #else
          if( !m_resizable )
@@ -1112,8 +1129,9 @@ void CList<T>::allocate( int size )
 }
 
 
-template <typename T> template<typename C>
-typename CList<T>::CIterator CList<T>::find(const C& candidate)
+template <typename T> template<typename C, class I>
+typename CList<T>::CIterator CList<T>::find(const C& candidate, I *c)
+// , bool (I::*isless)(CIterator a, CIterator b))
 {
    CIterator front( this, m_frontPos );
    CIterator back( this, m_backPos );
@@ -1122,16 +1140,24 @@ typename CList<T>::CIterator CList<T>::find(const C& candidate)
    int steps=0;
    #endif
 
+   if( !count() )
+   {
+      return( end() );
+   }
+
    while( distance(front, back) > 1 )
    {
-      mid=moduloEntry( front.getIndex() +(distance( front.getIndex(), back.getIndex() ) /2 ) );
+      mid=moduloEntry( front.index() +(distance( front.index(), back.index() ) /2 ) );
       //printf("   Check: Front: 0x%X; Back: 0x%X; distance: %d; value: 0x%X\n", front.getIndex(), back.getIndex(), distance(front, back), candidate );
-      if( mid < candidate )
+      //if( mid < candidate )
+      if( c->isLess( mid, candidate ) )
       {
+         lDebug("Right");
          right(front, mid, back);
       }
       else
       {
+         lDebug("Left");
          left(front, mid, back);
       }
       #if 0
@@ -1144,7 +1170,7 @@ typename CList<T>::CIterator CList<T>::find(const C& candidate)
    }
 
    // printf("   Front: 0x%X; Back: 0x%X; distance: %d; value: 0x%X\n", front.getIndex(), back.getIndex(), distance(front, back), candidate );
-   if( front < candidate )
+   if( c->isLess( front, candidate ) )
    {
       //printf("   F\n");
       return( back );

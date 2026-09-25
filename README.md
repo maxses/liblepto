@@ -100,3 +100,10 @@ available defines.
 
 An additional define "LEPTO_CONFIGURED" is checked. This ensures that the 
 desired configuration is applied correctly and not accidently defaults are used.
+
+## Known issues
+
+* Compiling breaks with no ex	pressive error, only somethiung like "Deleting file 'libfosh/config_generated_fosh.h'"
+
+-> The config header does not contain any entry for the given library. An dummy config setting can be added.
+

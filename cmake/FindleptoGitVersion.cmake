@@ -5,7 +5,7 @@
 #------------------------------------------------------------------------------
 
 
-include( ${CMAKE_CURRENT_LIST_DIR}/leptoConfig.cmake )
+include( ${CMAKE_CURRENT_LIST_DIR}/leptoGitVersionConfig.cmake )
 
 
 #------------------------------------------------------------------------------

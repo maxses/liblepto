@@ -105,7 +105,10 @@ void logPrintPretty( const SLogEntry* le )
       fputs(".", stdout);
    }
    fputs( ": ", stdout );
-   fputs( categoryMessages[ (int)toCategory(le->code) ], stdout );
+   if( (int)toCategory(le->code) < (int)ELogCategory::Function )
+   {
+      fputs( categoryMessages[ (int)toCategory(le->code) ], stdout );
+   }
    fputs( ANSI_NORMAL,  stdout );
    fputs( le->logString, stdout );
    fputs( "\n", stdout );

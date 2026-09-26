@@ -143,6 +143,11 @@ void lVLogSimple(ELogCode code, const char *format, va_list &list )
       #else
          logPrintSimple(le);
       #endif
+
+      #if IS_ENABLED( CONFIG_LEPTO_LOG_CALLBACK )
+         logCallBack( le );
+      #endif
+
    #endif
    
    return;
@@ -193,7 +198,7 @@ void logEventLoop()
    #if IS_ENABLED( CONFIG_LEPTO_LOG_CALLBACK )
       logCallBack( le );
    #endif
-      
+
    #if IS_ENABLED( CONFIG_LEPTO_LOG_SIGNAL )
       m_signalLog.emitSignal( le->code );
    #endif // ? CONFIG_BIWAK_LOG_SIGNAL

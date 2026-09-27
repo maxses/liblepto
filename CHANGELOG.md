@@ -1,3 +1,15 @@
+# Changes for v1.4.0
+
+* List: Fixed find() for CANRec
+* cmake: Install cmake package GitVersion
+* [#837] Added cmake package ConfigHeader
+* Added Kconfig
+* [#837] Use generated config header instead of global include
+* Use CList for CString
+* Restructured list and string
+* Shrink binary size
+* Minor fixes
+
 # Changes for v1.3.1
 
 * Signals: Implemented usage of connections to const methods

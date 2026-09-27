@@ -45,6 +45,11 @@ int mainDummy(int argc, const char **argv);
    signal.connect< &mainDummy >( object, slot );
 
 
+#if ! ( __cplusplus >= 201703 )
+    #error Need at least C++17; update compiler or set the standard in your CMakeLists.txt
+#endif
+
+
 /*--- Declarations ---------------------------------------------------------*/
 
 

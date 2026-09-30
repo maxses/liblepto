@@ -36,8 +36,11 @@
 
 /*--- Defines --------------------------------------------------------------*/
 
+
 int mainDummy(int argc, const char **argv);
 
+// Use slot without & operator.
+// Example: CONNECT( m_wkupButton.signalEvent(), this, CMiniMinutnik::slotButtonEvent );
 #define CONNECT( signal, object, slot) \
     signal.connect< &slot>( object, &slot );
 

@@ -66,6 +66,9 @@
       { throw("Assertion wrong: " #assertion); };
 #endif
 
+#define lAssertIndexInArray(_enum, _array) \
+         lDebugAssert( (_enum) < (sizeof(_array) / sizeof(_array[0]) ), _enum )
+
 #if USE_FULL_ASSERT
    #define lFullAssert( assertion, ... ) if ( ! (assertion) ) \
       { lFatal( "ASRT" /*SW " __VA_ARGS__*/ ); };

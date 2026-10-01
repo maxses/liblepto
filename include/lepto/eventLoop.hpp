@@ -69,16 +69,16 @@ class CEventLoop
       ~CEventLoop()
       {
          #if IS_ENABLED( CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR )
-         CEventLoop** p=&m_first;
-         while( *p != this  )
-         {
-            p=&( (*p)->m_next );
-            if(!p)
+            CEventLoop** p=&m_first;
+            while( *p != this  )
             {
-               lFatal("Destruct");
+               p=&( (*p)->m_next );
+               if(!p)
+               {
+                  lFatal("Destruct");
+               }
             }
-         }
-         *p=m_next;
+            *p=m_next;
          #else
             #if ! defined STM32
                #error Please enable CONFIG_LEPTO_EVENT_LOOP_DESTRUCTOR for host

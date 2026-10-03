@@ -180,12 +180,12 @@ const char* shrinkFileName( const char* const filename )
 #endif
 
 struct SLogEntry;
-//__attribute__((weak))
-void logCallBack( const SLogEntry *le );
 
 extern "C"
 {
-   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
+   void logCallBack( const SLogEntry *le );
+
+#if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
 
       extern const char *categoryMessages[];
       void lVLogSimple(ELogCode code, const char *format, va_list &list );

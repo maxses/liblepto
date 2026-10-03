@@ -184,6 +184,7 @@ struct SLogEntry;
 extern "C"
 {
    void logCallBack( const SLogEntry *le );
+   void logCallBack2( const SLogEntry *le );
 
 #if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
 

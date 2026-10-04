@@ -23,6 +23,7 @@
    #error "Either 'catch' or 'catch2' has to be installed"
 #endif
 
+#include <lepto/lepto.h>
 #include <lepto/list.hpp>
 #include <lepto/ring.hpp>
 #include <list>

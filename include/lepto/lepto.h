@@ -13,128 +13,72 @@
  *
  *--------------------------------------------------------------------------*/
 
-
 /*--- Includes -------------------------------------------------------------*/
 
-
-#include <lepto/configArgs.h>          // let IS_ENABLED work for compability
-
-#if defined(LEPTO_GENERATED_CONFIG)
-   #include "config_generated_lepto.h"
-#else
-   #include <lepto/config.h>
-#endif
-
+#include <assert.h>
 #include <stdint.h>
 
+#include <lepto/configArgs.h>
+
+#if defined(LEPTO_GENERATED_CONFIG)
+    #include "config_generated_lepto.h"
+#else
+    #include <lepto/config.h>
+#endif
 
 /*--- Defines --------------------------------------------------------------*/
 
-
-#if ! defined(LEPTO_CONFIGURED)
-   #error   LEPTO_CONFIGURED not defined. The configuration header was \
-            probably not involved. If the file is present make sure the macro \
-            'LEPTO_CONFIGURED' is defined in the configuration header.
+#if !defined(LEPTO_CONFIGURED)
+    #error   LEPTO_CONFIGURED not defined. The configuration header was \
+             probably not involved. If the file is present make sure the macro \
+             'LEPTO_CONFIGURED' is defined in the configuration header.
 #endif
 
-#if ! defined (MAX)
-   #define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#if !defined(MAX)
+    #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #endif
-#if ! defined (MIN)
-   #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#if !defined(MIN)
+    #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #endif
 
-// Because Qt has QT_STRINGIFY
 #define L_STRINGIFY2(exp) "" #exp ""
 #define L_STRINGIFY(exp) L_STRINGIFY2(exp)
 #define LEPTO_KEEP(sym) __asm__ __volatile__("" :: "m" (sym));
-
-#define arraySize(array) (int)(sizeof(array)/sizeof(array[0]) )
+#define arraySize(array) (int)(sizeof(array) / sizeof(array[0]))
 
 #if defined(_LP64)
-   #include <stdint.h>
-   #define address_t uint64_t
-   #define FI32   "%d"
+    #define address_t uint64_t
+    #define FI32      "%d"
 #else
-   #define address_t uint32_t
-   #define FI32   "%ld"
+    #define address_t uint32_t
+    #define FI32      "%ld"
 #endif
 
 #define address32_t uint32_t
 
-// This was for checking if some overloading worked correctly. May be removed soon.
-#define LEPTO_CODE            0x1
+#define LEPTO_CODE 0x1
 #define lUNUSED(a) (void)a
 
 typedef int lsize_t;
 
-// When CONFIG_LEPTO_LOG_PRETTY_PRINT is not defined, enable it only when
-// CONFIG_LEPTO_LOG_DOWNSIZE is not set.
-// Make it a nice default configuration.
-#if ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT
-   #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DOWNSIZE )
-      #define CONFIG_LEPTO_LOG_PRETTY_PRINT          1
-   #endif
-#endif // ? ! defined CONFIG_LEPTO_LOG_PRETTY_PRINT
+#if !defined(CONFIG_LEPTO_LOG_PRETTY_PRINT) && !IS_ENABLED(CONFIG_LEPTO_LOG_DOWNSIZE)
+    #define CONFIG_LEPTO_LOG_PRETTY_PRINT 1
+#endif
 
 void leptoInit();
 void leptoEventLoop();
 uint32_t leptoConfigChecksum();
 uint32_t leptoCodeVersion();
 
-#if 0
-#if __cplusplus__
-    #define configHashCheckImplement_S2( a, b ) \
-        extern "C" { void configHashCheck_ ## a ## _ ## b(); }; \
-        void configHashCheck_ ## a ## _ ## b(){};
-
-    #define configHashCheckDeclare_S2( a, b ) \
-        extern "C" { void configHashCheck_ ## a ## _ ## b(); }
-#else
-    #define configHashCheckImplement_S2( a, b ) \
-        void configHashCheck_ ## a ## _ ## b(); \
-        void configHashCheck_ ## a ## _ ## b(){};
-
-    #define configHashCheckDeclare_S2( a, b ) \
-        void configHashCheck_ ## a ## _ ## b();
-#endif
-
-#define configHashCheck_S2( a, b ) \
-    configHashCheck_ ## a ## _ ## b();
-
-#define configHashCheckImplement_S1( a, b ) \
-        configHashCheckImplement_S2( a, b )
-
-#define configHashCheckDeclare_S1( a, b ) \
-        configHashCheckDeclare_S2( a, b )
-
-#define configHashCheck_S1( a, b ) \
-        configHashCheck_S2( a, b )
-
-#define configHashCheckImplement( a ) \
-        configHashCheckImplement_S1( a, CONFIG_HASH )
-
-#define configHashCheckDeclare( a ) \
-        configHashCheckDeclare_S1( a, CONFIG_HASH )
-
-#define configHashCheck( a ) \
-        configHashCheck_S1( a, CONFIG_HASH )
-#endif
-
-
-#define configHashCheck( module )                                 \
-    do {                                                          \
-        assert( module##_CONFIG_CHECKSUM ==                       \
-               module##ConfigChecksum() );                        \
+#define configHashCheck(module)                                        \
+    do {                                                                \
+        assert(module##_CONFIG_CHECKSUM == module##ConfigChecksum()); \
     } while (0)
 
-// Check for the version that is generated in gitVersion cmake module
-#define codeVersionCheck( module )                                \
-    do {                                                          \
-        assert( module##_CODE_SHA ==                              \
-               module##CodeVersion() );                           \
+#define codeVersionCheck(module)                                       \
+    do {                                                                \
+        assert(module##_CODE_SHA == module##CodeVersion());            \
     } while (0)
-
 
 /*--- Fin ------------------------------------------------------------------*/
 #endif // ? ! LEPTO_LEPTO_HPP

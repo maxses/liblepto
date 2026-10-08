@@ -4,168 +4,152 @@
 #
 #------------------------------------------------------------------------------
 
+cmake_minimum_required(VERSION 3.10.2)
 
-# 3.18.4: Debian Bullsyeye
-# 3.10.2: Ubuntu Bionic
-cmake_minimum_required( VERSION 3.10.2 )
-
-project( lepto LANGUAGES CXX VERSION 1.0.0 )
+project(lepto LANGUAGES CXX VERSION 1.0.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set( lepto_VERSION 1.0.0 )
+set(lepto_VERSION "${PROJECT_VERSION}")
 
 enable_testing()
 
-set(CMAKE_MODULE_PATH   "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(GenerateExportHeader)
 
-if( ( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" ) OR HOST )
-   set(CMAKE_AUTOUIC ON)
-   set(CMAKE_AUTOMOC ON)
-   set(CMAKE_AUTORCC ON)
-   set( QT_COMPONENTS Core Network Xml )
+if(("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64") OR HOST)
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    set(QT_COMPONENTS Core Network Xml)
 
-   # Check either Qt6 or Qt5
-   find_package( QT NAMES Qt5 Qt6 COMPONENTS ${QT_COMPONENTS} REQUIRED )
-   find_package( Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS ${QT_COMPONENTS} )
-
-   #add_definitions( "-fPIC" )
-   set( MCU_PLATFORM "linux" )
+    find_package(QT NAMES Qt5 Qt6 COMPONENTS ${QT_COMPONENTS} REQUIRED)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS ${QT_COMPONENTS})
+    set(MCU_PLATFORM "linux")
 endif()
 
-if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
-   # Let the tests work out of box
-   add_definitions(
-      -DCONFIG_LEPTO_RING_SUPPORT_VOLATILE=1
-      -DLEPTO_CONFIGURED
-   )
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    add_definitions(
+        -DCONFIG_LEPTO_RING_SUPPORT_VOLATILE=1
+        -DLEPTO_CONFIGURED
+    )
 
-    set ( CMAKE_CXX_STANDARD 20 )
-
+    set(CMAKE_CXX_STANDARD 20)
 endif()
 
-if ( NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR) # PROJECT_IS_TOP_LEVEL
-   set( USE_LEPTO 1 PARENT_SCOPE )
+if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(USE_LEPTO 1 PARENT_SCOPE)
 endif()
 
-find_package( leptoConfigHeader REQUIRED )
+find_package(leptoConfigHeader REQUIRED)
 
-set(
-   headers
-      include/lepto/ansi.h
-      include/lepto/base64.h
-      include/lepto/lepto.h
-      include/lepto/log.h
-      include/lepto/logPrinter.h
-      include/lepto/ring.hpp
-      include/lepto/list.hpp
-      include/lepto/string.hpp
-      include/lepto/crc32.h
-      include/lepto/crc8.h
-      include/lepto/print.h
-      include/lepto/bufferRing.hpp
-      include/lepto/eventLoop.hpp
-      include/lepto/tuple.hpp
-      include/lepto/signal.hpp
-      include/lepto/signalDeferred.hpp
-      include/lepto/signalPool.hpp
-      include/lepto/signalPoolStatic.hpp
-      ${COMMON_CONFIG_HEADER}
-      config_generated_lepto.h
+set(headers
+    include/lepto/ansi.h
+    include/lepto/base64.h
+    include/lepto/lepto.h
+    include/lepto/log.h
+    include/lepto/logPrinter.h
+    include/lepto/ring.hpp
+    include/lepto/list.hpp
+    include/lepto/string.hpp
+    include/lepto/crc32.h
+    include/lepto/crc8.h
+    include/lepto/print.h
+    include/lepto/bufferRing.hpp
+    include/lepto/eventLoop.hpp
+    include/lepto/tuple.hpp
+    include/lepto/signal.hpp
+    include/lepto/signalDeferred.hpp
+    include/lepto/signalPool.hpp
+    include/lepto/signalPoolStatic.hpp
+    ${COMMON_CONFIG_HEADER}
+    config_generated_lepto.h
 )
 
-set(
-   sources
-      src/lepto.cpp
-      src/log.cpp
-      src/logPrinter.cpp
-      src/ring.cpp
-      src/string.cpp
-      src/signal.cpp
-      src/crc32.cpp
-      src/crc8.cpp
-      src/base64.cpp
-      src/print.cpp
-      src/eventLoop.cpp
+set(sources
+    src/lepto.cpp
+    src/log.cpp
+    src/logPrinter.cpp
+    src/ring.cpp
+    src/string.cpp
+    src/signal.cpp
+    src/crc32.cpp
+    src/crc8.cpp
+    src/base64.cpp
+    src/print.cpp
+    src/eventLoop.cpp
 )
 
 add_library(
-   ${PROJECT_NAME}
-   STATIC
-      ${sources}
-      ${headers}
-      ${lepto_HEADERS_MOC}
+    ${PROJECT_NAME}
+    STATIC
+        ${sources}
+        ${headers}
+        ${lepto_HEADERS_MOC}
 )
 
-add_generated_config( lepto )
+add_generated_config(lepto)
+
 target_compile_definitions(
-   ${PROJECT_NAME}
-   PUBLIC
-      -DUSE_LEPTO
+    ${PROJECT_NAME}
+    PUBLIC
+        -DUSE_LEPTO
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY VERSION 1)
 set_property(TARGET ${PROJECT_NAME} PROPERTY SOVERSION 1)
-set_property(TARGET ${PROJECT_NAME} PROPERTY
-   INTERFACE_${PROJECT_NAME}_MAJOR_VERSION 3)
-set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY
-   COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION
-)
+set_property(TARGET ${PROJECT_NAME} PROPERTY INTERFACE_${PROJECT_NAME}_MAJOR_VERSION 3)
+set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION)
 
-if( "${MCU_PLATFORM}" MATCHES "linux" )
-   # There is an threaded list test that uses QThread
-   target_link_libraries(
-      ${PROJECT_NAME}
-      Qt${QT_VERSION_MAJOR}::Core
-   )
+if("${MCU_PLATFORM}" MATCHES "linux")
+    target_link_libraries(
+        ${PROJECT_NAME}
+        Qt${QT_VERSION_MAJOR}::Core
+    )
 endif()
 
 target_include_directories(
-   ${PROJECT_NAME}
-   PRIVATE
-      include
-   INTERFACE
-      include
-   PUBLIC
-      include
+    ${PROJECT_NAME}
+    PRIVATE
+        include
+    INTERFACE
+        include
+    PUBLIC
+        include
 )
 
-# generate_config_hash( lepto )
-
-generate_export_header( ${PROJECT_NAME} )
+generate_export_header(${PROJECT_NAME})
 
 install(
-   TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
-   RUNTIME DESTINATION bin
-   INCLUDES DESTINATION include
+    TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
 )
 
-# Includes have to be installed manually for some reason
 install(
-   DIRECTORY
-      include/lepto 
-   DESTINATION
-      include
-   COMPONENT Devel
+    DIRECTORY
+        include/lepto
+    DESTINATION
+        include
+    COMPONENT Devel
 )
 
 install (
-   FILES
-      LICENSE
-   DESTINATION
-      share/doc/liblepto
+    FILES
+        LICENSE
+    DESTINATION
+        share/doc/liblepto
 )
 
 install (
-   FILES
-      ${CMAKE_CURRENT_BINARY_DIR}/config_generated_lepto.h
-   DESTINATION
-      include/lepto
-   RENAME
-      config.h
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/config_generated_lepto.h
+    DESTINATION
+        include/lepto
+    RENAME
+        config.h
 )
 
 include(CMakePackageConfigHelpers)
@@ -229,9 +213,8 @@ install(
     Devel
 )
 
-if( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR HOST )
-    add_subdirectory( tests )
+if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR HOST)
+    add_subdirectory(tests)
 endif()
-
 
 #------------------------------------------------------------------------------

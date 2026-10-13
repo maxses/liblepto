@@ -87,7 +87,8 @@ public:
          }
          MAY_SLEEP;
       }
-      m_pFinished=true;
+      bool value=true;
+      __atomic_store_n( &m_pFinished, value, __ATOMIC_SEQ_CST);
    }
 };
 
@@ -196,7 +197,7 @@ class CConsumer: public QThread
       {
          for(int i1=0; i1<PRODUCERS; i1++)
          {
-            if(!m_finished[i1])
+            if(! __atomic_load_n( &m_finished[i1], __ATOMIC_SEQ_CST) )
             {
                return( false );
             }

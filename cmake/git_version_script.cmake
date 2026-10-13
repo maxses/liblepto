@@ -13,6 +13,15 @@
 
 
 execute_process(
+  COMMAND shasum -v
+  RESULT_VARIABLE result
+)
+
+if( NOT "${result}" STREQUAL "0" )
+    message( FATAL_ERROR "'shasum' is not installed." )
+endif()
+
+execute_process(
                       COMMAND ${CMAKE_CURRENT_LIST_DIR}/git_version_script.sh
                       WORKING_DIRECTORY $ENV{SOURCE_DIR}
                       OUTPUT_VARIABLE GIT_ALL

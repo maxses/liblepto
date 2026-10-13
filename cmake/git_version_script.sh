@@ -162,6 +162,8 @@ SHORT_SHA="${SHA:0:4}"
 DISTANCE="$(git rev-list HEAD ^${TAG} --count)"
 PROJECT="$(basename $PWD)"
 PROJECT="${PROJECT//-/_}"
+shasum -v &> /dev/null || echo 'shasum' is not installed
+shasum -v &> /dev/null || exit 2
 PROJECT_CODE="0x$(echo -n ${PROJECT} | shasum | head -c 8)"
 
 if [ "$format" == "text" ]; then

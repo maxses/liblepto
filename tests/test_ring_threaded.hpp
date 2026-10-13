@@ -39,8 +39,10 @@
       Please disable the feature for host tests.
 #endif
 
-//#define MAY_SLEEP       usleep(1);
-#define MAY_SLEEP
+// When compiler optimizations are enabled, having no sleep can cause tasks to not
+// being called at all.
+#define MAY_SLEEP       usleep(0);
+// #define MAY_SLEEP
 
 
 /*--- Declaration ----------------------------------------------------------*/

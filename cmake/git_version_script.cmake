@@ -14,6 +14,7 @@
 
 execute_process(
   COMMAND sha1sum --version
+  OUTPUT_QUIET
   RESULT_VARIABLE result
 )
 

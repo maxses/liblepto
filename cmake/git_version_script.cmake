@@ -13,12 +13,12 @@
 
 
 execute_process(
-  COMMAND sha1sum -v
+  COMMAND sha1sum --version
   RESULT_VARIABLE result
 )
 
 if( NOT "${result}" STREQUAL "0" )
-    message( FATAL_ERROR "'shasum' is not installed." )
+    message( FATAL_ERROR "'sha1sum' is not installed." )
 endif()
 
 execute_process(

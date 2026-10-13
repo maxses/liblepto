@@ -90,6 +90,10 @@ public:
       bool value=true;
       __atomic_store_n( &m_pFinished, value, __ATOMIC_SEQ_CST);
    }
+   int counter()
+   {
+      return( m_counter );
+   }
 };
 
 
@@ -168,7 +172,8 @@ class CConsumer: public QThread
             else
             {
                noDataCounter++;
-               if( timer.hasExpired( 10 * 1000 ) )
+               // One second no data in a row, that would be strange
+               if( timer.hasExpired( 1 * 1000 ) )
                {
                   lInfo("Pushable: %s", m_ring.pushable() ? "yes": "no");
                   lInfo("Full : %s", m_ring.isFull( m_ring.frontIndex(), m_ring.backIndex() ) ? "yes": "no");
@@ -177,7 +182,14 @@ class CConsumer: public QThread
                   lInfo("---------");
                   m_ring.dump();
                   
-                  lFatal("No data available");
+                  lWarning( "allProducerFinished: %d", allProducerFinished());
+                  lWarning( "Errors: %d", m_errors);
+                  for(int i1=0; i1<PRODUCERS; i1++)
+                  {
+                     lWarning( "   [%d]: Counter:%d / running: %d", i1
+                              , m_producers[i1]->counter(), m_producers[i1]->isRunning() );
+                  }
+                  lFatal("No data available for some time");
                }
                else
                {

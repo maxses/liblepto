@@ -18,7 +18,7 @@ execute_process(
 )
 
 if( NOT "${result}" STREQUAL "0" )
-    message( FATAL_ERROR "'shasum' is not installed." )
+    message( FATAL_ERROR "'sha1sum' is not installed." )
 endif()
 
 execute_process(

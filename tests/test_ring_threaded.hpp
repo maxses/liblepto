@@ -22,7 +22,8 @@
 
 #define TEST_ALL
 #define STOP_ON_FAIL
-#define PRODUCER_LOOPS                 (1000000/2)
+// (1000000/8) still consumed 24 seconds; (1000000/4) took 50 seconds
+#define PRODUCER_LOOPS                 (1000000/8)
 //#define PRODUCER_LOOPS               10000
 #define PRODUCERS                      4           // Only 4, 6, 8 or 10
 

@@ -162,9 +162,9 @@ SHORT_SHA="${SHA:0:4}"
 DISTANCE="$(git rev-list HEAD ^${TAG} --count)"
 PROJECT="$(basename $PWD)"
 PROJECT="${PROJECT//-/_}"
-shasum -v &> /dev/null || echo 'shasum' is not installed
-shasum -v &> /dev/null || exit 2
-PROJECT_CODE="0x$(echo -n ${PROJECT} | shasum | head -c 8)"
+sha1sum -v &> /dev/null || echo 'shasum' is not installed
+sha1sum -v &> /dev/null || exit 2
+PROJECT_CODE="0x$(echo -n ${PROJECT} | sha1sum | head -c 8)"
 
 if [ "$format" == "text" ]; then
    echo "${PROJECT}: \"$(git describe --tags --dirty --long --match 'v[0-9]*.[0-9]*.[0-9]*')\""

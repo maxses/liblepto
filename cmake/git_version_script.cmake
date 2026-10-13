@@ -13,7 +13,7 @@
 
 
 execute_process(
-  COMMAND shasum -v
+  COMMAND sha1sum -v
   RESULT_VARIABLE result
 )
 

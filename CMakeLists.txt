@@ -72,7 +72,6 @@ set(
       include/lepto/signalPool.hpp
       include/lepto/signalPoolStatic.hpp
       ${COMMON_CONFIG_HEADER}
-      lepto/config_generated_local.h
 )
 
 set(

@@ -19,8 +19,8 @@
 
 #include <lepto/configArgs.h>          // let IS_ENABLED work for compability
 
-#if defined(LEPTO_GENERATED_CONFIG)
-   #include "lepto/config_generated_local.h"
+#if defined( LEPTO_LOCAL_CONFIG )
+   #include <lepto/config_generated_local.h>
 #else
    #include <lepto/config.h>
 #endif

@@ -20,7 +20,7 @@
 #include <lepto/configArgs.h>          // let IS_ENABLED work for compability
 
 #if defined(LEPTO_GENERATED_CONFIG)
-   #include "config_generated_lepto.h"
+   #include "lepto/config_generated_local.h"
 #else
    #include <lepto/config.h>
 #endif

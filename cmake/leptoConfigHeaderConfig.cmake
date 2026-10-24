@@ -71,45 +71,49 @@ function( add_generated_config project )
    if( NOT ${PROJECT}_CONFIG_HEADER )
       message( FATAL_ERROR "Config header could not be evaluated." )
    endif()
+   
+   set( GENERATED_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${project}/config_generated_local.h )
 
    add_custom_command(
-      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+      OUTPUT ${GENERATED_HEADER}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       COMMAND
-         echo "// Generated configuration header. Do not change!" > ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/${project}
+      COMMAND
+         echo "// Generated configuration header. Do not change!" > ${GENERATED_HEADER}
       COMMAND
          ${CMAKE_CXX_COMPILER} -include ${header} ${DEFS}
-            -dM -E - < /dev/null >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}_all.h
+            -dM -E - < /dev/null >> ${CMAKE_CURRENT_BINARY_DIR}/config_${project}_all.h
       COMMAND
          ${CMAKE_CXX_COMPILER} -include ${header} ${DEFS}
-            -dM -E - < /dev/null | grep CONFIG_${PROJECT} >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+            -dM -E - < /dev/null | grep CONFIG_${PROJECT} >> ${GENERATED_HEADER}
       COMMAND
-         echo -n "\\#define ${PROJECT}_CONFIG_CHECKSUM 0x" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo -n "\\#define ${PROJECT}_CONFIG_CHECKSUM 0x" >> ${GENERATED_HEADER}
       COMMAND
-         bash -c 'sha256sum ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h | cut -c1-8 >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h'
+         sha256sum ${GENERATED_HEADER} | cut -c1-8 >> ${GENERATED_HEADER}
       COMMAND
-         echo  "\\#define ${project}_CONFIG_CHECKSUM ${PROJECT}_CONFIG_CHECKSUM" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo  "\\#define ${project}_CONFIG_CHECKSUM ${PROJECT}_CONFIG_CHECKSUM" >> ${GENERATED_HEADER}
       COMMAND
-         echo -n "\\#define ${PROJECT}_CODE_SHA 0x" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo -n "\\#define ${PROJECT}_CODE_SHA 0x" >> ${GENERATED_HEADER}
       COMMAND
-         git --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git rev-parse HEAD | head -c8  >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         git --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git rev-parse HEAD | head -c8  >> ${GENERATED_HEADER}
       COMMAND
-         echo >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo >> ${GENERATED_HEADER}
       COMMAND
-         echo  "\\#define ${project}_CODE_SHA ${PROJECT}_CODE_SHA" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo  "\\#define ${project}_CODE_SHA ${PROJECT}_CODE_SHA" >> ${GENERATED_HEADER}
       COMMAND
-         echo  "\\#define ${PROJECT}_CONFIGURED 1" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo  "\\#define ${PROJECT}_CONFIGURED 1" >> ${GENERATED_HEADER}
       COMMAND
-         echo >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo >> ${GENERATED_HEADER}
       COMMAND
-         echo "//--- Fin ---------------------------" >> ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
+         echo "//--- Fin ---------------------------" >> ${GENERATED_HEADER}
       DEPENDS ${header}
    )
 
-   #add_custom_target(
-   #   generate_config_${project}
-   #   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/config_generated_${project}.h
-   #)
+   add_custom_target(
+      generate_config_${project}
+      DEPENDS ${GENERATED_HEADER}
+   )
 
 # endfunction()
 
@@ -129,7 +133,7 @@ function( add_generated_config project )
          ${CMAKE_CURRENT_BINARY_DIR}
    )
 
-   #add_dependencies( ${project} generate_config_${project} )
+   add_dependencies( ${project} generate_config_${project} )
 
 endfunction()
 

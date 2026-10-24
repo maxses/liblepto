@@ -77,9 +77,9 @@ the same time does not make sense.
 #endif
 
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
-void lVLogPretty(const char*file, int line, ELogCode code, const char *format, va_list &list )
+void lVLogPretty(const char*file, int line, ELogCategory category, const char *format, va_list &list )
 #else
-void lVLogSimple(ELogCode code, const char *format, va_list &list )
+void lVLogSimple(ELogCategory category, const char *format, va_list &list )
 #endif
 {
    #if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
@@ -114,16 +114,25 @@ void lVLogSimple(ELogCode code, const char *format, va_list &list )
          le->timeStamp = clock() / 1000;
       #endif
    #endif
-      
-   #if IS_ENABLED( CONFIG_LEPTO_LOG_CALLBACK )
-      le->code=code;
+
+   le->category=category;
+
+   #if IS_ENABLED( CONFIG_LEPTO_LOG_CODE )
+      if( memcmp(format, "#%X ", 4) == 0 )
+      {
+         le->code=va_arg(list, int);
+
+         // Either adjust the format string or restore the list
+         //va_start(list, format);
+         format+=4;
+      }
    #endif
-      
+
    #if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
       vsnprintf( &le->logString[0], CONFIG_LEPTO_LOG_MAX_STRING_LENGTH, format, list);
    #endif
    
-   if( toCategory(code) == ELogCategory::Fatal )
+   if( category == ELogCategory::Fatal )
    {
       #if defined ( STM32 )
          // Fatal means fatal. Dont even try to print anything.
@@ -155,11 +164,11 @@ void lVLogSimple(ELogCode code, const char *format, va_list &list )
 
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
 
-void lLogPretty( const char*file, int line, ELogCode code, const char *format, ... )
+void lLogPretty( const char*file, int line, ELogCategory category, const char *format, ... )
 {
    va_list list;
    va_start(list, format); // expected-note{{Initialized va_list}}
-   lVLogPretty( file, line, code, format, list);
+   lVLogPretty( file, line, category, format, list);
    return;
 }
 
@@ -187,7 +196,7 @@ void logEventLoop()
    while( ( le = (const SLogEntry*)logs.frontEntry() ) )
    {
       // Dont crash due to missing category string. Text is empty anyways.
-      if( (int)toCategory(le->code) < (int)ELogCategory::Function )
+      if( (int)le->category < (int)ELogCategory::Function )
       {
       #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
          logPrintPretty(le);
@@ -209,7 +218,7 @@ void logEventLoop()
    if(logOverflow)
    {
       logOverflow=false;
-      lCritical( "LOF" );
+      lCriticalC( LC_LOG_OVERFLOW, LDS( "LOF", "Log overflow" ) );
    }
 
    #endif // ? ! CONFIG_LEPTO_LOG_DIRECT_PRINT

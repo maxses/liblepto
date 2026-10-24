@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <lepto/lepto.h>               // IS_ENABLED( )
 #include <stdlib.h>                    // abort()
+#include <lepto/logCodes.h>
 
 
 /*--- Implementation -------------------------------------------------------*/
@@ -82,11 +83,12 @@ enum class ELogCategory
    Debug       = 0,
    Good        = 0,
    Info        = 0,
-   Event       = 1,  // Device-to-device logic via log codes. E.g. "I want to shut down"
-   Caution     = 1,
-   Warning     = 2,
-   Critical    = 3,
-   Fatal       = 4,
+   Gone        = 1,
+   Event       = 2,  // Device-to-device logic via log codes. E.g. "I want to shut down"
+   Caution     = 2,
+   Warning     = 3,
+   Critical    = 4,
+   Fatal       = 5,
 
    Function    = 8,    // Function area
    Beckon      = 8,    //
@@ -95,6 +97,7 @@ enum class ELogCategory
 };
 
 // The ELogCode allways contains the cathegory
+#if 0
 enum class ELogCode: int;
 
 inline constexpr ELogCode operator| (ELogCategory cat, int i)
@@ -102,7 +105,7 @@ inline constexpr ELogCode operator| (ELogCategory cat, int i)
    //return( (ELogBlended)( (int) cat | ( i << 4 ) ) );
    return( (ELogCode)( (int) cat | ( i ) ) );
 }
-
+#endif
 /*
 inline constexpr operator ELogBlended(ELogCategory cat)
 {
@@ -110,22 +113,27 @@ inline constexpr operator ELogBlended(ELogCategory cat)
 }
 */
 
+#if 0
 inline constexpr ELogCategory toCategory(ELogCode code)
 {
    return( (ELogCategory)( (int) code & 0xF ) );
 }
-
+#endif
 
 #if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
-   #define lDebugReal(msg, ...) lLog(ELogCategory::Debug|0, msg, ##__VA_ARGS__ )
-   #define lInfo(msg, ...) lLog(ELogCategory::Info|0, msg, ##__VA_ARGS__ )
-   #define lCaution(msg, ... ) lLog(ELogCategory::Caution|0, msg, ##__VA_ARGS__ )
-   #define lWarning(msg, ... ) lLog(ELogCategory::Warning|0, msg, ##__VA_ARGS__ )
-   #define lCritical(msg, ... ) lLog(ELogCategory::Critical|0, msg, ##__VA_ARGS__ )
-   #if defined STM32
+   #define lDebugReal(msg, ...) lLog(ELogCategory::Debug, msg, ##__VA_ARGS__ )
+   #define lInfo(msg, ...) lLog(ELogCategory::Info, msg, ##__VA_ARGS__ )
+   #define lCaution(msg, ... ) lLog(ELogCategory::Caution, msg, ##__VA_ARGS__ )
+   #define lWarning(msg, ... ) lLog(ELogCategory::Warning, msg, ##__VA_ARGS__ )
+   #define lCritical(msg, ... ) lLog(ELogCategory::Critical, msg, ##__VA_ARGS__ )
+
+   #define lWarningC( code, msg, ... ) lLog(ELogCategory::Warning, "#%X " msg, code, ##__VA_ARGS__ )
+   #define lCriticalC( code, msg, ... ) lLog(ELogCategory::Critical, "#%X """ msg, code, ##__VA_ARGS__ )
+
+#if defined STM32
       #define lFatal(msg, ... ) abort();
    #else
-      #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, msg, ##__VA_ARGS__ )
+      #define lFatal(msg, ... ) lLog(ELogCategory::Fatal, msg, ##__VA_ARGS__ )
    #endif
    #define lCalm() lLog(ELogCategory::Calm|0, "" )
 #else
@@ -136,6 +144,9 @@ inline constexpr ELogCategory toCategory(ELogCode code)
    #define lCritical(msg, ... ) lLog(ELogCategory::Critical|0, "" )
    #define lFatal(msg, ... ) lLog(ELogCategory::Fatal|0, "" )
    #define lCalm() lLog(ELogCategory::Calm|0, "" )
+
+   #define lWarningC(code, msg, ... ) lLog(ELogCategory::Warning|0, "" )
+   #define lCriticalC(code, msg, ... ) lLog(ELogCategory::Critical|0, "" )
 #endif
 
 // You can use the LDS macro to give two different messages depending on the
@@ -189,10 +200,10 @@ extern "C"
 #if ! IS_ENABLED( CONFIG_LEPTO_LOG_SILENT )
 
       extern const char *categoryMessages[];
-      void lVLogSimple(ELogCode code, const char *format, va_list &list );
-      void lVLogPretty(const char*file, int line, ELogCode code, const char *format, va_list &list );
-      void lLogSimple(ELogCode code, const char *format, ... );
-      void lLogPretty(const char*file, int line, ELogCode code, const char *format, ... );
+      void lVLogSimple(ELogCategory code, const char *format, va_list &list );
+      void lVLogPretty(const char*file, int line, ELogCategory code, const char *format, va_list &list );
+      void lLogSimple(ELogCategory code, const char *format, ... );
+      void lLogPretty(const char*file, int line, ELogCategory code, const char *format, ... );
       
    #else
 

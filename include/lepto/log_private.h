@@ -72,7 +72,11 @@ struct SLogEntry
       clock_t timeStamp;
    #endif
       
+   ELogCategory category;
+
+   #if IS_ENABLED( CONFIG_LEPTO_LOG_CODE )
    ELogCode code;
+   #endif
 
    #if IS_ENABLED( CONFIG_LEPTO_LOG_EVENTS )
    //unsigned int event;

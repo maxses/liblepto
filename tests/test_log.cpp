@@ -40,7 +40,7 @@ TEST_CASE( "Log", "[default]" )
    SECTION( "Output" )
    {
       lWarning( "BOF: %d", 10 );
-      lLog( ELogCategory::Warning | EV_BOF, "E-BOF: %d", 10 );
+      lLog( ELogCategory::Warning, "E-BOF: %d", 10 );
    }
 }
 

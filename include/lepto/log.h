@@ -105,6 +105,9 @@ inline constexpr ELogCode operator| (ELogCategory cat, int i)
    //return( (ELogBlended)( (int) cat | ( i << 4 ) ) );
    return( (ELogCode)( (int) cat | ( i ) ) );
 }
+#else
+   //enum class ELogCode: int;
+   typedef int ELogCode;
 #endif
 /*
 inline constexpr operator ELogBlended(ELogCategory cat)
@@ -126,10 +129,14 @@ inline constexpr ELogCategory toCategory(ELogCode code)
    #define lCaution(msg, ... ) lLog(ELogCategory::Caution, msg, ##__VA_ARGS__ )
    #define lWarning(msg, ... ) lLog(ELogCategory::Warning, msg, ##__VA_ARGS__ )
    #define lCritical(msg, ... ) lLog(ELogCategory::Critical, msg, ##__VA_ARGS__ )
-
-   #define lWarningC( code, msg, ... ) lLog(ELogCategory::Warning, "#%X " msg, code, ##__VA_ARGS__ )
-   #define lCriticalC( code, msg, ... ) lLog(ELogCategory::Critical, "#%X """ msg, code, ##__VA_ARGS__ )
-
+   
+   #if IS_ENABLED( CONFIG_LEPTO_LOG_CODE )
+      #define lWarningC( code, msg, ... ) lLog(ELogCategory::Warning, "#%X " msg, code, ##__VA_ARGS__ )
+      #define lCriticalC( code, msg, ... ) lLog(ELogCategory::Critical, "#%X """ msg, code, ##__VA_ARGS__ )
+   #else
+      #define lWarningC( code, msg, ... ) lLog(ELogCategory::Warning, msg, ##__VA_ARGS__ )
+      #define lCriticalC( code, msg, ... ) lLog(ELogCategory::Critical, msg, ##__VA_ARGS__ )
+   #endif
 #if defined STM32
       #define lFatal(msg, ... ) abort();
    #else

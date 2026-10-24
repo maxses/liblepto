@@ -66,12 +66,14 @@ const char *categoryMessages[]=
    { [(int)ELogCategory::Debug]="",
      //[(int)ELogCategory::Caution]="",
      //[(int)ELogCategory::Info]="",
+     [(int)ELogCategory::Gone]=ANSI_GREEN "Gone: ",
      [(int)ELogCategory::Caution]=ANSI_YELLOW "Caution: ",
      [(int)ELogCategory::Warning]=ANSI_ORANGE "Warning: ",
      [(int)ELogCategory::Critical]=ANSI_RED "Error: ",
      [(int)ELogCategory::Fatal]=ANSI_RED "Fatal: " };
 #else
    { [ (int)ELogCategory::Debug ]="",
+     [ (int)ELogCategory::Gone ]="G:",
      [ (int)ELogCategory::Caution ]="C:",
      [ (int)ELogCategory::Warning ]="W:",
      [ (int)ELogCategory::Critical ]="E:",
@@ -107,7 +109,7 @@ void logPrintPretty( const SLogEntry* le )
    fputs( ": ", stdout );
    if( (int)toCategory(le->code) < (int)ELogCategory::Function )
    {
-      fputs( categoryMessages[ (int)toCategory(le->code) ], stdout );
+      fputs( categoryMessages[ (int)le->category ], stdout );
    }
    fputs( ANSI_NORMAL,  stdout );
    fputs( le->logString, stdout );
@@ -118,7 +120,7 @@ void logPrintPretty( const SLogEntry* le )
 
 void logPrintSimple( const SLogEntry* le )
 {
-   fputs( categoryMessages[ (int)toCategory(le->code) ], stdout );
+   fputs( categoryMessages[ (int)le->category ], stdout );
    // fputs does not print an newline
    fputs(le->logString, stdout );
    fputs("\n", stdout );

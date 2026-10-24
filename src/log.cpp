@@ -174,11 +174,11 @@ void lLogPretty( const char*file, int line, ELogCategory category, const char *f
 
 #else
 
-void lLogSimple( ELogCode code, const char *format, ... )
+void lLogSimple( ELogCategory cathegory, const char *format, ... )
 {
    va_list list;
    va_start(list, format);
-   lVLogSimple( code, format, list);
+   lVLogSimple( cathegory, format, list);
    return;
 }
 

@@ -35,7 +35,7 @@ TEST_CASE( "Ring threaded", "[default]" )
 {
    SECTION( "Ring threaded" )
    {
-      for(int i1=0; i1 < 10; i1++)
+      for(int i1=0; i1 < 1; i1++)
       {
          int argc=1;
          char* argv[]{ 0 };

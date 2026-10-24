@@ -29,6 +29,9 @@
    #undef CONFIG_LEPTO_GLOBAL_EVENT_LOOP
    #define CONFIG_LEPTO_GLOBAL_EVENT_LOOP          1
 
+   #undef CONFIG_LEPTO_LOG_DIRECT_PRINT
+   #define CONFIG_LEPTO_LOG_DIRECT_PRINT           1
+
 #endif
 
 

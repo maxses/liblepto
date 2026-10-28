@@ -78,6 +78,45 @@ char CBase64::alphabet(char index)
    */
 }
 
+uint32_t CBase64::alphabetToRaw(char c) /* static */
+{
+   uint32_t rawValue=(uint32_t)-1;
+
+   if( ( rawValue=(c-'A') ) <= ( 'Z' - 'A' ) )
+   {
+
+   }
+   else
+   if( ( rawValue=(c-'a') ) <= ( 'z' - 'a' ) )
+   {
+      rawValue += 26;
+   }
+   else
+   if( ( rawValue=(c-'0') ) <= ( '9' - '0' ) )
+   {
+      rawValue += ( 26 * 2 );
+   }
+   else
+   {
+      switch( c )
+      {
+         case '+':
+            rawValue=0x3E;
+            break;
+         case '/':
+            rawValue=0x3F;
+            break;
+         case '=':
+            rawValue=0;
+            break;
+         default:
+            break;
+      }
+   }
+   return( rawValue );
+}
+
+
 #endif // ? CONFIG_LEPTO_BASE64_STATIC_ALPHABET ELSE
 
 uint32_t CBase64::triPortion( const uint8_t *src, lsize_t srcSize )
@@ -181,29 +220,10 @@ int CBase64::decode(const char *src, lsize_t srcSize, uint8_t *dest, lsize_t des
       reduced=0;
       for(i1=0; i1<4; i1++)
       {
-         switch(src[srcPos])
+         rawValue=alphabetToRaw( src[ srcPos ] );
+         if( rawValue > 0xff )
          {
-            case 'A'...'Z':
-               rawValue=(src[srcPos]-'A');
-               break;
-            case 'a'...'z':
-               rawValue=(src[srcPos]-'a')+26;
-               break;
-            case '0'...'9':
-               rawValue=(src[srcPos]-'0')+(26*2);
-               break;
-            case '+':
-               rawValue=0x3E;
-               break;
-            case '/':
-               rawValue=0x3F;
-               break;
-            case '=':
-               rawValue=0;
-               break;
-            default:
-               return(-1);
-               break;
+            return(-1);
          }
          value= ( value << 6 ) | ( rawValue & 0x3f );
          if( src[srcPos] == '=' )
@@ -242,26 +262,10 @@ lsize_t CBase64::decode(const CString &src, CByteArray &dest)
       for(i1=0; i1<4; i1++)
       {
          unsigned char ch=src.at( srcPos );
-         switch( ch )
+         rawValue=alphabetToRaw( ch );
+         if( rawValue > 0xFF )
          {
-            case 'A'...'Z':
-               rawValue=(ch-'A');
-               break;
-            case 'a'...'z':
-               rawValue=(ch-'a')+26;
-               break;
-            case '0'...'9':
-               rawValue=(ch-'0')+(26*2);
-               break;
-            case '+':
-               rawValue=(ch-'+')+(26*2)+10;
-               break;
-            case '/':
-               rawValue=(ch-'/')+(26*2)+10+1;
-               break;
-            default:
-               rawValue=0;
-               break;
+            return( 0 );
          }
          value= (value<<6) | ( rawValue & 0x3f );
          if( src[srcPos] == '=' )

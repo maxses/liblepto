@@ -61,6 +61,10 @@ the same time does not make sense.
 #if IS_ENABLED( CONFIG_LEPTO_LOG_USE_ANSI )
 #endif
 
+// error: ISO C++ does not allow C99 designated initializers [-Werror=pedantic]
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 const char *categoryMessages[]=
 #if IS_ENABLED( CONFIG_LEPTO_LOG_PRETTY_PRINT )
    { [(int)ELogCategory::Debug]="",
@@ -69,14 +73,18 @@ const char *categoryMessages[]=
      [(int)ELogCategory::Caution]=ANSI_YELLOW "Caution: ",
      [(int)ELogCategory::Warning]=ANSI_ORANGE "Warning: ",
      [(int)ELogCategory::Critical]=ANSI_RED "Error: ",
-     [(int)ELogCategory::Fatal]=ANSI_RED "Fatal: " };
+     [(int)ELogCategory::Fatal]=ANSI_RED "Fatal: ",
+   };
 #else
    { [ (int)ELogCategory::Debug ]="",
      [ (int)ELogCategory::Caution ]="C:",
      [ (int)ELogCategory::Warning ]="W:",
      [ (int)ELogCategory::Critical ]="E:",
-     [ (int)ELogCategory::Fatal ]="F:", };
+     [ (int)ELogCategory::Fatal ]="F:",
+};
 #endif
+
+#pragma GCC diagnostic pop
 
 //#if ! IS_ENABLED( CONFIG_LEPTO_LOG_DIRECT_PRINT )
 

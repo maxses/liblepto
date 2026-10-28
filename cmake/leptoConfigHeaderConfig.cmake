@@ -79,9 +79,6 @@ function( add_generated_config project )
    
    set( GENERATED_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${project}/config_generated_local.h )
 
-   message( WARNING "### OUTPUT: ${generated_header_${project}}" )
-   message( WARNING "### INPUT: ${input_header_${project}}" )
-      
    add_custom_command(
       OUTPUT ${generated_header_${project}}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

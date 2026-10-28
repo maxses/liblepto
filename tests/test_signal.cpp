@@ -106,7 +106,7 @@ class CBase
       CBase()
       {
          // m_signal.connect(this, &CBase::slot );
-         CONNECT( m_signal, this, CBase::slot );
+         lConnect( m_signal, this, CBase::slot );
       }
       virtual int slot(int)=0;
       virtual int getSum()=0;
@@ -161,7 +161,7 @@ TEST_CASE( "Signal", "[default]" )
       CSignal<int, int>sigConst;
 
       //sig.connect(&obj, &C1::_slot1);
-      CONNECT( sig, &obj, C1::_slot1);
+      lConnect( sig, &obj, C1::_slot1);
       
       for(int i1=0; i1<0x10; i1++)
          sig.emitSignal(0, i1);
@@ -170,9 +170,9 @@ TEST_CASE( "Signal", "[default]" )
       REQUIRE( obj.getCounter() == 0x78 + START_VALUE );
 
       // Connecting a void-method
-      CONNECT( sigVoid, &obj, C1::slotVoid);
+      lConnect( sigVoid, &obj, C1::slotVoid);
       // Connecting a const-method
-      CONNECT( sigConst, &obj, C1::slotConst);
+      lConnect( sigConst, &obj, C1::slotConst);
       
       REQUIRE( sigConst.emitSingle(0x500) == 0x500 - 123 );
 
@@ -186,8 +186,8 @@ TEST_CASE( "Signal", "[default]" )
 
       CSignal<void, int, int>sig;
 
-      CONNECT( sig, &obj, C1::_slot1);
-      CONNECT( sig, &obj2, C1::_slot1);
+      lConnect( sig, &obj, C1::_slot1);
+      lConnect( sig, &obj2, C1::_slot1);
 
       for(int i1=0; i1<0x10; i1++)
          sig.emitSignal(0, i1);
@@ -224,7 +224,7 @@ TEST_CASE( "Signal", "[default]" )
       CSignal<void, int> sig;
 
       //sig.connect(&obj, &C1::_slot2);
-      CONNECT( sig, &obj, C1::_slot2);
+      lConnect( sig, &obj, C1::_slot2);
 
       //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
@@ -249,7 +249,7 @@ TEST_CASE( "Signal", "[default]" )
       CSignal<void> sig;
 
       //sig.connect(&obj, &C1::_slot3);
-      CONNECT( sig, &obj, C1::_slot3);
+      lConnect( sig, &obj, C1::_slot3);
 
       //lHint << "Checking adding to list";
       for(int i1=0; i1<0x10; i1++)
@@ -274,7 +274,7 @@ TEST_CASE( "Signal", "[default]" )
       CSignalDeferred<void> sig( sigCount + 1 );
       
       // sig.connect(&obj, &C1::_slot3);
-      CONNECT( sig, &obj, C1::_slot3 );
+      lConnect( sig, &obj, C1::_slot3 );
       
       //lHint << "Checking adding to list";
       for(int i1=0; i1<sigCount; i1++)
@@ -396,8 +396,8 @@ TEST_CASE( "SimpleSignal", "[default]" )
        CSimple1 c1;
        CSimple2 c2;
 
-       CONNECT( sig1, &c1, CSimple1::slot );
-       CONNECT( sig2, &c2, CSimple2::slot );
+       lConnect( sig1, &c1, CSimple1::slot );
+       lConnect( sig2, &c2, CSimple2::slot );
 
        for(int i1=0; i1<10; i1++)
        {
@@ -415,11 +415,11 @@ TEST_CASE( "SimpleSignal", "[default]" )
        REQUIRE( sig3.emitSignal( 10 ) == 0 );
 
        // Test void-type
-       CONNECT( sig4, &c1, CSimple1::slotVoid );
+       lConnect( sig4, &c1, CSimple1::slotVoid );
        sig4.emitSignal();
 
        // Test void-type
-       CONNECT( sig4, &c1, CSimple1::slotConst );
+       lConnect( sig4, &c1, CSimple1::slotConst );
        sig4.emitSignal();
 
    }

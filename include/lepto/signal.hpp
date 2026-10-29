@@ -39,7 +39,17 @@
 
 int mainDummy(int argc, const char **argv);
 
-#define GET_MACRO(_1,_2,_3,_4,NAME,...) NAME
+
+/* Macros for creatig signal connections to methods. Signal can be standalone 
+ * object or a getter-method of an class object.
+ * The second version is just for mimicing Qt commands.
+ * E.g.
+ *    lConnect( &m_timer, timeout(), this, CClass::slotTimer );
+ * Vs.
+ *    lConnect( m_timer->timeout(), this, CClass::slotTimer );
+ */
+
+#define GET_MACRO_4(_1,_2,_3,_4,NAME,...) NAME
 
 #define lConnect4( sigObject, signal, object, slot) \
     (sigObject)->signal.connect< &slot>( object, &slot );
@@ -57,24 +67,31 @@ int mainDummy(int argc, const char **argv);
 // Dicpatcher for different handling of different count of arguments.
 // Use slot without & operator.
 // Example: lConnect( m_wkupButton.signalEvent(), this, CMiniMinutnik::slotButtonEvent );
-#define lConnect(...) GET_MACRO(__VA_ARGS__, lConnect4, lConnect3, lConnect2, lConnect1)(__VA_ARGS__)
+#define lConnect(...) GET_MACRO_4(__VA_ARGS__, lConnect4, lConnect3, lConnect2, lConnect1)(__VA_ARGS__)
 
 #define CONNECT( ... ) \
    _Pragma("GCC error \"Use 'lConnet' instead of 'CONNECT'\"")
 
-/*
-#define CONNECT( sigObject, signal, object, slot) \
-    (sigObject)->signal.connect< &slot>( object, &slot );
 
-#define DCONNECT( signal, object, slot) \
-    signal.connect< &slot>( object, &slot );
-*/
+/* Macros for creatig signal connections to methods, that are already available 
+ * as pointer. Regular macros use an '&' for getting method ptr which does not
+ * work when its already an pointer.
+ */
 
-#define CONNECT_MPTR( sigObject, signal, object, slot) \
+#define lConnectMethodPtr4( sigObject, signal, object, slot) \
    (sigObject)->signal.connect< &mainDummy >( object, slot );
 
-#define DCONNECT_MPTR( signal, object, slot) \
+#define lConnectMethodPtr3( signal, object, slot) \
    signal.connect< &mainDummy >( object, slot );
+
+#define lConnectMethodPtr(...) GET_MACRO_4(__VA_ARGS__, lConnectMethodPtr4, lConnectMethodPtr3, lConnectMethodPtr2, lConnectMethodPtr1)(__VA_ARGS__)
+
+#define CONNECT_MPTR( ... ) \
+   _Pragma("GCC error \"Use 'lConnectMethodPtr' instead of 'CONNECT'\"")
+
+#define DCONNECT_MPTR( ... ) \
+   _Pragma("GCC error \"Use 'lConnectMethodPtr' instead of 'DCONNECT_MPTR'\"")
+
 
 #if ! ( __cplusplus >= 201703 )
     #error Need at least C++17; update compiler or set the standard in your CMakeLists.txt
